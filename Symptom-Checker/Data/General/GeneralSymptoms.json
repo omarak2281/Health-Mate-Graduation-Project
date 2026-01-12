@@ -1,0 +1,412 @@
+{
+  "Cough": {
+    "nameAr": "السعال",
+    "description": "Sudden expulsion of air from lungs to clear throat or airways",
+    "descriptionAr": "إخراج مفاجئ للهواء من الرئتين لتنظيف الحلق أو الممرات الهوائية",
+    "severity": "low",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Common Cold",
+      "Influenza",
+      "Bronchitis",
+      "Pneumonia",
+      "Asthma",
+      "COVID-19",
+      "Tuberculosis"
+    ]
+  },
+  "Shortness of Breath": {
+    "nameAr": "ضيق التنفس",
+    "description": "Difficulty breathing or feeling unable to get enough air",
+    "descriptionAr": "صعوبة في التنفس أو الشعور بعدم القدرة على الحصول على هواء كافٍ",
+    "severity": "moderate",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Asthma",
+      "Chronic Obstructive Pulmonary Disease (COPD)",
+      "Pneumonia",
+      "Heart Failure",
+      "Anemia",
+      "Pulmonary Embolism",
+      "Chronic Kidney Disease",
+      "Hypertension"
+    ]
+  },
+  "Runny Nose": {
+    "nameAr": "سيلان الأنف",
+    "description": "Excess nasal drainage ranging from clear fluid to thick mucus",
+    "descriptionAr": "تصريف أنفي زائد يتراوح من سائل صافٍ إلى مخاط سميك",
+    "severity": "low",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Common Cold",
+      "Influenza",
+      "Allergic Rhinitis",
+      "Sinusitis",
+      "COVID-19"
+    ]
+  },
+  "Sore Throat": {
+    "nameAr": "التهاب الحلق",
+    "description": "Pain, scratchiness or irritation of throat that often worsens when swallowing",
+    "descriptionAr": "ألم، خشونة أو تهيج الحلق الذي غالبًا ما يزداد سوءًا عند البلع",
+    "severity": "low",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Common Cold",
+      "Influenza",
+      "Strep Throat",
+      "Tonsillitis",
+      "COVID-19",
+      "Mononucleosis"
+    ]
+  },
+  "Fever": {
+    "nameAr": "الحمى",
+    "description": "Temporary increase in body temperature, often due to illness",
+    "descriptionAr": "ارتفاع مؤقت في درجة حرارة الجسم، غالبًا بسبب المرض",
+    "severity": "moderate",
+    "category": "Systemic",
+    "relatedDiseases": [
+      "Common Cold",
+      "Influenza",
+      "Pneumonia",
+      "COVID-19",
+      "Urinary Tract Infection (UTI)",
+      "Malaria",
+      "Sepsis"
+    ]
+  },
+  "Fatigue": {
+    "nameAr": "التعب",
+    "description": "Persistent feeling of tiredness, weakness or exhaustion",
+    "descriptionAr": "شعور مستمر بالتعب، الضعف أو الإرهاق",
+    "severity": "moderate",
+    "category": "Systemic",
+    "relatedDiseases": [
+      "Anemia",
+      "Hypothyroidism",
+      "Chronic Fatigue Syndrome",
+      "Diabetes",
+      "Heart Failure",
+      "Depression",
+      "Cancer",
+      "Hepatitis B",
+      "Liver Cirrhosis",
+      "Chronic Kidney Disease"
+    ]
+  },
+  "Headache": {
+    "nameAr": "الصداع",
+    "description": "Pain in any region of head, ranging from sharp to dull pain",
+    "descriptionAr": "ألم في أي منطقة من الرأس، يتراوح من ألم حاد إلى ممل",
+    "severity": "moderate",
+    "category": "Neurological",
+    "relatedDiseases": [
+      "Migraine",
+      "Tension Headache",
+      "Sinusitis",
+      "Hypertension",
+      "Meningitis",
+      "COVID-19",
+      "Stroke"
+    ]
+  },
+  "Dizziness": {
+    "nameAr": "الدوخة",
+    "description": "Feeling of lightheadedness, unsteadiness, or vertigo",
+    "descriptionAr": "إحساس بالدوار، عدم الثبات، أو الدوخة",
+    "severity": "moderate",
+    "category": "Neurological",
+    "relatedDiseases": [
+      "Vertigo",
+      "Anemia",
+      "Hypotension",
+      "Migraine",
+      "Dehydration",
+      "Inner Ear Disorders"
+    ]
+  },
+  "Nausea": {
+    "nameAr": "الغثيان",
+    "description": "Unpleasant sensation of wanting to vomit",
+    "descriptionAr": "إحساس غير سار بالرغبة في التقيؤ",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedDiseases": [
+      "Gastroenteritis",
+      "Food Poisoning",
+      "Migraine",
+      "Pregnancy",
+      "Medication Side Effects",
+      "Appendicitis",
+      "Hepatitis B",
+      "Kidney Stones",
+      "Chronic Kidney Disease"
+    ]
+  },
+  "Vomiting": {
+    "nameAr": "التقيؤ",
+    "description": "Forceful expulsion of stomach contents through mouth",
+    "descriptionAr": "إخراج قوي لمحتويات المعدة عبر الفم",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedDiseases": [
+      "Gastroenteritis",
+      "Food Poisoning",
+      "Migraine",
+      "Appendicitis",
+      "Pancreatitis",
+      "Intestinal Obstruction",
+      "Kidney Stones"
+    ]
+  },
+  "Diarrhea": {
+    "nameAr": "الإسهال",
+    "description": "Loose, watery stools occurring more frequently than usual",
+    "descriptionAr": "براز رخو، مائي يحدث بشكل متكرر أكثر من المعتاد",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedDiseases": [
+      "Gastroenteritis",
+      "Food Poisoning",
+      "Inflammatory Bowel Disease (IBD)",
+      "Irritable Bowel Syndrome (IBS)",
+      "Celiac Disease",
+      "COVID-19"
+    ]
+  },
+  "Abdominal Pain": {
+    "nameAr": "ألم البطن",
+    "description": "Pain occurring between chest and pelvic regions",
+    "descriptionAr": "ألم يحدث بين مناطق الصدر والحوض",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedDiseases": [
+      "Gastroenteritis",
+      "Appendicitis",
+      "Gallstones",
+      "Peptic Ulcer Disease",
+      "Irritable Bowel Syndrome (IBS)",
+      "Kidney Stones",
+      "Hepatitis B"
+    ]
+  },
+  "Joint Pain": {
+    "nameAr": "ألم المفاصل",
+    "description": "Discomfort, pain or inflammation arising from any joint",
+    "descriptionAr": "انزعاج، ألم أو التهاب ينشأ من أي مفصل",
+    "severity": "moderate",
+    "category": "Musculoskeletal",
+    "relatedDiseases": [
+      "Osteoarthritis",
+      "Rheumatoid Arthritis",
+      "Gout",
+      "Lupus",
+      "Fibromyalgia",
+      "Lyme Disease"
+    ]
+  },
+  "Muscle Pain": {
+    "nameAr": "ألم العضلات",
+    "description": "Pain affecting one or more muscles",
+    "descriptionAr": "ألم يؤثر على عضلة واحدة أو أكثر",
+    "severity": "moderate",
+    "category": "Musculoskeletal",
+    "relatedDiseases": [
+      "Influenza",
+      "Fibromyalgia",
+      "Chronic Fatigue Syndrome",
+      "Lyme Disease",
+      "Polymyalgia Rheumatica",
+      "Electrolyte Imbalance"
+    ]
+  },
+  "Skin Rash": {
+    "nameAr": "طفح جلدي",
+    "description": "Change in skin color or texture, often with itching or redness",
+    "descriptionAr": "تغير في لون الجلد أو قوامه، غالبًا مع حكة أو احمرار",
+    "severity": "low",
+    "category": "Dermatological",
+    "relatedDiseases": [
+      "Eczema",
+      "Psoriasis",
+      "Contact Dermatitis",
+      "Shingles",
+      "Measles",
+      "Allergic Reaction"
+    ]
+  },
+  "Weight Loss": {
+    "nameAr": "فقدان الوزن",
+    "description": "Decrease in body weight from normal or healthy range",
+    "descriptionAr": "انخفاض في وزن الجسم من النطاق الطبيعي أو الصحي",
+    "severity": "high",
+    "category": "Systemic",
+    "relatedDiseases": [
+      "Cancer",
+      "Hyperthyroidism",
+      "Diabetes",
+      "Tuberculosis",
+      "HIV/AIDS",
+      "Inflammatory Bowel Disease (IBD)"
+    ]
+  },
+  "Weight Gain": {
+    "nameAr": "زيادة الوزن",
+    "description": "Increase in body weight above normal or healthy range",
+    "descriptionAr": "زيادة في وزن الجسم فوق النطاق الطبيعي أو الصحي",
+    "severity": "moderate",
+    "category": "Systemic",
+    "relatedDiseases": [
+      "Hypothyroidism",
+      "Cushing's Syndrome",
+      "Polycystic Ovary Syndrome (PCOS)",
+      "Depression",
+      "Heart Failure"
+    ]
+  },
+  "Chest Pain": {
+    "nameAr": "ألم الصدر",
+    "description": "Pain or discomfort in chest area",
+    "descriptionAr": "ألم أو انزعاج في منطقة الصدر",
+    "severity": "high",
+    "category": "Cardiovascular",
+    "relatedDiseases": [
+      "Heart Attack",
+      "Angina",
+      "Pneumonia",
+      "Pulmonary Embolism",
+      "Costochondritis",
+      "Gastroesophageal Reflux Disease (GERD)"
+    ]
+  },
+  "Back Pain": {
+    "nameAr": "ألم الظهر",
+    "description": "Pain in back region, ranging from dull constant ache to sudden sharp pain",
+    "descriptionAr": "ألم في منطقة الظهر، يتراوح من ألم ممل مستمر إلى ألم حاد مفاجئ",
+    "severity": "moderate",
+    "category": "Musculoskeletal",
+    "relatedDiseases": [
+      "Muscle Strain",
+      "Herniated Disc",
+      "Osteoporosis",
+      "Arthritis",
+      "Kidney Stones",
+      "Spinal Stenosis"
+    ]
+  },
+  "Loss of Appetite": {
+    "nameAr": "فقدان الشهية",
+    "description": "Reduced desire to eat",
+    "descriptionAr": "انخفاض الرغبة في تناول الطعام",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedDiseases": [
+      "Gastroenteritis",
+      "Depression",
+      "Cancer",
+      "Liver Disease",
+      "Kidney Disease",
+      "HIV/AIDS"
+    ]
+  },
+  "Insomnia": {
+    "nameAr": "الأرق",
+    "description": "Persistent difficulty falling or staying asleep",
+    "descriptionAr": "صعوبة مستمرة في النوم أو البقاء نائمًا",
+    "severity": "moderate",
+    "category": "Neurological",
+    "relatedDiseases": [
+      "Anxiety Disorders",
+      "Depression",
+      "Chronic Pain",
+      "Restless Legs Syndrome",
+      "Sleep Apnea",
+      "Hyperthyroidism"
+    ]
+  },
+  "Frequent Urination": {
+    "nameAr": "التبول المتكرر",
+    "description": "Need to urinate more often than usual",
+    "descriptionAr": "الحاجة إلى التبول أكثر من المعتاد",
+    "severity": "moderate",
+    "category": "Urological",
+    "relatedDiseases": [
+      "Urinary Tract Infection (UTI)",
+      "Diabetes",
+      "Prostate Enlargement",
+      "Interstitial Cystitis",
+      "Overactive Bladder",
+      "Pregnancy"
+    ]
+  },
+  "Jaundice": {
+    "nameAr": "اليرقان",
+    "description": "Yellowing of the skin and eyes",
+    "descriptionAr": "اصفرار الجلد والعينين",
+    "severity": "high",
+    "category": "Hepatic",
+    "relatedDiseases": [
+      "Hepatitis B",
+      "Liver Cirrhosis",
+      "Gallstones",
+      "Liver Cancer",
+      "Pancreatic Cancer"
+    ]
+  },
+  "Dark Urine": {
+    "nameAr": "بول داكن",
+    "description": "Urine that looks darker than normal",
+    "descriptionAr": "بول يبدو أغمق من المعتاد",
+    "severity": "moderate",
+    "category": "Hepatic/Renal",
+    "relatedDiseases": [
+      "Hepatitis B",
+      "Dehydration",
+      "Liver Cirrhosis",
+      "Gallstones"
+    ]
+  },
+  "Blood in Urine": {
+    "nameAr": "دم في البول",
+    "description": "Presence of red blood cells in urine (Hematuria)",
+    "descriptionAr": "وجود خلايا دم حمراء في البول (بيلة دموية)",
+    "severity": "high",
+    "category": "Urological",
+    "relatedDiseases": [
+      "Kidney Stones",
+      "Urinary Tract Infection (UTI)",
+      "Bladder Cancer",
+      "Kidney Cancer",
+      "Chronic Kidney Disease"
+    ]
+  },
+  "Flank Pain": {
+    "nameAr": "ألم الخاصرة",
+    "description": "Pain in the side of the body between ribs and hip",
+    "descriptionAr": "ألم في جانب الجسم بين الأضلاع والورك",
+    "severity": "moderate",
+    "category": "Musculoskeletal/Renal",
+    "relatedDiseases": [
+      "Kidney Stones",
+      "Kidney Infection",
+      "Muscle Strain",
+      "Shingles"
+    ]
+  },
+  "Edema": {
+    "nameAr": "الوذمة",
+    "description": "Swelling caused by excess fluid trapped in body's tissues",
+    "descriptionAr": "تورم ناتج عن سوائل زائدة محبوسة في أنسجة الجسم",
+    "severity": "moderate",
+    "category": "Systemic",
+    "relatedDiseases": [
+      "Heart Failure",
+      "Kidney Disease",
+      "Liver Cirrhosis",
+      "Pregnancy",
+      "Deep Vein Thrombosis (DVT)"
+    ]
+  }
+}
