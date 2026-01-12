@@ -133,8 +133,10 @@ Ensure you have the latest **Flutter SDK** and **Android Studio / Xcode**.
 
 ## 👨‍💻 Developed By
 **Omar Ashraf**  
+**Saif Eldeen Amr**
 *Graduation Project - 2026*  
-Contact: omarak2281@gmail.com
-
+Contact: 
+**omarak2281@gmail.com**
+**saifeldeenamr10@gmail.com**
 ---
 🚀 **Health Mate** - *Your Life, Our Mission.*
