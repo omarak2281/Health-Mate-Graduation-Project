@@ -1,4 +1,4 @@
-# Flutter/Dart
+# Flutter/Dart Build Artifacts
 **/build/
 **/.dart_tool/
 **/.packages
@@ -13,7 +13,7 @@
 **/*.apk
 **/*.aab
 
-# Python
+# Python Virtual Environments & Cache
 **/__pycache__/
 **/*.pyc
 **/*.pyo
@@ -24,22 +24,6 @@
 **/.pytest_cache/
 **/.coverage
 **/htmlcov/
-
-# Environment variables (Sensitive data)
-**/.env
-**/.env.*
-
-# IDEs
-**/.vscode/
-**/.idea/
-**/*.swp
-**/*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project specific
 **/predict_abp_env/
 **/symptom_checker_env/
 **/predict_abp_venv/
@@ -48,13 +32,24 @@ Thumbs.db
 **/symptom_checker/venv/
 **/Back-end/venv/
 **/prediction-backend/venv/
-**/prediction-backend/__pycache__/
-**/Back-end/__pycache__/
-**/Back-end/db_data/
-**/Back-end/postgres_data/
-**/Back-end/redis_data/
-**/Back-end/.env
-**/Front-end/health_mate_app/build/
-**/Front-end/health_mate_app/.dart_tool/
-**/Front-end/health_mate_app/.flutter-plugins
-**/Front-end/health_mate_app/.flutter-plugins-dependencies
+
+# Database Data (Heavy and local-only)
+**/db_data/
+**/postgres_data/
+**/redis_data/
+
+# IDE & OS Files
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+.DS_Store
+Thumbs.db
+
+# ALLOWING ALL CONFIG AND MODELS (As requested for easy team setup)
+# The following files will NOT be ignored:
+# .env files
+# .json config files
+# .pkl model files
+# Translation keys
+# Firebase keys
