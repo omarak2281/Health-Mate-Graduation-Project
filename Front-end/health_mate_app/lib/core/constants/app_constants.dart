@@ -23,6 +23,7 @@ class AppConstants {
   static const String cacheKeyLatestBP = 'latest_bp';
   static const String cacheKeyBPHistory = 'bp_history';
   static const String cacheKeyMedications = 'medications';
+  static const String cacheKeyLastRole = 'last_selected_role';
 
   // Hive Box Names
   static const String hiveBoxUser = 'user_box';
@@ -66,4 +67,20 @@ class AssetsConstants {
   static const String _imagesPath = 'assets/images';
 
   static const String splashLogo = '$_imagesPath/splash_logo.svg';
+  static const String bloodPressure = '$_imagesPath/Blood_Pressure.svg';
+  static const String check = '$_imagesPath/Check.svg';
+  static const String heartRate = '$_imagesPath/Heart_Rate.svg';
+  static const String home = '$_imagesPath/Home.svg';
+  static const String language = '$_imagesPath/Language.svg';
+  static const String logout = '$_imagesPath/Logout.svg';
+  static const String pill = '$_imagesPath/Pill.svg';
+  static const String settings = '$_imagesPath/Settings.svg';
+  static const String phone = '$_imagesPath/phone.svg';
+  static const String doctor = '$_imagesPath/doctor.svg';
+  static const String email = '$_imagesPath/email.svg';
+  static const String password = '$_imagesPath/password.svg';
+  static const String googleLogoUrl =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png';
+  static const String ukFlagUrl = 'https://flagcdn.com/w160/gb.png';
+  static const String egyptFlagUrl = 'https://flagcdn.com/w160/eg.png';
 }

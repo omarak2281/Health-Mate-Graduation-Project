@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/constants/constants.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/auth_provider.dart';
 import 'splash_page.dart';
 
@@ -58,82 +61,128 @@ class _EmailVerificationPageState extends ConsumerState<EmailVerificationPage> {
     });
 
     final authState = ref.watch(authNotifierProvider);
-    final theme = Theme.of(context);
-
-    // If suddenly authenticated, the router should take over,
-    // but we can also show a success state here.
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('auth.verify_email'.tr()),
+        title: Text(LocaleKeys.authVerifyEmail.tr(),
+            style: TextStyle(
+                fontSize: context.sp(20), fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             onPressed: () => ref.read(authNotifierProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
+            icon: AppIcons.logout(size: context.sp(24)),
           ),
         ],
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(context.w(6)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.mark_email_read_outlined,
-                size: 100,
-                color: Colors.blue,
+                size: context.sp(100),
+                color: AppColors.primary,
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: context.h(4)),
               Text(
-                'auth.verify_email'.tr(),
-                style: theme.textTheme.headlineMedium?.copyWith(
+                LocaleKeys.authVerifyEmail.tr(),
+                style: TextStyle(
+                  fontSize: context.sp(24),
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.h(2)),
               Text(
-                'auth.verification_sent'.tr(
+                LocaleKeys.authVerificationSent.tr(
                   namedArgs: {'email': authState.user?.email ?? ''},
                 ),
-                style: theme.textTheme.bodyLarge,
+                style: TextStyle(
+                  fontSize: context.sp(16),
+                  color: AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: context.h(5)),
               if (authState.errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    authState.errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
+                  padding: EdgeInsets.only(bottom: context.h(3)),
+                  child: Container(
+                    padding: EdgeInsets.all(context.w(3)),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.error.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(AppIcons.error,
+                            color: AppColors.error, size: context.sp(20)),
+                        SizedBox(width: context.w(2)),
+                        Expanded(
+                          child: Text(
+                            authState.errorMessage!,
+                            style: TextStyle(
+                              color: AppColors.error,
+                              fontSize: context.sp(13),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: context.h(6.5),
                 child: ElevatedButton(
                   onPressed: authState.status == AuthStatus.loading
                       ? null
                       : () => ref
-                            .read(authNotifierProvider.notifier)
-                            .checkVerificationStatus(),
+                          .read(authNotifierProvider.notifier)
+                          .checkVerificationStatus(),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: authState.status == AuthStatus.loading
-                      ? const CircularProgressIndicator()
-                      : Text('auth.check_verification'.tr()),
+                      ? SizedBox(
+                          height: context.sp(24),
+                          width: context.sp(24),
+                          child: const CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text(
+                          LocaleKeys.authCheckVerification.tr(),
+                          style: TextStyle(
+                              fontSize: context.sp(16),
+                              fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.h(2)),
               TextButton(
                 onPressed: _isResending ? null : _resendEmail,
                 child: _isResending
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? SizedBox(
+                        height: context.sp(20),
+                        width: context.sp(20),
+                        child: const CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text('auth.resend_email'.tr()),
+                    : Text(
+                        LocaleKeys.authResendEmail.tr(),
+                        style: TextStyle(
+                          fontSize: context.sp(14),
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
               ),
             ],
           ),

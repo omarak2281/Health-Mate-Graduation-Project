@@ -51,21 +51,28 @@ class DioClient {
         handler.next(options);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401) {
-          // Token expired - try refresh
+        // Handle 401 (Unauthorized) OR 403 (Forbidden/Expired) for token refresh
+        if (error.response?.statusCode == 401 ||
+            error.response?.statusCode == 403) {
+          // Token might be expired or invalid - try refresh
           final refreshed = await _refreshToken();
           if (refreshed) {
             // Retry original request
             final options = error.requestOptions;
             final token = await _secureStorage.getAccessToken();
-            options.headers['Authorization'] = 'Bearer $token';
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
 
             try {
+              // Create a new Dio instance for retry to avoid interceptor loops if needed,
+              // but here we use the same one which is generally fine if handled.
               final response = await _dio.fetch(options);
               handler.resolve(response);
               return;
             } catch (e) {
               handler.next(error);
+              return;
             }
           }
         }
@@ -127,7 +134,7 @@ class DioClient {
 
       final response = await _dio.post(
         ApiConstants.refreshToken,
-        data: {'refresh_token': refreshToken},
+        queryParameters: {'refresh_token': refreshToken},
       );
 
       if (response.statusCode == 200) {

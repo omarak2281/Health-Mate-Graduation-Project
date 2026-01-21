@@ -174,34 +174,107 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.primaryLight,
-      secondary: AppColors.secondaryLight,
-      surface: AppColors.backgroundDark,
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+      surface: AppColors.surfaceDark,
       error: AppColors.error,
-      onPrimary: AppColors.textPrimary,
-      onSecondary: AppColors.textPrimary,
+      onPrimary: Colors.white,
+      onSecondary: Colors.black,
       onSurface: AppColors.textPrimaryDark,
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.backgroundDark,
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.surfaceDark,
-      foregroundColor: AppColors.textPrimaryDark,
-      elevation: 2,
+      foregroundColor: Colors.white,
+      elevation: 0,
       centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.white),
+      actionsIconTheme: const IconThemeData(color: Colors.white),
       titleTextStyle: GoogleFonts.tajawal(
         fontSize: 20,
         fontWeight: FontWeight.bold,
-        color: AppColors.textPrimaryDark,
+        color: Colors.white,
       ),
     ),
     cardTheme: const CardThemeData(
       color: AppColors.surfaceDark,
-      elevation: 2,
+      elevation: 4,
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: AppColors.borderDark, width: 1),
       ),
+    ),
+    listTileTheme: const ListTileThemeData(
+      textColor: Colors.white,
+      iconColor: Colors.white,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: GoogleFonts.tajawal(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primaryLight,
+        side: const BorderSide(color: AppColors.primaryLight, width: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: GoogleFonts.tajawal(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primaryLight,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: GoogleFonts.tajawal(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.surfaceDark,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.borderDark),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.borderDark),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      hintStyle: GoogleFonts.tajawal(
+        color: AppColors.textSecondaryDark,
+        fontSize: 14,
+      ),
+      labelStyle: GoogleFonts.tajawal(
+        color: AppColors.textSecondaryDark,
+        fontSize: 14,
+      ),
+      prefixIconColor: AppColors.textSecondaryDark,
+      suffixIconColor: AppColors.textSecondaryDark,
     ),
     textTheme: TextTheme(
       displayLarge: GoogleFonts.tajawal(
@@ -214,6 +287,26 @@ class AppTheme {
         fontWeight: FontWeight.bold,
         color: AppColors.textPrimaryDark,
       ),
+      displaySmall: GoogleFonts.tajawal(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimaryDark,
+      ),
+      headlineMedium: GoogleFonts.tajawal(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimaryDark,
+      ),
+      headlineSmall: GoogleFonts.tajawal(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimaryDark,
+      ),
+      titleLarge: GoogleFonts.tajawal(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimaryDark,
+      ),
       bodyLarge: GoogleFonts.tajawal(
         fontSize: 16,
         fontWeight: FontWeight.normal,
@@ -224,7 +317,30 @@ class AppTheme {
         fontWeight: FontWeight.normal,
         color: AppColors.textPrimaryDark,
       ),
+      bodySmall: GoogleFonts.tajawal(
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textSecondaryDark,
+      ),
+      labelLarge: GoogleFonts.tajawal(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textPrimaryDark,
+      ),
     ),
-    iconTheme: const IconThemeData(color: AppColors.primaryLight, size: 24),
+    iconTheme: const IconThemeData(color: Colors.white, size: 24),
+    dividerTheme: const DividerThemeData(
+      color: AppColors.borderDark,
+      thickness: 1,
+      space: 16,
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.surfaceDark,
+      selectedItemColor: AppColors.primaryLight,
+      unselectedItemColor: AppColors.textSecondaryDark,
+      type: BottomNavigationBarType.fixed,
+      elevation: 8,
+    ),
+    unselectedWidgetColor: AppColors.textSecondaryDark,
   );
 }

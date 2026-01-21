@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../vitals/presentation/widgets/bp_card.dart';
-import '../../../vitals/presentation/pages/bp_history_page.dart';
-import '../../../medications/presentation/widgets/medications_list.dart';
-import '../../../notifications/presentation/pages/notifications_page.dart';
-import '../../../notifications/presentation/providers/notifications_provider.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../ai/presentation/pages/symptom_checker_page.dart';
-import '../../../contacts/presentation/pages/medical_contacts_page.dart';
 import '../../../medications/presentation/pages/medications_page.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../../communication/presentation/pages/incoming_call_page.dart';
-import './iot_screen.dart';
-import '../../../linking/presentation/pages/qr_code_page.dart';
+import '../widgets/patient_dashboard_widgets.dart';
+import '../widgets/patient_graphs.dart';
+import '../../../contacts/presentation/pages/medical_contacts_page.dart';
 
 /// Patient Home Page
-/// Dashboard with BP monitoring, medications, quick actions
+/// Professional dashboard with BP monitoring, heart rate, and measurements history
+/// Designed to match expert healthcare UI standards
 
 class PatientHomePage extends ConsumerStatefulWidget {
   const PatientHomePage({super.key});
@@ -55,98 +52,139 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final unreadCount = ref.watch(notificationsNotifierProvider).unreadCount;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.homePatientDashboard.tr()),
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsPage(),
-                    ),
-                  );
-                },
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      unreadCount > 9 ? '9+' : unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: _buildBody(),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+            width: 1,
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
-            },
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      body: _buildBody(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: context.w(2),
+            vertical: context.h(0.4),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                index: 0,
+                icon: AppIcons.home,
+                label: LocaleKeys.homeHome.tr(),
+              ),
+              _buildNavItem(
+                index: 1,
+                icon: AppIcons.check,
+                label: LocaleKeys.homeCheck.tr(),
+              ),
+              _buildNavItem(
+                index: 2,
+                icon: AppIcons.pill,
+                label: LocaleKeys.homeMeds.tr(),
+              ),
+              _buildNavItem(
+                index: 3,
+                icon: ({size, color}) =>
+                    Icon(Icons.contacts_outlined, size: size, color: color),
+                label: LocaleKeys.contacts.tr(),
+              ),
+              _buildNavItem(
+                index: 4,
+                icon: AppIcons.settings,
+                label: LocaleKeys.homeSetting.tr(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required Widget Function({double? size, Color? color}) icon,
+    required String label,
+  }) {
+    final isSelected = _selectedIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
           setState(() {
             _selectedIndex = index;
           });
         },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            label: LocaleKeys.homeDashboard.tr(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(
+            horizontal: context.w(1),
+            vertical: context.h(0.6),
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.favorite_outlined),
-            label: LocaleKeys.vitalsBloodPressure.tr(),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.primary.withValues(alpha: 0.08))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.medication_outlined),
-            label: LocaleKeys.medicationsMyMedications.tr(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 1.0, end: isSelected ? 1.1 : 1.0),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.elasticOut,
+                builder: (context, scale, child) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: icon(
+                      size: context.sp(24),
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isDark ? Colors.white60 : AppColors.textSecondary),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: context.h(0.2)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: context.sp(9),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark ? Colors.white60 : AppColors.textSecondary),
+                  letterSpacing: 0.3,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.chat_bubble_outline),
-            label: LocaleKeys.homeAiChat.tr(),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.contacts_outlined),
-            label: LocaleKeys.contacts.tr(),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outlined),
-            label: LocaleKeys.settingsProfile.tr(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -156,15 +194,13 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
       case 0:
         return _buildDashboard();
       case 1:
-        return const BPHistoryPage();
+        return const SymptomCheckerPage();
       case 2:
         return const MedicationsPage();
       case 3:
-        return const SymptomCheckerPage();
+        return const MedicalContactsPage(); // 4th item: Contacts
       case 4:
-        return const MedicalContactsPage();
-      case 5:
-        return const SettingsPage();
+        return const SettingsPage(); // 5th item: Settings
       default:
         return _buildDashboard();
     }
@@ -175,166 +211,157 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Refresh data here
+        // TODO: Refresh vitals data when model is ready
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: AppColors.primaryLight,
-                      child: Text(
-                        user?.fullName.isNotEmpty == true
-                            ? user!.fullName.substring(0, 1).toUpperCase()
-                            : 'P',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${LocaleKeys.homeWelcome.tr()}, ${user?.fullName ?? ""}',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            LocaleKeys.authPatient.tr(),
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            // User Header with Gradient Background
+            _buildUserHeader(user),
+            SizedBox(height: context.h(2)),
+
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.w(5)),
+              child: Column(
+                children: [
+                  // Heart Rate Card
+                  HeartRateCard(
+                    heartRate: null, // Will be populated from model
+                    avgToday: null,
+                    maxToday: null,
+                  ),
+                  SizedBox(height: context.h(2.5)),
+
+                  // Blood Pressure Card
+                  BloodPressureCardExpert(
+                    systolic: null, // Will be populated from model
+                    diastolic: null,
+                    time: null,
+                    onCheckNow: () {
+                      // TODO: Navigate to BP checking page
+                    },
+                  ),
+                  SizedBox(height: context.h(2.5)),
+
+                  // BP Trend Graph
+                  const BloodPressureTrendCard(),
+                  SizedBox(height: context.h(2.5)),
+
+                  // Measurements History Card
+                  MeasurementsHistoryCard(
+                    onTap: () {
+                      // TODO: Navigate to measurements history page
+                    },
+                  ),
+                  SizedBox(height: context.h(3)),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Latest BP Reading
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  LocaleKeys.homeLatestBp.tr(),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedIndex = 1;
-                    });
-                  },
-                  child: Text(LocaleKeys.viewAll.tr()),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const BPCard(),
-            const SizedBox(height: 24),
-
-            // Medications
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  LocaleKeys.homeMedications.tr(),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedIndex = 2;
-                    });
-                  },
-                  child: Text(LocaleKeys.viewAll.tr()),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const MedicationsList(compact: true),
-            const SizedBox(height: 24),
-
-            // Quick Actions
-            Text(
-              LocaleKeys.homeQuickActions.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionCard(
-                    context,
-                    LocaleKeys.vitalsIoTDevices.tr(),
-                    Icons.sensors,
-                    AppColors.primary,
-                    () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const IoTScreen()),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionCard(
-                    context,
-                    LocaleKeys.linkingMyQrCode.tr(),
-                    Icons.qr_code,
-                    AppColors.secondary,
-                    () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const QRCodePage()),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+  Widget _buildUserHeader(user) {
+    // Extract first name from full name
+    final firstName =
+        user?.fullName?.split(' ').first ?? LocaleKeys.commonHello.tr();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        bottom: 16,
+        left: context.w(5),
+        right: context.w(5),
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryDark,
+            AppColors.primary,
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Profile Picture
+          Container(
+            width: context.sp(48),
+            height: context.sp(48),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.5),
+                width: 2,
+              ),
+            ),
+            child: ClipOval(
+              child: user?.profileImage != null
+                  ? Image.network(
+                      user!.profileImage!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person_outline,
+                          color: Colors.white,
+                          size: context.sp(24),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      child: Icon(
+                        Icons.person_outline,
+                        color: Colors.white,
+                        size: context.sp(24),
+                      ),
+                    ),
+            ),
+          ),
+          SizedBox(width: context.w(4)),
+
+          // Greeting Text
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
               Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                LocaleKeys.commonHello.tr(),
+                style: TextStyle(
+                  fontSize: context.sp(14),
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Text(
+                firstName,
+                style: TextStyle(
+                  fontSize: context.sp(20),
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

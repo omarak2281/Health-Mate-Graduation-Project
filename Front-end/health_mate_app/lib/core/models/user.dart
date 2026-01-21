@@ -8,6 +8,8 @@ class User {
   final String? phone;
   final String role; // 'patient' or 'caregiver'
   final String? profileImage;
+  final String? birthDate;
+  final String? gender;
   final bool isActive;
   final bool isVerified;
   final DateTime createdAt;
@@ -19,6 +21,8 @@ class User {
     this.phone,
     required this.role,
     this.profileImage,
+    this.birthDate,
+    this.gender,
     required this.isActive,
     required this.isVerified,
     required this.createdAt,
@@ -32,6 +36,8 @@ class User {
       phone: json['phone']?.toString(),
       role: json['role']?.toString() ?? 'patient',
       profileImage: json['profile_image_url']?.toString(),
+      birthDate: json['birth_date']?.toString(),
+      gender: json['gender']?.toString(),
       isActive: json['is_active'] == true,
       isVerified: json['is_verified'] == true,
       createdAt: json['created_at'] != null
@@ -48,6 +54,8 @@ class User {
       'phone': phone,
       'role': role,
       'profile_image_url': profileImage,
+      'birth_date': birthDate,
+      'gender': gender,
       'is_active': isActive,
       'is_verified': isVerified,
       'created_at': createdAt.toIso8601String(),

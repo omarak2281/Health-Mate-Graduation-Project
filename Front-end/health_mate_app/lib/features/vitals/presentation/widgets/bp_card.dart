@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../vitals/presentation/providers/vitals_provider.dart';
 import '../pages/bp_history_page.dart';
@@ -34,8 +34,7 @@ class BPCard extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Icon(
-                Icons.favorite_border,
+              AppIcons.bloodPressure(
                 size: 48,
                 color: AppColors.textSecondary,
               ),
@@ -50,7 +49,7 @@ class BPCard extends ConsumerWidget {
                   onPressed: () {
                     _showAddReadingDialog(context, ref);
                   },
-                  icon: const Icon(Icons.add),
+                  icon: Icon(AppIcons.add),
                   label: Text(LocaleKeys.vitalsAddReading.tr()),
                 ),
             ],
@@ -156,8 +155,7 @@ class BPCard extends ConsumerWidget {
                   if (bp.heartRate != null)
                     Row(
                       children: [
-                        const Icon(
-                          Icons.favorite,
+                        AppIcons.heartRate(
                           size: 16,
                           color: AppColors.error,
                         ),

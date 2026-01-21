@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -38,6 +39,9 @@ class AuthRepository {
     required String fullName,
     String? phone,
     required String role,
+    String? birthDate,
+    String? gender,
+    String? profileImage,
   }) async {
     try {
       // Step 1: Create Firebase user (if Firebase is available)
@@ -88,6 +92,9 @@ class AuthRepository {
           'full_name': fullName,
           'phone': phone,
           'role': role,
+          if (birthDate != null) 'birth_date': birthDate,
+          if (gender != null) 'gender': gender,
+          if (profileImage != null) 'profile_image_url': profileImage,
           if (firebaseUid != null) 'firebase_uid': firebaseUid,
         },
       );
@@ -100,6 +107,21 @@ class AuthRepository {
       return user;
     } catch (e) {
       AuthErrorHandler.logError(e);
+
+      // CRITICAL: Cleanup Firebase user if backend registration fails
+      // This prevents orphaned Firebase accounts
+      try {
+        final currentUser = _firebaseAuthService?.getCurrentUser();
+        if (currentUser != null) {
+          debugPrint(
+              '🧹 Cleaning up orphaned Firebase user after failed registration...');
+          await currentUser.delete();
+          debugPrint('✅ Orphaned Firebase user deleted successfully');
+        }
+      } catch (cleanupError) {
+        debugPrint('⚠️ Failed to cleanup Firebase user: $cleanupError');
+      }
+
       rethrow;
     }
   }
@@ -108,7 +130,11 @@ class AuthRepository {
   // Email & Password Login with Firebase
   // ============================================================================
 
-  Future<User> login({required String email, required String password}) async {
+  Future<User> login({
+    required String email,
+    required String password,
+    String? role,
+  }) async {
     try {
       // Step 1: Sign in with Firebase (if available)
       firebase_auth.User? firebaseUser;
@@ -134,9 +160,14 @@ class AuthRepository {
       debugPrint(
         '🚀 Logging in to backend at: ${ApiConstants.baseUrl}${ApiConstants.login}',
       );
+      final data = {'email': email, 'password': password};
+      if (role != null) {
+        data['role'] = role;
+      }
+
       final response = await _dioClient.dio.post(
         ApiConstants.login,
-        data: {'email': email, 'password': password},
+        data: data,
       );
 
       // Save tokens
@@ -178,6 +209,8 @@ class AuthRepository {
     String? fullName,
     String? phone,
     String? profileImage,
+    String? birthDate,
+    String? gender,
   }) async {
     try {
       final response = await _dioClient.dio.put(
@@ -186,6 +219,8 @@ class AuthRepository {
           if (fullName != null) 'full_name': fullName,
           if (phone != null) 'phone': phone,
           if (profileImage != null) 'profile_image': profileImage,
+          if (birthDate != null) 'birth_date': birthDate,
+          if (gender != null) 'gender': gender,
         },
       );
       final user = User.fromJson(response.data);
@@ -211,14 +246,56 @@ class AuthRepository {
     }
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      // 1. Delete from backend
+      await _dioClient.dio.delete(ApiConstants.deleteAccount);
+
+      // 2. Delete from Firebase
+      if (_firebaseAuthService != null && _firebaseAuthService.isInitialized) {
+        await _firebaseAuthService.deleteUser();
+      }
+
+      // 3. Clear local data
+      await logout();
+    } catch (e) {
+      AuthErrorHandler.logError(e);
+      rethrow;
+    }
+  }
+
+  // Reset Password (Forgot Password)
+  Future<void> resetPassword(String email) async {
+    try {
+      if (_firebaseAuthService != null && _firebaseAuthService.isInitialized) {
+        await _firebaseAuthService.sendPasswordResetEmail(email);
+      } else {
+        // If Firebase is not available, we might want to call a backend endpoint
+        // But for now, we'll throw if no service is available
+        throw Exception(LocaleKeys.errorsServerError);
+      }
+    } catch (e) {
+      AuthErrorHandler.logError(e);
+      rethrow;
+    }
+  }
+
   // Upload Profile Image
   Future<String> uploadProfileImage(dynamic file) async {
     try {
-      final formData = FormData.fromMap({'file': file});
+      dynamic fileToUpload = file;
+
+      if (file is File) {
+        fileToUpload = await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        );
+      }
+
+      final formData = FormData.fromMap({'file': fileToUpload});
 
       final response = await _dioClient.dio.post(
-        ApiConstants
-            .uploadProfilePicture, // Standardized to use profile-picture endpoint
+        ApiConstants.uploadProfilePicture,
         data: formData,
       );
 
@@ -260,14 +337,21 @@ class AuthRepository {
   // Google Sign-In
   // ============================================================================
 
-  Future<User> loginWithGoogle({required String role}) async {
+  Future<User> loginWithGoogle({
+    String? role,
+    bool isSignup = false,
+    String? birthDate,
+    String? phone,
+    String? gender,
+  }) async {
+    firebase_auth.User? firebaseUser;
     try {
       // Step 1: Sign in with Google via Firebase
       if (_firebaseAuthService == null || !_firebaseAuthService.isInitialized) {
         throw Exception(LocaleKeys.errorsGoogleSignInFailed);
       }
 
-      final firebaseUser = await _firebaseAuthService.signInWithGoogle();
+      firebaseUser = await _firebaseAuthService.signInWithGoogle();
 
       if (firebaseUser == null) {
         throw Exception(LocaleKeys.errorsGoogleSignInFailed);
@@ -282,7 +366,14 @@ class AuthRepository {
       // Step 3: Authenticate with backend using social auth endpoint
       final response = await _dioClient.dio.post(
         ApiConstants.googleLogin,
-        data: {'firebase_id_token': idToken, 'role': role},
+        data: {
+          'firebase_id_token': idToken,
+          'role': role,
+          'is_signup': isSignup,
+          'birth_date': birthDate,
+          'phone': phone,
+          'gender': gender,
+        },
       );
 
       // Save tokens
@@ -296,6 +387,45 @@ class AuthRepository {
       return user;
     } catch (e) {
       AuthErrorHandler.logError(e);
+
+      // CRITICAL: Cleanup if registration fails or if login attempt is for an unregistered user
+      if (firebaseUser != null) {
+        bool shouldCleanup = false;
+
+        if (!isSignup) {
+          // LOGIN Case: Cleanup only if explicitly not registered in backend
+          if (e is DioException) {
+            final statusCode = e.response?.statusCode;
+            final detail = e.response?.data?['detail']?.toString() ?? '';
+            if (statusCode == 404 || detail.contains('Not registered')) {
+              shouldCleanup = true;
+              debugPrint(
+                  '🧹 Cleanup: Deleting Firebase account (Login attempted for unregistered user)');
+            }
+          }
+        } else {
+          // SIGNUP Case: Cleanup on ANY failure to prevent orphaned accounts
+          // (Unless it's a conflict error showing they were already registered)
+          bool isConflict = e is DioException && e.response?.statusCode == 409;
+          if (!isConflict) {
+            shouldCleanup = true;
+            debugPrint(
+                '🧹 Cleanup: Deleting Firebase account (Registration failed in backend)');
+          }
+        }
+
+        if (shouldCleanup) {
+          try {
+            await firebaseUser.delete();
+            await _firebaseAuthService?.signOut();
+            debugPrint('✅ Temporary Firebase account removed successfully');
+          } catch (cleanupError) {
+            debugPrint(
+                '⚠️ Failed to cleanup Google Firebase user: $cleanupError');
+          }
+        }
+      }
+
       rethrow;
     }
   }
@@ -317,8 +447,9 @@ class AuthRepository {
 
   Future<bool> checkEmailVerification() async {
     try {
-      if (_firebaseAuthService == null || !_firebaseAuthService.isInitialized)
+      if (_firebaseAuthService == null || !_firebaseAuthService.isInitialized) {
         return false;
+      }
       return await _firebaseAuthService.checkEmailVerified();
     } catch (e) {
       AuthErrorHandler.logError(e);
@@ -328,8 +459,9 @@ class AuthRepository {
 
   Future<User> verifyAndLogin() async {
     try {
-      if (_firebaseAuthService == null || !_firebaseAuthService.isInitialized)
+      if (_firebaseAuthService == null || !_firebaseAuthService.isInitialized) {
         throw Exception('Firebase not initialized');
+      }
 
       final idToken = await _firebaseAuthService.getIdToken();
       if (idToken == null) throw Exception('Failed to get token');

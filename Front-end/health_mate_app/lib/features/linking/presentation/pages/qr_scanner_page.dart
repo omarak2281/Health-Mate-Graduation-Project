@@ -4,11 +4,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../data/linking_repository.dart';
-
-/// QR Scanner Page
-/// Scans patient QR code to link
-/// Uses mobile_scanner for Web support
 
 class QRScannerPage extends ConsumerStatefulWidget {
   const QRScannerPage({super.key});
@@ -27,14 +24,17 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
     super.initState();
     controller = MobileScannerController(
       formats: [BarcodeFormat.qrCode],
-      // No formattedOverlayColor here, it was causing errors
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(LocaleKeys.linkingScanPatientQr.tr())),
+      appBar: AppBar(
+        title: Text(LocaleKeys.linkingScanPatientQr.tr(),
+            style: TextStyle(
+                fontSize: context.sp(20), fontWeight: FontWeight.bold)),
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -49,13 +49,19 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
           ),
           Expanded(
             flex: 1,
-            child: Center(
-              child: isLoading
-                  ? const CircularProgressIndicator()
-                  : Text(
-                      LocaleKeys.linkingScanInstructionsDetail.tr(),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: context.w(6)),
+              child: Center(
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : Text(
+                        LocaleKeys.linkingScanInstructionsDetail.tr(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: context.sp(16),
+                            fontWeight: FontWeight.w500),
+                      ),
+              ),
             ),
           ),
         ],
@@ -64,7 +70,7 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
   }
 
   Widget _buildOverlay(BuildContext context) {
-    const double cutOutSize = 300;
+    final double cutOutSize = context.w(70);
     return Stack(
       children: [
         // Semi-transparent background
@@ -72,14 +78,14 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
           colorFilter: ColorFilter.mode(
             AppColors.black.withValues(
               alpha: 0.5,
-            ), // Using withValues as withOpacity is deprecated
+            ),
             BlendMode.srcOut,
           ),
           child: Stack(
             children: [
               Container(
                 decoration: const BoxDecoration(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   backgroundBlendMode: BlendMode.dstOut,
                 ),
               ),
@@ -90,7 +96,7 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
                   height: cutOutSize,
                   decoration: BoxDecoration(
                     color: AppColors.black,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
@@ -104,8 +110,8 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
             width: cutOutSize,
             height: cutOutSize,
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.primary, width: 4),
-              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.primary, width: context.w(1)),
+              borderRadius: BorderRadius.circular(20),
             ),
           ),
         ),
@@ -135,7 +141,10 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(LocaleKeys.linkingLinkedSuccess.tr())),
+              SnackBar(
+                content: Text(LocaleKeys.linkingLinkedSuccess.tr(),
+                    style: TextStyle(fontSize: context.sp(14))),
+              ),
             );
             Navigator.of(context).pop(true);
           }
@@ -145,6 +154,7 @@ class _QRScannerPageState extends ConsumerState<QRScannerPage> {
               SnackBar(
                 content: Text(
                   '${LocaleKeys.commonError.tr()}: ${e.toString()}',
+                  style: TextStyle(fontSize: context.sp(14)),
                 ),
               ),
             );

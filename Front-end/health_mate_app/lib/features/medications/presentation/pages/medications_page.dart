@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/medications_provider.dart';
 import '../widgets/medications_list.dart';
 import './add_medication_page.dart';
 import './medication_alarm_page.dart';
+
+import '../../../../core/widgets/expert_app_bar.dart';
 
 class MedicationsPage extends ConsumerWidget {
   const MedicationsPage({super.key});
@@ -13,11 +16,12 @@ class MedicationsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.medicationsMyMedications.tr()),
+      extendBodyBehindAppBar: true,
+      appBar: ExpertAppBar(
+        title: LocaleKeys.medicationsMyMedications.tr(),
         actions: [
           IconButton(
-            icon: const Icon(Icons.alarm),
+            icon: Icon(Icons.alarm, size: context.sp(24), color: Colors.white),
             onPressed: () {
               // Demo Alarm with first medication or mock
               final meds = ref.read(medicationsNotifierProvider).medications;
@@ -30,15 +34,16 @@ class MedicationsPage extends ConsumerWidget {
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please add a medication first to see demo'),
+                  SnackBar(
+                    content: Text(LocaleKeys.medicationsDemoAdd.tr(),
+                        style: TextStyle(fontSize: context.sp(14))),
                   ),
                 );
               }
             },
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(AppIcons.add, size: context.sp(24), color: Colors.white),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddMedicationPage()),
@@ -46,12 +51,16 @@ class MedicationsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(medicationsNotifierProvider.notifier).loadMedications(),
-        child: const SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: MedicationsList(),
+      body: Container(
+        height: double.infinity,
+        padding: EdgeInsets.only(top: ExpertAppBar.getAppBarPadding(context)),
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(medicationsNotifierProvider.notifier).loadMedications(),
+          child: const SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: MedicationsList(),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -59,7 +68,7 @@ class MedicationsPage extends ConsumerWidget {
           context,
           MaterialPageRoute(builder: (_) => const AddMedicationPage()),
         ),
-        child: const Icon(Icons.add),
+        child: Icon(AppIcons.add, size: context.sp(28)),
       ),
     );
   }

@@ -75,6 +75,15 @@ class SharedPrefsCache {
     return _prefs.getBool('onboarding_completed') ?? false;
   }
 
+  // Last Selected Role
+  Future<void> setLastSelectedRole(String role) async {
+    await _prefs.setString(AppConstants.cacheKeyLastRole, role);
+  }
+
+  String? getLastSelectedRole() {
+    return _prefs.getString(AppConstants.cacheKeyLastRole);
+  }
+
   // Clear all
   Future<void> clearAll() async {
     await _prefs.clear();

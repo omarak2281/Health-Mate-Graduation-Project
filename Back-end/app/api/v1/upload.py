@@ -14,6 +14,29 @@ from app.services.cloudinary_service import get_cloudinary_service, CloudinarySe
 router = APIRouter(prefix="/upload", tags=["File Upload"])
 
 
+@router.post("/public/image")
+async def upload_public_image(
+    file: UploadFile = File(...),
+    cloudinary: CloudinaryService = Depends(get_cloudinary_service)
+):
+    """
+    Public image upload for registration (no auth required)
+    """
+    result = await cloudinary.upload_image(
+        file=file,
+        folder="registration",
+        metadata={
+            "type": "registration_image"
+        }
+    )
+    return {
+        "message": "Image uploaded successfully",
+        "url": result["url"],
+        "image_url": result["url"],
+        "image_id": result["image_id"]
+    }
+
+
 @router.post("/image")
 async def upload_generic_image(
     file: UploadFile = File(...),

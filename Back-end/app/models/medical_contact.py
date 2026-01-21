@@ -18,6 +18,7 @@ class ContactType(str, enum.Enum):
     CLINIC = "clinic"
     PHARMACY = "pharmacy"
     EMERGENCY = "emergency"
+    FAMILY = "family"
 
 
 class MedicalContact(Base):

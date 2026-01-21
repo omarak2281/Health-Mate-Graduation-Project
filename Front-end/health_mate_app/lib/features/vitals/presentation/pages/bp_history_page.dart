@@ -4,11 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/vitals_provider.dart';
 import './bp_detail_page.dart';
-
-/// BP History Page
-/// Shows BP readings history with chart
 
 class BPHistoryPage extends ConsumerStatefulWidget {
   const BPHistoryPage({super.key});
@@ -33,10 +31,12 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleKeys.homeBpHistory.tr()),
+        title: Text(LocaleKeys.homeBpHistory.tr(),
+            style: TextStyle(
+                fontSize: context.sp(20), fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, size: context.sp(22)),
             onPressed: () {
               ref.read(vitalsNotifierProvider.notifier).loadHistory();
             },
@@ -50,38 +50,44 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
         child: vitalsState.history.isEmpty
             ? _buildEmptyState(context)
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(context.w(4)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Chart Card
                     Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(context.w(4)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               LocaleKeys.vitalsBpTrend.tr(),
-                              style: Theme.of(context).textTheme.titleLarge,
+                              style: TextStyle(
+                                  fontSize: context.sp(18),
+                                  fontWeight: FontWeight.bold),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: context.h(3)),
                             SizedBox(
-                              height: 200,
+                              height: context.h(25),
                               child: _buildChart(vitalsState.history),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: context.h(2.5)),
 
                     // History List
                     Text(
                       LocaleKeys.vitalsReadingHistory.tr(),
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: TextStyle(
+                          fontSize: context.sp(18),
+                          fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: context.h(1)),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -91,7 +97,11 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                         final riskColor = _getRiskColor(reading.riskLevel);
 
                         return Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          margin: EdgeInsets.only(bottom: context.h(1)),
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -101,37 +111,48 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                               );
                             },
                             child: ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: context.w(4),
+                                  vertical: context.h(0.5)),
                               leading: CircleAvatar(
+                                radius: context.sp(22),
                                 backgroundColor: riskColor.withValues(
                                   alpha: 0.1,
                                 ),
-                                child: Icon(Icons.favorite, color: riskColor),
+                                child: Icon(Icons.favorite,
+                                    color: riskColor, size: context.sp(20)),
                               ),
                               title: Text(
                                 '${reading.systolic}/${reading.diastolic}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                                  fontSize: context.sp(18),
                                   color: riskColor,
                                 ),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  SizedBox(height: context.h(0.5)),
                                   Text(
                                     DateFormat.yMMMd().add_jm().format(
-                                      reading.measuredAt,
-                                    ),
+                                          reading.measuredAt,
+                                        ),
+                                    style: TextStyle(fontSize: context.sp(13)),
                                   ),
                                   if (reading.heartRate != null)
                                     Text(
                                       LocaleKeys.vitalsHeartRateValue.tr(
                                         args: [reading.heartRate.toString()],
                                       ),
+                                      style:
+                                          TextStyle(fontSize: context.sp(13)),
                                     ),
+                                  SizedBox(height: context.h(0.3)),
                                   Text(
                                     _getRiskText(reading.riskLevel),
                                     style: TextStyle(
+                                      fontSize: context.sp(13),
                                       color: riskColor,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -143,6 +164,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                                     ? Icons.sensors
                                     : Icons.edit,
                                 color: AppColors.textSecondary,
+                                size: context.sp(20),
                               ),
                             ),
                           ),
@@ -161,11 +183,15 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.timeline, size: 80, color: AppColors.textSecondary),
-          const SizedBox(height: 16),
+          Icon(Icons.timeline,
+              size: context.sp(80), color: AppColors.textSecondary),
+          SizedBox(height: context.h(2)),
           Text(
             LocaleKeys.vitalsNoReadings.tr(),
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: TextStyle(
+                fontSize: context.sp(20),
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -180,7 +206,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: true),
+        gridData: const FlGridData(show: true, drawVerticalLine: false),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -188,9 +214,12 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
               getTitlesWidget: (value, meta) {
                 if (value.toInt() >= 0 && value.toInt() < chartData.length) {
                   final reading = chartData[value.toInt()];
-                  return Text(
-                    DateFormat('MM/dd').format(reading.measuredAt),
-                    style: const TextStyle(fontSize: 10),
+                  return Padding(
+                    padding: EdgeInsets.only(top: context.h(0.8)),
+                    child: Text(
+                      DateFormat('MM/dd').format(reading.measuredAt),
+                      style: TextStyle(fontSize: context.sp(10)),
+                    ),
                   );
                 }
                 return const SizedBox();
@@ -198,7 +227,16 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: context.w(10),
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  value.toInt().toString(),
+                  style: TextStyle(fontSize: context.sp(10)),
+                );
+              },
+            ),
           ),
           topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
@@ -207,7 +245,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
-        borderData: FlBorderData(show: true),
+        borderData: FlBorderData(show: false),
         lineBarsData: [
           // Systolic line
           LineChartBarData(
@@ -219,7 +257,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             }).toList(),
             isCurved: true,
             color: AppColors.error,
-            barWidth: 3,
+            barWidth: context.w(0.8),
             dotData: const FlDotData(show: true),
           ),
           // Diastolic line
@@ -232,7 +270,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             }).toList(),
             isCurved: true,
             color: AppColors.primary,
-            barWidth: 3,
+            barWidth: context.w(0.8),
             dotData: const FlDotData(show: true),
           ),
         ],

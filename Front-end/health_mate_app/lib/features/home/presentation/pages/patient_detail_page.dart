@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/models/user.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../vitals/presentation/widgets/bp_card.dart';
 import '../../../medications/presentation/widgets/medications_list.dart';
 import '../../../communication/presentation/pages/call_page.dart';
 
-/// Patient Detail Page
-/// For caregivers to monitor a specific patient's health
+import '../../../../core/widgets/expert_app_bar.dart';
 
 class PatientDetailPage extends ConsumerWidget {
   final User patient;
@@ -19,45 +19,53 @@ class PatientDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(patient.fullName),
+      extendBodyBehindAppBar: true,
+      appBar: ExpertAppBar(
+        title: patient.fullName,
         actions: [
           IconButton(
-            icon: const Icon(Icons.videocam),
+            icon: Icon(AppIcons.videoCall,
+                size: context.sp(24), color: Colors.white),
             onPressed: () => _initiateCall(context, isVideo: true),
           ),
           IconButton(
-            icon: const Icon(Icons.phone),
+            icon: const Icon(Icons.phone_rounded, color: Colors.white),
             onPressed: () => _initiateCall(context, isVideo: false),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Patient Header
-            _buildPatientHeader(context),
-            const SizedBox(height: 24),
+      body: Container(
+        height: double.infinity,
+        padding: EdgeInsets.only(top: ExpertAppBar.getAppBarPadding(context)),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(context.w(4)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Patient Header
+              _buildPatientHeader(context),
+              SizedBox(height: context.h(3)),
 
-            // Vitals Section
-            Text(
-              LocaleKeys.vitalsBloodPressure.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            BPCard(patientId: patient.id),
-            const SizedBox(height: 24),
+              // Vitals Section
+              Text(
+                LocaleKeys.vitalsBloodPressure.tr(),
+                style: TextStyle(
+                    fontSize: context.sp(18), fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: context.h(2)),
+              BPCard(patientId: patient.id),
+              SizedBox(height: context.h(3)),
 
-            // Medications Section
-            Text(
-              LocaleKeys.homeMedications.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            MedicationsList(patientId: patient.id),
-          ],
+              // Medications Section
+              Text(
+                LocaleKeys.homeMedications.tr(),
+                style: TextStyle(
+                    fontSize: context.sp(18), fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: context.h(2)),
+              MedicationsList(patientId: patient.id),
+            ],
+          ),
         ),
       ),
     );
@@ -65,47 +73,52 @@ class PatientDetailPage extends ConsumerWidget {
 
   Widget _buildPatientHeader(BuildContext context) {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.w(4)),
         child: Row(
           children: [
             CircleAvatar(
-              radius: 40,
+              radius: context.sp(40),
               backgroundImage: patient.profileImage != null
                   ? NetworkImage(patient.profileImage!)
                   : null,
               child: patient.profileImage == null
-                  ? const Icon(Icons.person, size: 40)
+                  ? Icon(AppIcons.person, size: context.sp(40))
                   : null,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: context.w(4)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     patient.fullName,
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    style: TextStyle(
+                        fontSize: context.sp(20), fontWeight: FontWeight.bold),
                   ),
                   Text(
                     patient.email,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: TextStyle(
+                        fontSize: context.sp(14),
+                        color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: context.h(1)),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: context.w(2),
+                      vertical: context.h(0.5),
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       LocaleKeys.authLinkedPatient.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 12,
+                        fontSize: context.sp(12),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

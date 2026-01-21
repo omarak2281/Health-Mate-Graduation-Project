@@ -43,6 +43,8 @@ class User(Base):
     # Profile
     full_name = Column(String(255), nullable=False)
     phone = Column(String(50), nullable=True)
+    birth_date = Column(String(50), nullable=True)
+    gender = Column(String(20), nullable=True)
     profile_image_url = Column(String(500), nullable=True)
     
     # Role

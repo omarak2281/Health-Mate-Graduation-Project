@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/medications_provider.dart';
+import '../../../../core/widgets/expert_app_bar.dart';
 
 class AddMedicationPage extends ConsumerStatefulWidget {
   const AddMedicationPage({super.key});
@@ -53,6 +55,7 @@ class _AddMedicationPageState extends ConsumerState<AddMedicationPage> {
             SnackBar(
               content: Text(
                 LocaleKeys.medicationsImageUploadError.tr(args: [e.toString()]),
+                style: TextStyle(fontSize: context.sp(14)),
               ),
             ),
           );
@@ -89,9 +92,7 @@ class _AddMedicationPageState extends ConsumerState<AddMedicationPage> {
         return '$hour:$minute';
       }).toList();
 
-      await ref
-          .read(medicationsNotifierProvider.notifier)
-          .addMedication(
+      await ref.read(medicationsNotifierProvider.notifier).addMedication(
             name: _nameController.text,
             dosage: _dosageController.text,
             frequency: _frequencyController.text,
@@ -114,202 +115,250 @@ class _AddMedicationPageState extends ConsumerState<AddMedicationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(LocaleKeys.medicationsAddMedication.tr())),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Image Picker
-              Center(
-                child: GestureDetector(
-                  onTap: _isUploading ? null : _pickImage,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(15),
-                      image: _imageUrl != null
-                          ? DecorationImage(
-                              image: NetworkImage(_imageUrl!),
-                              fit: BoxFit.cover,
+      extendBodyBehindAppBar: true,
+      appBar: ExpertAppBar(
+        title: LocaleKeys.medicationsAddMedication.tr(),
+      ),
+      body: Container(
+        height: double.infinity,
+        padding: EdgeInsets.only(top: ExpertAppBar.getAppBarPadding(context)),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(context.w(6)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Image Picker
+                Center(
+                  child: GestureDetector(
+                    onTap: _isUploading ? null : _pickImage,
+                    child: Container(
+                      width: context.sp(120),
+                      height: context.sp(120),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        image: _imageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(_imageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _isUploading
+                          ? Center(
+                              child: SizedBox(
+                                width: context.sp(30),
+                                height: context.sp(30),
+                                child: const CircularProgressIndicator(),
+                              ),
                             )
-                          : null,
+                          : _imageUrl == null
+                              ? Icon(
+                                  Icons.add_a_photo,
+                                  size: context.sp(40),
+                                  color: AppColors.primary,
+                                )
+                              : null,
                     ),
-                    child: _isUploading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _imageUrl == null
-                        ? const Icon(
-                            Icons.add_a_photo,
-                            size: 40,
-                            color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(height: context.h(3)),
+                // Name
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: LocaleKeys.medicationsMedicationName.tr(),
+                    prefixIcon: Icon(AppIcons.medication, size: context.sp(22)),
+                    labelStyle: TextStyle(fontSize: context.sp(16)),
+                    errorStyle: TextStyle(fontSize: context.sp(12)),
+                  ),
+                  style: TextStyle(fontSize: context.sp(16)),
+                  validator: (value) => value!.isEmpty
+                      ? LocaleKeys.errorsRequiredField.tr()
+                      : null,
+                ),
+                SizedBox(height: context.h(2)),
+
+                // Dosage & Frequency
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _dosageController,
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.medicationsDosage.tr(),
+                          prefixIcon:
+                              Icon(AppIcons.dosage, size: context.sp(22)),
+                          labelStyle: TextStyle(fontSize: context.sp(16)),
+                          errorStyle: TextStyle(fontSize: context.sp(12)),
+                        ),
+                        style: TextStyle(fontSize: context.sp(16)),
+                        validator: (value) => value!.isEmpty
+                            ? LocaleKeys.errorsRequiredField.tr()
+                            : null,
+                      ),
+                    ),
+                    SizedBox(width: context.w(3)),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _frequencyController,
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.medicationsFrequency.tr(),
+                          prefixIcon:
+                              Icon(AppIcons.repeat, size: context.sp(22)),
+                          labelStyle: TextStyle(fontSize: context.sp(16)),
+                          errorStyle: TextStyle(fontSize: context.sp(12)),
+                        ),
+                        style: TextStyle(fontSize: context.sp(16)),
+                        validator: (value) => value!.isEmpty
+                            ? LocaleKeys.errorsRequiredField.tr()
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: context.h(2)),
+
+                // Instructions
+                TextFormField(
+                  controller: _instructionsController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: LocaleKeys.medicationsInstructions.tr(),
+                    prefixIcon:
+                        Icon(AppIcons.description, size: context.sp(22)),
+                    labelStyle: TextStyle(fontSize: context.sp(16)),
+                    contentPadding: EdgeInsets.all(context.w(3)),
+                  ),
+                  style: TextStyle(fontSize: context.sp(16)),
+                ),
+                SizedBox(height: context.h(3)),
+
+                // Time Slots
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LocaleKeys.medicationsTimeSlots.tr(),
+                      style: TextStyle(
+                          fontSize: context.sp(18),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.add_circle,
+                        color: AppColors.primary,
+                        size: context.sp(28),
+                      ),
+                      onPressed: _addTimeSlot,
+                    ),
+                  ],
+                ),
+                ..._timeSlots.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final time = entry.value;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(AppIcons.time, size: context.sp(24)),
+                    title: Text(time.format(context),
+                        style: TextStyle(fontSize: context.sp(16))),
+                    trailing: _timeSlots.length > 1
+                        ? IconButton(
+                            icon: Icon(Icons.remove_circle_outline,
+                                size: context.sp(24)),
+                            onPressed: () =>
+                                setState(() => _timeSlots.removeAt(index)),
                           )
                         : null,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Name
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: LocaleKeys.medicationsMedicationName.tr(),
-                  prefixIcon: const Icon(Icons.medication),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? LocaleKeys.errorsRequiredField.tr() : null,
-              ),
-              const SizedBox(height: 16),
+                    onTap: () => _pickTime(index),
+                  );
+                }),
+                SizedBox(height: context.h(3)),
 
-              // Dosage & Frequency
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _dosageController,
-                      decoration: InputDecoration(
-                        labelText: LocaleKeys.medicationsDosage.tr(),
-                        prefixIcon: const Icon(Icons.shutter_speed),
-                      ),
-                      validator: (value) => value!.isEmpty
-                          ? LocaleKeys.errorsRequiredField.tr()
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _frequencyController,
-                      decoration: InputDecoration(
-                        labelText: LocaleKeys.medicationsFrequency.tr(),
-                        prefixIcon: const Icon(Icons.repeat),
-                      ),
-                      validator: (value) => value!.isEmpty
-                          ? LocaleKeys.errorsRequiredField.tr()
-                          : null,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Instructions
-              TextFormField(
-                controller: _instructionsController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: LocaleKeys.medicationsInstructions.tr(),
-                  prefixIcon: const Icon(Icons.description),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Time Slots
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    LocaleKeys.medicationsTimeSlots.tr(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: AppColors.primary,
-                    ),
-                    onPressed: _addTimeSlot,
-                  ),
-                ],
-              ),
-              ..._timeSlots.asMap().entries.map((entry) {
-                final index = entry.key;
-                final time = entry.value;
-                return ListTile(
-                  leading: const Icon(Icons.access_time),
-                  title: Text(time.format(context)),
-                  trailing: _timeSlots.length > 1
-                      ? IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () =>
-                              setState(() => _timeSlots.removeAt(index)),
-                        )
-                      : null,
-                  onTap: () => _pickTime(index),
-                );
-              }),
-              const SizedBox(height: 24),
-
-              // Smart Box Settings
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.inventory_2,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            LocaleKeys.vitalsSmartMedicineBox.tr(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<int>(
-                        initialValue: _selectedDrawer,
-                        decoration: InputDecoration(
-                          labelText: LocaleKeys.medicationsDrawer.tr(),
+                // Smart Box Settings
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: EdgeInsets.all(context.w(4)),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              AppIcons.smartBox,
+                              color: AppColors.primary,
+                              size: context.sp(22),
+                            ),
+                            SizedBox(width: context.w(2)),
+                            Text(
+                              LocaleKeys.vitalsSmartMedicineBox.tr(),
+                              style: TextStyle(
+                                  fontSize: context.sp(16),
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        items: List.generate(
-                          6,
-                          (index) => DropdownMenuItem(
-                            value: index + 1,
-                            child: Text(
-                              '${LocaleKeys.medicationsDrawer.tr()} ${index + 1}',
+                        SizedBox(height: context.h(2)),
+                        DropdownButtonFormField<int>(
+                          value: _selectedDrawer,
+                          decoration: InputDecoration(
+                            labelText: LocaleKeys.medicationsDrawer.tr(),
+                            labelStyle: TextStyle(fontSize: context.sp(16)),
+                          ),
+                          items: List.generate(
+                            10,
+                            (index) => DropdownMenuItem(
+                              value: index + 1,
+                              child: Text(
+                                '${LocaleKeys.medicationsDrawer.tr()} ${index + 1}',
+                                style: TextStyle(fontSize: context.sp(14)),
+                              ),
                             ),
                           ),
+                          onChanged: (value) =>
+                              setState(() => _selectedDrawer = value),
                         ),
-                        onChanged: (value) =>
-                            setState(() => _selectedDrawer = value),
-                      ),
-                      SwitchListTile(
-                        title: Text(LocaleKeys.medicationsEnableLed.tr()),
-                        value: _enableLed,
-                        onChanged: (v) => setState(() => _enableLed = v),
-                      ),
-                      SwitchListTile(
-                        title: Text(LocaleKeys.medicationsEnableBuzzer.tr()),
-                        value: _enableBuzzer,
-                        onChanged: (v) => setState(() => _enableBuzzer = v),
-                      ),
-                    ],
+                        SwitchListTile(
+                          title: Text(LocaleKeys.medicationsEnableLed.tr(),
+                              style: TextStyle(fontSize: context.sp(14))),
+                          value: _enableLed,
+                          onChanged: (v) => setState(() => _enableLed = v),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        SwitchListTile(
+                          title: Text(LocaleKeys.medicationsEnableBuzzer.tr(),
+                              style: TextStyle(fontSize: context.sp(14))),
+                          value: _enableBuzzer,
+                          onChanged: (v) => setState(() => _enableBuzzer = v),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                SizedBox(height: context.h(4)),
 
-              // Save Button
-              ElevatedButton(
-                onPressed: _handleSave,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                // Save Button
+                ElevatedButton(
+                  onPressed: _handleSave,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: context.h(2)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    LocaleKeys.save.tr(),
+                    style: TextStyle(
+                        fontSize: context.sp(18), fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: Text(
-                  LocaleKeys.save.tr(),
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,11 +1,11 @@
 name: health_mate_app
 description: "Health Mate - Medical-Grade Healthcare Monitoring System"
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.6.0
 
 dependencies:
   flutter:

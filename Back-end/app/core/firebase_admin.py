@@ -158,5 +158,19 @@ def _get_auth_provider(decoded_token: Dict[str, Any]) -> str:
         return 'email'
 
 
+async def delete_firebase_user(firebase_uid: str) -> bool:
+    """
+    Delete a user from Firebase
+    Used for cleanup if database registration fails
+    """
+    try:
+        auth.delete_user(firebase_uid)
+        print(f"🧹 Successfully deleted orphaned Firebase user: {firebase_uid}")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to delete Firebase user {firebase_uid}: {str(e)}")
+        return False
+
+
 # Initialize on module import
 initialize_firebase()

@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/constants/locale_keys.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/storage/shared_prefs_cache.dart';
-import '../providers/auth_provider.dart';
-import 'login_page.dart';
-import 'email_verification_page.dart';
-import '../../../home/presentation/pages/patient_home_page.dart';
-import '../../../home/presentation/pages/caregiver_home_page.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../../core/utils/navigation_utils.dart';
+import 'onboarding_welcome_page.dart';
 
 /// Language Selection Onboarding Screen
 /// Shown on first launch to let user choose app language
@@ -50,11 +47,11 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
 
     _animationController.forward();
   }
@@ -65,48 +62,17 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
     super.dispose();
   }
 
-  Future<void> _handleGetStarted() async {
-    // Check if widget is still mounted
-    if (!mounted) return;
-
-    final sharedPrefs = ref.read(sharedPrefsCacheProvider);
-
-    // Mark onboarding as completed
-    await sharedPrefs.setOnboardingCompleted(true);
-
-    if (!mounted) return;
-
-    // Determine destination immediately without going back to Splash delay
-    final authState = ref.read(authNotifierProvider);
-
-    if (authState.status == AuthStatus.authenticated &&
-        authState.user != null) {
-      if (authState.user!.isPatient) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const PatientHomePage()),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaregiverHomePage()),
-        );
-      }
-    } else if (authState.status == AuthStatus.unverified) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const EmailVerificationPage()),
-      );
-    } else {
-      // Default for first-time users completing onboarding
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
-    }
+  void _handleGetStarted() {
+    Navigator.of(context).push(
+      FadePageRoute(page: const OnboardingWelcomePage()),
+    );
   }
 
   Widget _buildLanguageOption({
     required String languageCode,
     required String languageName,
     required String nativeName,
-    required IconData icon,
+    required Widget flag,
   }) {
     final isSelected = _selectedLanguage == languageCode;
 
@@ -125,26 +91,22 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
       },
       child: AnimatedContainer(
         duration: AppConstants.mediumAnimationDuration,
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.w(5),
+          vertical: context.h(2),
+        ),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? AppColors.white : AppColors.backgroundLight,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: isSelected ? 2 : 1.5,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
-                    blurRadius: 12,
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ]
@@ -152,21 +114,13 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: isSelected ? Colors.white : AppColors.primary,
-              ),
+            // Premium Flag Icon
+            SizedBox(
+              width: context.sp(48),
+              height: context.sp(48),
+              child: flag,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: context.w(4)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,26 +128,38 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
                   Text(
                     languageName,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: context.sp(18),
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected ? AppColors.primary : AppColors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: context.h(0.5)),
                   Text(
                     nativeName,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: context.sp(14),
                       color: isSelected
-                          ? Colors.white.withOpacity(0.9)
-                          : Colors.grey[600],
+                          ? AppColors.primary.withValues(alpha: 0.7)
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.white, size: 28),
+            SizedBox(
+              width: context.sp(24),
+              height: context.sp(24),
+              child: isSelected
+                  ? Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.check,
+                          color: Colors.white, size: context.sp(16)),
+                    )
+                  : null,
+            ),
           ],
         ),
       ),
@@ -203,133 +169,125 @@ class _OnboardingLanguagePageState extends ConsumerState<OnboardingLanguagePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
+        child: Column(
+          children: [
+            SizedBox(height: context.h(4)),
+            // Fixed App Logo (Static, doesn't re-animate on entry or language change)
+            Center(
+              child: AppIcons.splashLogo(
+                key: const ValueKey('onboarding_fixed_logo'),
+                size: context.sp(100),
+                color: null,
+              ),
+            ),
 
-                  // App Logo
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.favorite_rounded,
-                        size: 64,
-                        color: Colors.white,
-                      ),
+            // Animated Content (Only these elements transition on page load)
+            Expanded(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: context.w(6),
+                      vertical: context.h(2),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Welcome Title
-                  Text(
-                    LocaleKeys.onboardingWelcome.tr(),
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-
-                  // App Name
-                  Text(
-                    AppConstants.appName,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Language Selection Title
-                  Text(
-                    LocaleKeys.onboardingSelectLanguage.tr(),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Description
-                  Text(
-                    LocaleKeys.onboardingLanguageDescription.tr(),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Language Options
-                  _buildLanguageOption(
-                    languageCode: AppConstants.englishCode,
-                    languageName: LocaleKeys.onboardingEnglish.tr(),
-                    nativeName: 'English',
-                    icon: Icons.language,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildLanguageOption(
-                    languageCode: AppConstants.arabicCode,
-                    languageName: LocaleKeys.onboardingArabic.tr(),
-                    nativeName: 'العربية',
-                    icon: Icons.translate,
-                  ),
-
-                  const Spacer(),
-
-                  // Get Started Button
-                  ElevatedButton(
-                    onPressed: _handleGetStarted,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          LocaleKeys.onboardingGetStarted.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        SizedBox(height: context.h(3)),
+
+                        // Language Selection Header
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              LocaleKeys.onboardingSelectLanguage.tr(),
+                              style: TextStyle(
+                                fontSize: context.sp(24),
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: context.h(1.5)),
+                            Text(
+                              LocaleKeys.onboardingLanguageDescription.tr(),
+                              style: TextStyle(
+                                fontSize: context.sp(16),
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: context.h(4)),
+
+                        // Language Options
+                        _buildLanguageOption(
+                          languageCode: AppConstants.englishCode,
+                          languageName: LocaleKeys.onboardingEnglish.tr(),
+                          nativeName: 'English',
+                          flag: AppIcons.ukFlag(),
+                        ),
+                        SizedBox(height: context.h(2.5)),
+                        _buildLanguageOption(
+                          languageCode: AppConstants.arabicCode,
+                          languageName: LocaleKeys.onboardingArabic.tr(),
+                          nativeName: 'العربية',
+                          flag: AppIcons.egyptFlag(),
+                        ),
+
+                        SizedBox(height: context.h(6)),
+
+                        // Get Started Button
+                        ElevatedButton(
+                          onPressed: _handleGetStarted,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding:
+                                EdgeInsets.symmetric(vertical: context.h(2.2)),
+                            elevation: 8,
+                            shadowColor:
+                                AppColors.primary.withValues(alpha: 0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Text(
+                                LocaleKeys.onboardingGetStarted
+                                    .tr()
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: context.sp(16),
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: Padding(
+                                  padding: EdgeInsets.only(right: context.w(4)),
+                                  child: Icon(Icons.arrow_forward_ios,
+                                      size: context.sp(18)),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded),
+                        SizedBox(height: context.h(3)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

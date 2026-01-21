@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'core/constants/constants.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'core/storage/hive_cache.dart';
 import 'core/storage/shared_prefs_cache.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
@@ -55,10 +57,10 @@ class HealthMateApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedPrefs = ref.watch(sharedPrefsCacheProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
-      title: 'Health Mate',
+      onGenerateTitle: (context) => LocaleKeys.appName.tr(),
       debugShowCheckedModeBanner: false,
 
       // Localization
@@ -69,9 +71,7 @@ class HealthMateApp extends ConsumerWidget {
       // Theme
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: sharedPrefs.getThemeMode() == 'dark'
-          ? ThemeMode.dark
-          : ThemeMode.light,
+      themeMode: themeMode,
 
       home: const SplashPage(),
     );

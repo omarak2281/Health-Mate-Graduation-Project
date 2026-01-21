@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../linking/presentation/pages/qr_scanner_page.dart';
 import '../../../../core/services/socket_service.dart';
@@ -12,9 +13,7 @@ import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../linking/presentation/providers/linking_provider.dart';
 import './patient_detail_page.dart';
-
-/// Caregiver Home Page
-/// Dashboard for monitoring linked patients
+import '../../../../core/widgets/expert_app_bar.dart';
 
 class CaregiverHomePage extends ConsumerStatefulWidget {
   const CaregiverHomePage({super.key});
@@ -50,12 +49,16 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.homeCaregiverDashboard.tr()),
+      extendBodyBehindAppBar: true,
+      appBar: ExpertAppBar(
+        title: LocaleKeys.homeCaregiverDashboard.tr(),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: Icon(AppIcons.notifications,
+                size: context.sp(24), color: Colors.white),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotificationsPage()),
@@ -64,25 +67,69 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
           ),
         ],
       ),
-      body: _buildBody(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.dashboard_outlined),
-            label: LocaleKeys.homeDashboard.tr(),
+      body: Container(
+        padding: EdgeInsets.only(top: ExpertAppBar.getAppBarPadding(context)),
+        child: _buildBody(),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+              width: 1,
+            ),
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.contacts_outlined),
-            label: LocaleKeys.contacts,
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: isDark
+                ? AppColors.textSecondary.withValues(alpha: 0.7)
+                : AppColors.textSecondary,
+            selectedFontSize: context.sp(10),
+            unselectedFontSize: context.sp(9),
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+              height: 1.2,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
+              height: 1.2,
+            ),
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined, size: context.sp(24)),
+                activeIcon: Icon(Icons.home, size: context.sp(24)),
+                label: LocaleKeys.homeDashboard.tr(),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.contacts_outlined, size: context.sp(24)),
+                activeIcon: Icon(Icons.contacts, size: context.sp(24)),
+                label: LocaleKeys.contacts.tr(),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline, size: context.sp(24)),
+                activeIcon: Icon(Icons.person, size: context.sp(24)),
+                label: LocaleKeys.settingsProfile.tr(),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outlined),
-            label: LocaleKeys.settingsProfile.tr(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -104,38 +151,44 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
     final user = ref.watch(authNotifierProvider).user;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.w(4)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Welcome Card
           Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(context.w(4)),
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 30,
+                    radius: context.sp(30),
                     backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.person,
-                      size: 30,
+                    child: Icon(
+                      AppIcons.person,
+                      size: context.sp(30),
                       color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: context.w(4)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           '${LocaleKeys.homeWelcome.tr()}, ${user?.fullName ?? ""}',
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: TextStyle(
+                              fontSize: context.sp(18),
+                              fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: context.h(0.5)),
                         Text(
                           LocaleKeys.authCaregiver.tr(),
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: TextStyle(
+                              fontSize: context.sp(14),
+                              color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -144,27 +197,33 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: context.h(3)),
 
           // Linked Patients Section
           _buildLinkedPatientsSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: context.h(3)),
 
           // Recent Alerts Section
           Text(
             LocaleKeys.homeRecentAlerts.tr(),
-            style: Theme.of(context).textTheme.titleLarge,
+            style: TextStyle(
+                fontSize: context.sp(18), fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: context.h(2)),
 
           Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: Icon(
-                Icons.notifications_none,
+                AppIcons.notifications,
                 color: AppColors.textSecondary,
+                size: context.sp(24),
               ),
-              title: Text(LocaleKeys.homeNoActiveAlerts.tr()),
-              subtitle: Text(LocaleKeys.homeAlertsSubtitle.tr()),
+              title: Text(LocaleKeys.homeNoActiveAlerts.tr(),
+                  style: TextStyle(fontSize: context.sp(14))),
+              subtitle: Text(LocaleKeys.homeAlertsSubtitle.tr(),
+                  style: TextStyle(fontSize: context.sp(12))),
             ),
           ),
         ],
@@ -183,17 +242,22 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
           children: [
             Text(
               LocaleKeys.homeLinkedPatients.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
+              style: TextStyle(
+                  fontSize: context.sp(18), fontWeight: FontWeight.bold),
             ),
             IconButton(
-              icon: const Icon(Icons.add),
+              icon: Icon(AppIcons.add, size: context.sp(24)),
               onPressed: () => _openScanner(),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.h(1)),
         if (linkingState.isLoading)
-          const Center(child: CircularProgressIndicator())
+          Center(
+              child: Padding(
+            padding: EdgeInsets.all(context.w(4)),
+            child: const CircularProgressIndicator(),
+          ))
         else if (linkingState.linkedUsers.isEmpty)
           _buildEmptyLinkedState()
         else
@@ -204,18 +268,28 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
             itemBuilder: (context, index) {
               final patient = linkingState.linkedUsers[index];
               return Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                margin: EdgeInsets.only(bottom: context.h(1.5)),
                 child: ListTile(
                   leading: CircleAvatar(
+                    radius: context.sp(24),
                     backgroundImage: patient.profileImage != null
                         ? NetworkImage(patient.profileImage!)
                         : null,
                     child: patient.profileImage == null
-                        ? const Icon(Icons.person)
+                        ? Icon(AppIcons.person, size: context.sp(24))
                         : null,
                   ),
-                  title: Text(patient.fullName),
-                  subtitle: Text(patient.email),
-                  trailing: const Icon(Icons.chevron_right),
+                  title: Text(patient.fullName,
+                      style: TextStyle(
+                          fontSize: context.sp(16),
+                          fontWeight: FontWeight.bold)),
+                  subtitle: Text(patient.email,
+                      style: TextStyle(
+                          fontSize: context.sp(14),
+                          color: AppColors.textSecondary)),
+                  trailing: Icon(AppIcons.chevronRight, size: context.sp(20)),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -233,30 +307,44 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
 
   Widget _buildEmptyLinkedState() {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.symmetric(
+            vertical: context.h(4), horizontal: context.w(6)),
         child: Column(
           children: [
-            const Icon(
-              Icons.people_outline,
-              size: 64,
+            Icon(
+              AppIcons.people,
+              size: context.sp(64),
               color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.h(2)),
             Text(
               LocaleKeys.homeNoLinkedPatients.tr(),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: context.sp(18), fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.h(1)),
             Text(
               LocaleKeys.homeScanToLinkSubtitle.tr(),
               textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: context.sp(14), color: AppColors.textSecondary),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.h(3)),
             ElevatedButton.icon(
               onPressed: () => _openScanner(),
-              icon: const Icon(Icons.qr_code_scanner),
-              label: Text(LocaleKeys.homeScanQrCode.tr()),
+              icon: Icon(AppIcons.scanner, size: context.sp(20)),
+              label: Text(LocaleKeys.homeScanQrCode.tr(),
+                  style: TextStyle(
+                      fontSize: context.sp(14), fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                    horizontal: context.w(6), vertical: context.h(1.5)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ],
         ),

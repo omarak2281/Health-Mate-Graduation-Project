@@ -23,7 +23,7 @@ class MedicalContact {
       userId: json['user_id'],
       name: json['name'],
       phone: json['phone'],
-      type: json['type'],
+      type: json['contact_type'] ?? json['type'] ?? 'doctor',
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -34,7 +34,7 @@ class MedicalContact {
       'user_id': userId,
       'name': name,
       'phone': phone,
-      'type': type,
+      'contact_type': type,
       'created_at': createdAt.toIso8601String(),
     };
   }

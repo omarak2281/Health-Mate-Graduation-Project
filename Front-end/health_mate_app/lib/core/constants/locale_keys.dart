@@ -11,6 +11,7 @@ class LocaleKeys {
 
   // Common
   static const String ok = 'common.ok';
+  static const String commonHello = 'common.hello';
   static const String commonOk = 'common.ok';
   static const String cancel = 'common.cancel';
   static const String commonCancel = 'common.cancel';
@@ -37,6 +38,10 @@ class LocaleKeys {
   static const String upload = 'common.upload';
   static const String takePhoto = 'common.take_photo';
   static const String chooseGallery = 'common.choose_gallery';
+  static const String manage = 'common.manage';
+  static const String active = 'common.active';
+  static const String pending = 'common.pending';
+  static const String status = 'common.status';
 
   // Auth
   static const String authLogin = 'auth.login';
@@ -71,6 +76,47 @@ class LocaleKeys {
   static const String authGoogleSignIn = 'auth.google_sign_in';
   static const String authRegisterGoogle = 'auth.register_google';
   static const String authSocialAuthCancelled = 'auth.social_auth_cancelled';
+  static const String authPatientSubtitle = 'auth.patient_subtitle';
+  static const String authCaregiverSubtitle = 'auth.caregiver_subtitle';
+  static const String authEnterEmail = 'auth.enter_email';
+  static const String authEnterPassword = 'auth.enter_password';
+  static const String authEnterName = 'auth.enter_name';
+  static const String authEnterPhone = 'auth.enter_phone';
+  static const String authBirthday = 'auth.birthday';
+  static const String authDay = 'auth.day';
+  static const String authMonth = 'auth.month';
+  static const String authYear = 'auth.year';
+  static const String authGender = 'auth.gender';
+  static const String authMale = 'auth.male';
+  static const String authFemale = 'auth.female';
+  static const String authCreateAccount = 'auth.create_account';
+  static const String authCreatePassword = 'auth.create_password';
+  static const String authLoginToAccount = 'auth.login_to_account';
+  static const String authWelcomeBack = 'auth.welcome_back';
+  static const String authContinueWith = 'auth.continue_with';
+  static const String authContinueWithGoogle = 'auth.continue_with_google';
+  static const String authDontHaveAccount = 'auth.dont_have_account';
+  static const String authSignUpNow = 'auth.sign_up_now';
+  static const String authAlreadyHaveAccount = 'auth.already_have_account';
+  static const String authLoginNow = 'auth.login_now';
+  static const String authLoginError = 'auth.login_error';
+  static const String authGoogleNotRegistered = 'auth.google_not_registered';
+  static const String authGoToRegister = 'auth.go_to_register';
+  static const String authCompleteProfile = 'auth.complete_profile';
+  static const String authCompleteProfileSubtitle =
+      'auth.complete_profile_subtitle';
+  static const String authSelectGender = 'auth.select_gender';
+  static const String authFinishRegistration = 'auth.finish_registration';
+  static const String authContinueWithGoogleRegister =
+      'auth.continue_with_google_register';
+  static const String authResetPassword = 'auth.reset_password';
+  static const String authResetPasswordInstruction =
+      'auth.reset_password_instruction';
+  static const String authResetPasswordSent = 'auth.reset_password_sent';
+  static const String authResendResetEmail = 'auth.resend_reset_email';
+  static const String authScanQrCodeOn = 'auth.scan_qr_code_on';
+  static const String authThePatients = 'auth.the_patients';
+  static const String authDevice = 'auth.device';
 
   // Home
   static const String homeWelcome = 'home.welcome';
@@ -99,6 +145,16 @@ class LocaleKeys {
   static const String aiErrorMessage = 'ai.error_message';
   static const String aiUnknownResponse = 'ai.unknown_response';
   static const String splashTagline = 'splash.tagline';
+  static const String homeAvgToday = 'home.avg_today';
+  static const String homeMax = 'home.max';
+  static const String homeBpm = 'home.bpm';
+  static const String homeCheckNow = 'home.check_now';
+  static const String homeMeasurementsHistory = 'home.measurements_history';
+  static const String homeHome = 'home.home';
+  static const String homeCheck = 'home.check';
+  static const String homeMeds = 'home.meds';
+  static const String homeSetting = 'home.setting';
+  static const String homeMmHg = 'home.mmHg';
 
   // Vitals
   static const String vitalsBloodPressure = 'vitals.blood_pressure';
@@ -148,6 +204,7 @@ class LocaleKeys {
   static const String medicationsConfirmTaken = 'medications.confirm_taken';
   static const String medicationsActive = 'medications.active';
   static const String medicationsInactive = 'medications.inactive';
+  static const String medicationsDemoAdd = 'medications.demo_add_medication';
   static const String medicationsTakeNow = 'medications.take_now';
   static const String medicationsSnooze = 'medications.snooze';
   static const String medicationsAlarmTitle = 'medications.alarm_title';
@@ -179,6 +236,28 @@ class LocaleKeys {
   static const String settingsAbout = 'settings.about';
   static const String settingsVersion = 'settings.version';
   static const String settingsChangePassword = 'settings.change_password';
+  static const String settingsLogoutConfirm = 'settings.logout_confirm';
+  static const String settingsQrShareSubtitle = 'settings.qr_share_subtitle';
+  static const String settingsRevealCode = 'settings.reveal_code';
+  static const String settingsLinkedCompanions = 'settings.linked_companions';
+  static const String settingsAccount = 'settings.account';
+  static const String settingsDeleteAccount = 'settings.delete_account';
+  static const String settingsDeleteAccountDesc =
+      'settings.delete_account_desc';
+  static const String settingsYears = 'settings.years';
+
+  // Contacts
+  static const String contactsTitle = 'contacts.title';
+  static const String contactsNoContacts = 'contacts.no_contacts';
+  static const String contactsAddInstructions = 'contacts.add_instructions';
+  static const String contactsAddContact = 'contacts.add_contact';
+  static const String contactsType = 'contacts.type';
+  static const String contactsDoctor = 'contacts.doctor';
+  static const String contactsPharmacy = 'contacts.pharmacy';
+  static const String contactsEmergency = 'contacts.emergency';
+  static const String contactsFamily = 'contacts.family';
+  static const String contactsDeleteConfirm = 'contacts.delete_confirm';
+  static const String contactsDeleteWarning = 'contacts.delete_warning';
 
   // Linking
   static const String linkingMyQrCode = 'linking.my_qr_code';
@@ -218,6 +297,13 @@ class LocaleKeys {
   static const String errorsWrongPassword = 'errors.wrong_password';
   static const String errorsAccountDisabled = 'errors.account_disabled';
   static const String errorsTooManyRequests = 'errors.too_many_requests';
+  static const String authGoogleSignUpRequired = 'auth.google_sign_up_required';
+  static const String authRecoveryRoleRequired = 'auth.recovery_role_required';
+  static const String authEmailMismatch = 'auth.email_mismatch';
+  static const String authRoleSelectionRequired =
+      'auth.role_selection_required';
+  static const String authEmailNotVerifiedFirebase =
+      'auth.email_not_verified_firebase';
 
   // Errors - Generic
   static const String errorsUnknownError = 'errors.unknown_error';
@@ -231,4 +317,6 @@ class LocaleKeys {
   static const String onboardingGetStarted = 'onboarding.get_started';
   static const String onboardingEnglish = 'onboarding.english';
   static const String onboardingArabic = 'onboarding.arabic';
+  static const String onboardingTagline = 'onboarding.tagline';
+  static const String onboardingSubtitle = 'onboarding.subtitle';
 }

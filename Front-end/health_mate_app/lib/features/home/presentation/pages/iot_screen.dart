@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/iot_provider.dart';
-
-/// IoT Screen
-/// Control sensors and medicine box
 
 class IoTScreen extends ConsumerWidget {
   const IoTScreen({super.key});
@@ -16,16 +14,20 @@ class IoTScreen extends ConsumerWidget {
     final iotState = ref.watch(iotNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(LocaleKeys.vitalsIoTDevices.tr())),
+      appBar: AppBar(
+        title: Text(LocaleKeys.vitalsIoTDevices.tr(),
+            style: TextStyle(
+                fontSize: context.sp(20), fontWeight: FontWeight.bold)),
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(iotNotifierProvider.notifier).loadStatus(),
         child: iotState.isLoading && iotState.sensors.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(context.w(4)),
                 children: [
                   _buildSensorSection(context, iotState),
-                  const SizedBox(height: 24),
+                  SizedBox(height: context.h(3)),
                   _buildMedicineBoxSection(context, ref, iotState),
                 ],
               ),
@@ -39,9 +41,10 @@ class IoTScreen extends ConsumerWidget {
       children: [
         Text(
           LocaleKeys.vitalsSensor.tr(),
-          style: Theme.of(context).textTheme.titleLarge,
+          style:
+              TextStyle(fontSize: context.sp(18), fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.h(2)),
         ...state.sensors.map((sensor) {
           final isPpg = sensor['sensor_type'] == 'ppg';
           return _buildSensorTile(
@@ -49,7 +52,7 @@ class IoTScreen extends ConsumerWidget {
             name: isPpg
                 ? LocaleKeys.vitalsPpgSensor.tr()
                 : LocaleKeys.vitalsEcgSensor.tr(),
-            icon: isPpg ? Icons.favorite : Icons.monitor_heart,
+            icon: isPpg ? AppIcons.heartRate : AppIcons.bloodPressure,
             status: sensor['status'],
             quality: sensor['signal_quality'],
           );
@@ -61,7 +64,7 @@ class IoTScreen extends ConsumerWidget {
   Widget _buildSensorTile(
     BuildContext context, {
     required String name,
-    required IconData icon,
+    required dynamic icon,
     required String status,
     required double quality,
   }) {
@@ -71,17 +74,36 @@ class IoTScreen extends ConsumerWidget {
         : LocaleKeys.vitalsSignalPoor.tr();
 
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.only(bottom: context.h(1.5)),
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: isConnected ? AppColors.primary : AppColors.textSecondary,
-        ),
-        title: Text(name),
+        leading: icon is IconData
+            ? Icon(
+                icon,
+                size: context.sp(24),
+                color:
+                    isConnected ? AppColors.primary : AppColors.textSecondary,
+              )
+            : SizedBox(
+                width: context.sp(24),
+                height: context.sp(24),
+                child: icon is Function
+                    ? icon(
+                        size: context.sp(24),
+                        color: isConnected
+                            ? AppColors.primary
+                            : AppColors.textSecondary)
+                    : (icon is Widget ? icon : null),
+              ),
+        title: Text(name,
+            style: TextStyle(
+                fontSize: context.sp(16), fontWeight: FontWeight.bold)),
         subtitle: Text(
           isConnected
               ? '${LocaleKeys.vitalsConnected.tr()} - $qualityText'
               : LocaleKeys.vitalsDisconnected.tr(),
           style: TextStyle(
+            fontSize: context.sp(14),
             color: isConnected ? AppColors.success : AppColors.error,
           ),
         ),
@@ -99,17 +121,18 @@ class IoTScreen extends ConsumerWidget {
       children: [
         Text(
           LocaleKeys.vitalsSmartMedicineBox.tr(),
-          style: Theme.of(context).textTheme.titleLarge,
+          style:
+              TextStyle(fontSize: context.sp(18), fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: context.h(2)),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: 1.5,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: context.w(3),
+            mainAxisSpacing: context.h(1.5),
           ),
           itemCount: state.drawers.length,
           itemBuilder: (context, index) {
@@ -126,28 +149,32 @@ class IoTScreen extends ConsumerWidget {
     final isActive = drawer['led_on'] || drawer['buzzer_on'];
 
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => _testDrawer(context, ref, number),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(context.w(3)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.inventory_2_outlined,
-                color: isActive ? AppColors.primary : null,
+                size: context.sp(24),
+                color: isActive ? AppColors.primary : AppColors.textSecondary,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: context.h(1)),
               Text(
                 '${LocaleKeys.vitalsDrawer.tr()} $number',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: context.sp(14), fontWeight: FontWeight.bold),
               ),
               Text(
                 isActive
                     ? LocaleKeys.medicationsActive.tr()
                     : LocaleKeys.medicationsInactive.tr(),
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: context.sp(10),
                   color: isActive ? AppColors.success : AppColors.textSecondary,
                 ),
               ),

@@ -16,7 +16,7 @@ class ApiConstants {
       // 192.168.1.6 is your PC's local IP (detected via ipconfig)
       // Use 10.0.2.2 if you are using an Android Emulator
       // return 'http://10.0.2.2:8000/api/v1'; // Uncomment for Emulator
-      return 'http://192.168.1.6:8000/api/v1';
+      return 'http://192.168.1.14:8000/api/v1';
     }
     return 'http://127.0.0.1:8000/api/v1';
   }
@@ -44,6 +44,7 @@ class ApiConstants {
   static String userLink(String userId) => '$users/link/$userId';
   static String userUnlink(String userId) => '$userLinked/$userId';
   static const String userPassword = '$users/me/password';
+  static const String deleteAccount = '$users/me';
 
   static const String vitals = '/vitals';
   static const String bpCreate = '$vitals/bp';

@@ -40,7 +40,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF757575);
   static const Color textDisabled = Color(0xFFBDBDBD);
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
-  static const Color textSecondaryDark = Color(0xFFB0B0B0);
+  static const Color textSecondaryDark = Color(0xFFE0E0E0);
 
   // Functional Colors
   static const Color success = Color(0xFF4CAF50);
@@ -96,4 +96,20 @@ class AppColors {
 
   // Feature Specific Colors
   static const Color drawerIcon = Color(0xFFFFEB3B); // Yellow
+
+  // UI Specific Colors (Aliases for consistency with Login/Register pages)
+  static const Color expertTeal = primary;
+  static const Color mediumGray = textSecondary;
+  static const Color darkGrayText = textPrimary;
+  static const Color borderGray = border;
+
+  // New Colors
+  static const Color transparent = Colors.transparent;
+  static const Color googleBlue = Color(0xFF4285F4);
+  static const Color pageBackground = Color(0xFFF8FBFC);
+  static const Color accentRed = Color(0xFFE57373);
+  static const Color grey = Colors.grey;
+
+  // Theme-aware colors
+  static const Color cardDark = Color(0xFF2C2C2C);
 }

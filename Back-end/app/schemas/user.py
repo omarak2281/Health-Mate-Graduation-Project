@@ -19,6 +19,8 @@ class UserRegister(BaseModel):
     phone: Optional[str] = Field(None, max_length=50)
     role: UserRole
     firebase_uid: Optional[str] = None
+    profile_image_url: Optional[str] = None
+    linked_patient_id: Optional[UUID] = None
     
     @validator('password')
     def validate_password(cls, v):
@@ -35,6 +37,8 @@ class UserLogin(BaseModel):
     """User login request"""
     email: EmailStr
     password: str
+    firebase_id_token: Optional[str] = None
+    role: Optional[UserRole] = None
 
 
 # Token Response
@@ -58,6 +62,8 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     phone: Optional[str]
+    birth_date: Optional[str]
+    gender: Optional[str]
     role: UserRole
     profile_image_url: Optional[str]
     is_active: bool
@@ -75,6 +81,8 @@ class UserUpdate(BaseModel):
     """User profile update"""
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
     phone: Optional[str] = Field(None, max_length=50)
+    birth_date: Optional[str] = Field(None, max_length=50)
+    gender: Optional[str] = Field(None, max_length=20)
     profile_image_url: Optional[str] = Field(None, max_length=500)
 
 
@@ -98,12 +106,17 @@ class PasswordChange(BaseModel):
 class SocialAuthRequest(BaseModel):
     """Social authentication request with Firebase ID token"""
     firebase_id_token: str = Field(..., min_length=1)
-    role: UserRole  # Required for new users (patient or caregiver)
+    role: Optional[UserRole] = None  # Required for new users (patient or caregiver)
+    is_signup: bool = False  # True if this is a signup request, False for login
+    phone: Optional[str] = Field(None, max_length=50)
+    birth_date: Optional[str] = Field(None, max_length=20)
+    gender: Optional[str] = Field(None, max_length=20)
     
     class Config:
         json_schema_extra = {
             "example": {
                 "firebase_id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6...",
-                "role": "patient"
+                "role": "patient",
+                "is_signup": False
             }
         }

@@ -37,7 +37,7 @@ class MedicalContactsRepository {
     try {
       final response = await _dioClient.dio.post(
         ApiConstants.contacts,
-        data: {'name': name, 'phone': phone, 'type': type},
+        data: {'name': name, 'phone': phone, 'contact_type': type},
       );
       return MedicalContact.fromJson(response.data);
     } catch (e) {

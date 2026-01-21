@@ -217,3 +217,18 @@ async def unlink_user(
     await db.commit()
     
     return None
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete current user account (Hard delete)
+    """
+    # Hard delete the user
+    await db.delete(current_user)
+    await db.commit()
+    
+    return None

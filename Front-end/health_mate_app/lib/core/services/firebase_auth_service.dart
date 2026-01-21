@@ -11,8 +11,8 @@ class FirebaseAuthService {
   FirebaseAuthService({
     firebase_auth.FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
-  }) : _firebaseAuth = _getFirebaseAuth(firebaseAuth),
-       _googleSignIn = googleSignIn ?? GoogleSignIn();
+  })  : _firebaseAuth = _getFirebaseAuth(firebaseAuth),
+        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   static firebase_auth.FirebaseAuth? _getFirebaseAuth(
     firebase_auth.FirebaseAuth? provided,
@@ -156,6 +156,8 @@ class FirebaseAuthService {
     }
     try {
       // Trigger Google Sign-In flow
+      // Always sign out first to force account selection
+      await _googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       // User cancelled sign-in
@@ -223,6 +225,20 @@ class FirebaseAuthService {
       ]);
     } catch (e) {
       // Continue with sign out even if one fails
+    }
+  }
+
+  /// Delete current Firebase user
+  Future<void> deleteUser() async {
+    final auth = _firebaseAuth;
+    if (auth == null) return;
+    try {
+      final user = auth.currentUser;
+      if (user != null) {
+        await user.delete();
+      }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
     }
   }
 

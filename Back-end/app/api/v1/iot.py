@@ -32,6 +32,31 @@ async def get_sensor_data():
     return iot_service.get_sensor_data()
 
 
+@router.get("/sensors/predict-bp")
+async def predict_bp_from_sensors():
+    """
+    Get current sensor data and run ABP prediction model
+    """
+    from app.services.abp_prediction_service import get_abp_service
+    
+    iot_service = get_iot_service()
+    sensor_data = iot_service.get_sensor_data()
+    
+    if sensor_data.get("status") != "success":
+         return sensor_data
+    
+    abp_service = get_abp_service()
+    prediction = abp_service.predict_bp(
+        ppg_signal=sensor_data["ppg"]["signal"],
+        ecg_signal=sensor_data["ecg"]["signal"]
+    )
+    
+    return {
+        **sensor_data,
+        "prediction": prediction
+    }
+
+
 @router.get("/medicine-box/drawers")
 async def get_all_drawers():
     """

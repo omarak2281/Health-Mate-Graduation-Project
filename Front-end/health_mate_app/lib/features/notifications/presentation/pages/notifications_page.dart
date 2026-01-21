@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/notifications_provider.dart';
-
-/// Notifications Page
-/// Shows all notifications with mark as read functionality
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
@@ -17,7 +15,9 @@ class NotificationsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleKeys.notificationsTitle.tr()),
+        title: Text(LocaleKeys.notificationsTitle.tr(),
+            style: TextStyle(
+                fontSize: context.sp(20), fontWeight: FontWeight.bold)),
         actions: [
           if (notificationsState.unreadCount > 0)
             TextButton(
@@ -28,7 +28,7 @@ class NotificationsPage extends ConsumerWidget {
               },
               child: Text(
                 LocaleKeys.notificationsMarkAllRead.tr(),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: context.sp(14)),
               ),
             ),
         ],
@@ -60,13 +60,16 @@ class NotificationsPage extends ConsumerWidget {
           children: [
             Icon(
               Icons.notifications_none,
-              size: 80,
+              size: context.sp(80),
               color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.h(2)),
             Text(
               LocaleKeys.notificationsNoNotifications.tr(),
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: TextStyle(
+                  fontSize: context.sp(20),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -74,6 +77,7 @@ class NotificationsPage extends ConsumerWidget {
     }
 
     return ListView.builder(
+      padding: EdgeInsets.symmetric(vertical: context.h(1)),
       itemCount: state.notifications.length,
       itemBuilder: (context, index) {
         final notification = state.notifications[index];
@@ -83,9 +87,10 @@ class NotificationsPage extends ConsumerWidget {
           direction: DismissDirection.endToStart,
           background: Container(
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: context.w(5)),
             color: AppColors.error,
-            child: const Icon(Icons.delete, color: Colors.white),
+            child:
+                Icon(Icons.delete, color: Colors.white, size: context.sp(24)),
           ),
           onDismissed: (direction) {
             ref
@@ -93,37 +98,45 @@ class NotificationsPage extends ConsumerWidget {
                 .deleteNotification(notification.id);
           },
           child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: EdgeInsets.symmetric(
+                horizontal: context.w(3), vertical: context.h(0.6)),
             color: notification.isRead
                 ? null
                 : AppColors.primary.withValues(alpha: 0.05),
             child: ListTile(
               leading: CircleAvatar(
+                radius: context.sp(22),
                 backgroundColor: _getNotificationColor(
                   notification.type,
                 ).withValues(alpha: 0.1),
                 child: Icon(
                   _getNotificationIcon(notification.type),
                   color: _getNotificationColor(notification.type),
+                  size: context.sp(20),
                 ),
               ),
               title: Text(
                 notification.title,
                 style: TextStyle(
-                  fontWeight: notification.isRead
-                      ? FontWeight.normal
-                      : FontWeight.bold,
+                  fontSize: context.sp(16),
+                  fontWeight:
+                      notification.isRead ? FontWeight.normal : FontWeight.bold,
                 ),
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 4),
-                  Text(notification.message),
-                  const SizedBox(height: 4),
+                  SizedBox(height: context.h(0.5)),
+                  Text(notification.message,
+                      style: TextStyle(fontSize: context.sp(14))),
+                  SizedBox(height: context.h(0.5)),
                   Text(
                     DateFormat.yMMMd().add_jm().format(notification.createdAt),
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: TextStyle(
+                        fontSize: context.sp(12),
+                        color: AppColors.textSecondary),
                   ),
                 ],
               ),

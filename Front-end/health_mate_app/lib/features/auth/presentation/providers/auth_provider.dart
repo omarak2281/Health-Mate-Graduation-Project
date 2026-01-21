@@ -42,7 +42,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
 
   AuthNotifier(this._authRepository)
-    : super(AuthState(status: AuthStatus.initial)) {
+      : super(AuthState(status: AuthStatus.initial)) {
     _checkAuthStatus();
   }
 
@@ -83,13 +83,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   // Login
-  Future<void> login({required String email, required String password}) async {
+  Future<void> login({
+    required String email,
+    required String password,
+    String? role,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
       final user = await _authRepository.login(
         email: email,
         password: password,
+        role: role,
       );
 
       // Check if user needs verification
@@ -143,16 +148,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String fullName,
     String? phone,
     required String role,
+    String? birthDate,
+    String? gender,
+    dynamic profileImage, // Can be File
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
+      String? profileImageUrl;
+      if (profileImage != null) {
+        // Upload image first
+        profileImageUrl =
+            await _authRepository.uploadProfileImage(profileImage);
+      }
+
       final user = await _authRepository.register(
         email: email,
         password: password,
         fullName: fullName,
         phone: phone,
         role: role,
+        birthDate: birthDate,
+        gender: gender,
+        profileImage: profileImageUrl,
       );
 
       // Set to unverified after registration
@@ -170,11 +188,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   // Google Sign-In
-  Future<void> loginWithGoogle({required String role}) async {
+  Future<void> loginWithGoogle({
+    String? role,
+    bool isSignup = false,
+    String? birthDate,
+    String? phone,
+    String? gender,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
-      final user = await _authRepository.loginWithGoogle(role: role);
+      final user = await _authRepository.loginWithGoogle(
+        role: role,
+        isSignup: isSignup,
+        birthDate: birthDate,
+        phone: phone,
+        gender: gender,
+      );
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
@@ -186,6 +216,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.error,
         errorMessage: AuthErrorHandler.handleError(e),
       );
+      rethrow;
     }
   }
 
@@ -235,11 +266,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
   }
 
+  // Delete Account
+  Future<void> deleteAccount() async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _authRepository.deleteAccount();
+      state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: AuthErrorHandler.handleError(e),
+      );
+      rethrow;
+    }
+  }
+
   // Update Profile
   Future<void> updateProfile({
     String? fullName,
     String? phone,
     String? profileImage,
+    String? birthDate,
+    String? gender,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
@@ -247,6 +295,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         fullName: fullName,
         phone: phone,
         profileImage: profileImage,
+        birthDate: birthDate,
+        gender: gender,
       );
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
     } catch (e) {
@@ -277,6 +327,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.error,
         errorMessage: AuthErrorHandler.handleError(e),
       );
+    }
+  }
+
+  // Reset Password (Forgot Password)
+  Future<void> resetPassword(String email) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _authRepository.resetPassword(email);
+      // We don't change state to authenticated, just clear loading
+      // The user still needs to login with the new password
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated, // or keep previous state?
+        errorMessage: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: AuthErrorHandler.handleError(e),
+      );
+      rethrow; // Rethrow so UI can show success/error dialogs
     }
   }
 

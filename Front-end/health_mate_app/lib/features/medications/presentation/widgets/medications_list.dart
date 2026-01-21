@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/constants/locale_keys.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/medications_provider.dart';
 
@@ -31,8 +31,7 @@ class MedicationsList extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.medication_outlined,
+              AppIcons.pill(
                 size: 48,
                 color: AppColors.textSecondary,
               ),
@@ -47,7 +46,7 @@ class MedicationsList extends ConsumerWidget {
                   onPressed: () {
                     _showAddMedicationDialog(context, ref);
                   },
-                  icon: const Icon(Icons.add),
+                  icon: Icon(AppIcons.add),
                   label: Text(LocaleKeys.medicationsAddMedication.tr()),
                 ),
               ],
@@ -75,7 +74,7 @@ class MedicationsList extends ConsumerWidget {
                 ),
                 if (patientId == null)
                   IconButton(
-                    icon: const Icon(Icons.add),
+                    icon: Icon(AppIcons.add),
                     onPressed: () {
                       _showAddMedicationDialog(context, ref);
                     },
@@ -95,7 +94,7 @@ class MedicationsList extends ConsumerWidget {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: const Icon(Icons.medication, color: AppColors.primary),
+                  child: AppIcons.pill(color: AppColors.primary),
                 ),
                 title: Text(
                   medication.name,
@@ -113,7 +112,7 @@ class MedicationsList extends ConsumerWidget {
                     if (medication.hasDrawer())
                       Text(
                         '${LocaleKeys.medicationsDrawer.tr()} ${medication.drawerNumber}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -183,11 +182,11 @@ class MedicationsList extends ConsumerWidget {
                 await ref
                     .read(medicationsNotifierProvider.notifier)
                     .addMedication(
-                      name: nameController.text,
-                      dosage: dosageController.text,
-                      frequency: frequencyController.text,
-                      timeSlots: ['08:00', '20:00'], // Default
-                    );
+                  name: nameController.text,
+                  dosage: dosageController.text,
+                  frequency: frequencyController.text,
+                  timeSlots: ['08:00', '20:00'], // Default
+                );
                 if (context.mounted) Navigator.pop(context);
               }
             },
