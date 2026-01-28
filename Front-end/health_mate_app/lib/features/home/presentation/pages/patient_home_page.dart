@@ -103,8 +103,7 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
               ),
               _buildNavItem(
                 index: 3,
-                icon: ({size, color}) =>
-                    Icon(Icons.contacts_outlined, size: size, color: color),
+                icon: AppIcons.phone,
                 label: LocaleKeys.contacts.tr(),
               ),
               _buildNavItem(

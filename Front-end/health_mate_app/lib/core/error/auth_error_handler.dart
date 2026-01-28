@@ -47,21 +47,28 @@ class AuthErrorHandler {
       if (data is Map && data.containsKey('detail')) {
         final detail = data['detail'].toString();
 
-        if (detail.contains('Email already registered'))
+        if (detail.contains('Email already registered')) {
           return 'errors.email_already_in_use';
-        if (detail.contains('Login error: Not registered'))
+        }
+        if (detail.contains('Login error: Not registered')) {
           return 'auth.google_not_registered';
-        if (detail.contains('Account recovery'))
+        }
+        if (detail.contains('Account recovery')) {
           return 'auth.recovery_role_required';
+        }
         if (detail.contains('Email mismatch')) return 'auth.email_mismatch';
-        if (detail.contains('Incorrect email or password'))
+        if (detail.contains('Incorrect email or password')) {
           return 'errors.invalid_credentials';
-        if (detail.contains('Account is inactive'))
+        }
+        if (detail.contains('Account is inactive')) {
           return 'errors.account_disabled';
-        if (detail.contains('Please select a role'))
+        }
+        if (detail.contains('Please select a role')) {
           return 'auth.role_selection_required';
-        if (detail.contains('Email not yet verified'))
+        }
+        if (detail.contains('Email not yet verified')) {
           return 'auth.email_not_verified_firebase';
+        }
 
         // Validation errors (Input Source)
         if (detail.contains('validation error') || statusCode == 422) {
@@ -100,10 +107,12 @@ class AuthErrorHandler {
       return 'errors.network_error';
     }
 
-    if (error.type == DioExceptionType.badResponse)
+    if (error.type == DioExceptionType.badResponse) {
       return 'errors.server_error';
-    if (error.type == DioExceptionType.cancel)
+    }
+    if (error.type == DioExceptionType.cancel) {
       return 'errors.request_cancelled';
+    }
 
     return 'errors.network_error';
   }

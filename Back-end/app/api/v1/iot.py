@@ -57,6 +57,15 @@ async def predict_bp_from_sensors():
     }
 
 
+@router.get("/medicine-box/status")
+async def get_box_status():
+    """
+    Get overall status of medicine box (battery, connection)
+    """
+    iot_service = get_iot_service()
+    return iot_service.get_box_status()
+
+
 @router.get("/medicine-box/drawers")
 async def get_all_drawers():
     """

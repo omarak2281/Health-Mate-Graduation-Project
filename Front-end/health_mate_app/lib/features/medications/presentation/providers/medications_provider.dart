@@ -40,7 +40,7 @@ class MedicationsNotifier extends StateNotifier<MedicationsState> {
   final String? patientId;
 
   MedicationsNotifier(this._repository, {this.patientId})
-    : super(MedicationsState()) {
+      : super(MedicationsState()) {
     loadMedications();
   }
 
@@ -103,6 +103,17 @@ class MedicationsNotifier extends StateNotifier<MedicationsState> {
     }
   }
 
+  // Update medication
+  Future<void> updateMedication(String id, Map<String, dynamic> updates) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _repository.updateMedication(id, updates);
+      await loadMedications();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
   // Delete medication
   Future<void> deleteMedication(String id) async {
     try {
@@ -140,15 +151,15 @@ class MedicationsNotifier extends StateNotifier<MedicationsState> {
 // Provider for current user
 final medicationsNotifierProvider =
     StateNotifierProvider<MedicationsNotifier, MedicationsState>((ref) {
-      final repository = ref.watch(medicationsRepositoryProvider);
-      return MedicationsNotifier(repository);
-    });
+  final repository = ref.watch(medicationsRepositoryProvider);
+  return MedicationsNotifier(repository);
+});
 
 // Family provider for patients (for caregivers)
 final patientMedicationsNotifierProvider =
     StateNotifierProvider.family<MedicationsNotifier, MedicationsState, String>(
-      (ref, patientId) {
-        final repository = ref.watch(medicationsRepositoryProvider);
-        return MedicationsNotifier(repository, patientId: patientId);
-      },
-    );
+  (ref, patientId) {
+    final repository = ref.watch(medicationsRepositoryProvider);
+    return MedicationsNotifier(repository, patientId: patientId);
+  },
+);

@@ -214,6 +214,32 @@ class LocaleKeys {
   static const String medicationsEnableBuzzer = 'medications.enable_buzzer';
   static const String medicationsImageUploadError =
       'medications.image_upload_error';
+  static const String medicationsAddPhoto = 'medications.add_photo';
+  static const String medicationsMedicationInformation =
+      'medications.medication_information';
+  static const String medicationsMedsList = 'medications.meds_list';
+  static const String medicationsTodaysSchedule = 'medications.todays_schedule';
+  static const String medicationsViewCalendar = 'medications.view_calendar';
+  static const String medicationsNextDose = 'medications.next_dose';
+  static const String medicationsDoneAllCaps = 'medications.done_all_caps';
+  static const String medicationsFormFactor = 'medications.form_factor';
+  static const String medicationsTablet = 'medications.tablet';
+  static const String medicationsCapsule = 'medications.capsule';
+  static const String medicationsInjection = 'medications.injection';
+  static const String medicationsLiquid = 'medications.liquid';
+  static const String medicationsSchedule = 'medications.schedule';
+  static const String medicationsInterval = 'medications.interval';
+  static const String medicationsStartDate = 'medications.start_date';
+  static const String medicationsSmartBoxSection =
+      'medications.smart_box_section';
+  static const String medicationsViewMore = 'medications.view_more';
+  static const String medicationsAssignToDrawer =
+      'medications.assign_to_drawer';
+  static const String medicationsMedicationBox = 'medications.medication_box';
+  static const String medicationsSmartBoxId = 'medications.smart_box_id';
+  static const String medicationsBattery = 'medications.battery';
+  static const String medicationsDrawers = 'medications.drawers';
+  static const String medicationsAssign = 'medications.assign';
 
   // Notifications
   static const String notificationsTitle = 'notifications.title';
@@ -319,4 +345,44 @@ class LocaleKeys {
   static const String onboardingArabic = 'onboarding.arabic';
   static const String onboardingTagline = 'onboarding.tagline';
   static const String onboardingSubtitle = 'onboarding.subtitle';
+
+  // Medicine Tutorial
+  static const String medicineTutorialMeetYour = 'medicine_tutorial.meet_your';
+  static const String medicineTutorialSmartBox = 'medicine_tutorial.smart_box';
+  static const String medicineTutorialDescription1 =
+      'medicine_tutorial.description_1';
+  static const String medicineTutorialAlerts = 'medicine_tutorial.alerts';
+  static const String medicineTutorialLighting = 'medicine_tutorial.lighting';
+  static const String medicineTutorialReminder = 'medicine_tutorial.reminder';
+  static const String medicineTutorialLearnMore =
+      'medicine_tutorial.learn_more';
+
+  static const String medicineTutorialSmartBoxSetup =
+      'medicine_tutorial.smart_box_setup';
+  static const String medicineTutorialFillDrawer =
+      'medicine_tutorial.fill_drawer';
+  static const String medicineTutorialDescription2 =
+      'medicine_tutorial.description_2';
+  static const String medicineTutorialNextStep = 'medicine_tutorial.next_step';
+  static const String medicineTutorialSkip = 'medicine_tutorial.skip';
+  static const String medicineTutorialMorning = 'medicine_tutorial.morning';
+  static const String medicineTutorialNoon = 'medicine_tutorial.noon';
+  static const String medicineTutorialEvening = 'medicine_tutorial.evening';
+  static const String medicineTutorialNight = 'medicine_tutorial.night';
+  static const String medicineTutorialAssigned = 'medicine_tutorial.assigned';
+  static const String medicineTutorialAssignMeds =
+      'medicine_tutorial.assign_meds';
+  static const String medicineTutorialEmpty = 'medicine_tutorial.empty';
+
+  static const String medicineTutorialStep3 = 'medicine_tutorial.step_3';
+  static const String medicineTutorialSmartNotifications =
+      'medicine_tutorial.smart_notifications';
+  static const String medicineTutorialDescription3Part1 =
+      'medicine_tutorial.description_3_part1';
+  static const String medicineTutorialLightUp = 'medicine_tutorial.light_up';
+  static const String medicineTutorialDescription3Part2 =
+      'medicine_tutorial.description_3_part2';
+  static const String medicineTutorialFinishSetup =
+      'medicine_tutorial.finish_setup';
+  static const String medicineTutorialReplay = 'medicine_tutorial.replay';
 }

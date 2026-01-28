@@ -3,6 +3,7 @@ import '../../../../core/models/user.dart';
 import '../../data/auth_repository.dart';
 import '../../../../core/error/auth_error_handler.dart';
 import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/storage/shared_prefs_cache.dart';
 
 /// Auth State
 /// Manages authentication state across the app
@@ -40,8 +41,9 @@ class AuthState {
 // Auth State Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  final SharedPrefsCache _sharedPrefs;
 
-  AuthNotifier(this._authRepository)
+  AuthNotifier(this._authRepository, this._sharedPrefs)
       : super(AuthState(status: AuthStatus.initial)) {
     _checkAuthStatus();
   }
@@ -61,6 +63,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (!user.isVerified) {
           state = state.copyWith(status: AuthStatus.unverified, user: user);
         } else {
+          // Mark onboarding as completed if already authenticated
+          _sharedPrefs.setOnboardingCompleted(true);
           state = state.copyWith(status: AuthStatus.authenticated, user: user);
         }
       } catch (e) {
@@ -106,6 +110,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           clearError: true,
         );
       } else {
+        // Mark onboarding as completed upon successful login
+        _sharedPrefs.setOnboardingCompleted(true);
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
@@ -206,6 +212,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         gender: gender,
       );
 
+      // Mark onboarding as completed upon successful Google login
+      _sharedPrefs.setOnboardingCompleted(true);
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
@@ -382,5 +390,6 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((
   ref,
 ) {
   final authRepository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(authRepository);
+  final sharedPrefs = ref.watch(sharedPrefsCacheProvider);
+  return AuthNotifier(authRepository, sharedPrefs);
 });

@@ -16,6 +16,12 @@ class IoTRepository {
     return response.data;
   }
 
+  // Get medicine box status (battery, ID)
+  Future<Map<String, dynamic>> getBoxStatus() async {
+    final response = await _dioClient.dio.get(ApiConstants.medicineBoxStatus);
+    return response.data;
+  }
+
   // Get medicine box drawers
   Future<List<dynamic>> getDrawers() async {
     final response = await _dioClient.dio.get(ApiConstants.medicineBoxDrawers);

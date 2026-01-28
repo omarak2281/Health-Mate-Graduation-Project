@@ -118,8 +118,13 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
                 label: LocaleKeys.homeDashboard.tr(),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.contacts_outlined, size: context.sp(24)),
-                activeIcon: Icon(Icons.contacts, size: context.sp(24)),
+                icon: AppIcons.phone(
+                    size: context.sp(24),
+                    color: isDark
+                        ? AppColors.textSecondary.withValues(alpha: 0.7)
+                        : AppColors.textSecondary),
+                activeIcon: AppIcons.phone(
+                    size: context.sp(24), color: AppColors.primary),
                 label: LocaleKeys.contacts.tr(),
               ),
               BottomNavigationBarItem(

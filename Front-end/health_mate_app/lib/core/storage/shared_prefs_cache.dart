@@ -84,6 +84,15 @@ class SharedPrefsCache {
     return _prefs.getString(AppConstants.cacheKeyLastRole);
   }
 
+  // Medicine Tutorial Completed
+  Future<void> setMedicineTutorialCompleted(bool completed) async {
+    await _prefs.setBool('medicine_tutorial_completed', completed);
+  }
+
+  bool hasSeenMedicineTutorial() {
+    return _prefs.getBool('medicine_tutorial_completed') ?? false;
+  }
+
   // Clear all
   Future<void> clearAll() async {
     await _prefs.clear();

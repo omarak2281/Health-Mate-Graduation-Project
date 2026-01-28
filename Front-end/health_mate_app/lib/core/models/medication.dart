@@ -14,6 +14,7 @@ class Medication {
   final bool enableBuzzer;
   final bool enableNotification;
   final String? imageUrl;
+  final String? formFactor;
   final DateTime startDate;
   final DateTime? endDate;
   final DateTime createdAt;
@@ -32,6 +33,7 @@ class Medication {
     required this.enableBuzzer,
     required this.enableNotification,
     this.imageUrl,
+    this.formFactor,
     required this.startDate,
     this.endDate,
     required this.createdAt,
@@ -56,12 +58,12 @@ class Medication {
       enableBuzzer: json['enable_buzzer'] == true,
       enableNotification: json['enable_notification'] == true,
       imageUrl: json['image_url']?.toString(),
+      formFactor: json['form_factor']?.toString(),
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date'])
           : DateTime.now(),
-      endDate: json['end_date'] != null
-          ? DateTime.parse(json['end_date'])
-          : null,
+      endDate:
+          json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
@@ -83,6 +85,7 @@ class Medication {
       'enable_buzzer': enableBuzzer,
       'enable_notification': enableNotification,
       'image_url': imageUrl,
+      'form_factor': formFactor,
       'start_date': startDate.toIso8601String(),
       'end_date': endDate?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),

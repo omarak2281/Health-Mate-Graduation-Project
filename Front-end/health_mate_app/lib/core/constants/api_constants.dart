@@ -65,6 +65,7 @@ class ApiConstants {
   static const String iot = '/iot';
   static const String sensorsStatus = '$iot/sensors/status';
   static const String sensorsData = '$iot/sensors/data';
+  static const String medicineBoxStatus = '$iot/medicine-box/status';
   static const String medicineBoxDrawers = '$iot/medicine-box/drawers';
   static String drawerActivate(int num) =>
       '$iot/medicine-box/drawer/$num/activate';

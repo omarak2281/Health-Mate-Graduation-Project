@@ -6,8 +6,6 @@ import '../../../../core/constants/constants.dart';
 import '../../../../core/storage/shared_prefs_cache.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles.dart';
-import '../../../../core/constants/locale_keys.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../providers/auth_provider.dart';

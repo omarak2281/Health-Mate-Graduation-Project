@@ -5,14 +5,38 @@ import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/models/medication.dart';
 import '../../../home/data/iot_repository.dart';
+import 'package:intl/intl.dart';
 
-class MedicationAlarmPage extends ConsumerWidget {
+class MedicationAlarmPage extends ConsumerStatefulWidget {
   final Medication medication;
 
   const MedicationAlarmPage({super.key, required this.medication});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MedicationAlarmPage> createState() =>
+      _MedicationAlarmPageState();
+}
+
+class _MedicationAlarmPageState extends ConsumerState<MedicationAlarmPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Activate IoT Drawer when alarm screen appears
+    if (widget.medication.hasDrawer()) {
+      Future.microtask(() async {
+        try {
+          await ref
+              .read(iotRepositoryProvider)
+              .activateDrawer(widget.medication.drawerNumber!);
+        } catch (e) {
+          debugPrint('Error activating drawer: $e');
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: Container(
@@ -42,14 +66,18 @@ class MedicationAlarmPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                DateFormat('HH:mm').format(DateTime.now()),
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 64,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
+              StreamBuilder(
+                  stream: Stream.periodic(const Duration(seconds: 1)),
+                  builder: (context, snapshot) {
+                    return Text(
+                      DateFormat('HH:mm').format(DateTime.now()),
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 64,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    );
+                  }),
               const SizedBox(height: 40),
 
               // Medicine Image/Icon
@@ -69,9 +97,9 @@ class MedicationAlarmPage extends ConsumerWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(30),
-                    child: medication.imageUrl != null
+                    child: widget.medication.imageUrl != null
                         ? Image.network(
-                            medication.imageUrl!,
+                            widget.medication.imageUrl!,
                             fit: BoxFit.cover,
                             width: double.infinity,
                           )
@@ -94,7 +122,7 @@ class MedicationAlarmPage extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      medication.name,
+                      widget.medication.name,
                       style: const TextStyle(
                         color: AppColors.white,
                         fontSize: 32,
@@ -104,13 +132,13 @@ class MedicationAlarmPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${medication.dosage} • ${medication.frequency}',
+                      '${widget.medication.dosage} • ${widget.medication.frequency}',
                       style: const TextStyle(
                         color: AppColors.white70,
                         fontSize: 18,
                       ),
                     ),
-                    if (medication.hasDrawer()) ...[
+                    if (widget.medication.hasDrawer()) ...[
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -131,7 +159,7 @@ class MedicationAlarmPage extends ConsumerWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${LocaleKeys.medicationsDrawer.tr()} ${medication.drawerNumber}',
+                              '${LocaleKeys.medicationsDrawer.tr()} ${widget.medication.drawerNumber}',
                               style: const TextStyle(
                                 color: AppColors.white,
                                 fontWeight: FontWeight.bold,
@@ -182,10 +210,15 @@ class MedicationAlarmPage extends ConsumerWidget {
                       child: ElevatedButton(
                         onPressed: () async {
                           // Deactivate IoT Drawer
-                          if (medication.hasDrawer()) {
-                            await ref
-                                .read(iotRepositoryProvider)
-                                .deactivateDrawer(medication.drawerNumber!);
+                          try {
+                            if (widget.medication.hasDrawer()) {
+                              await ref
+                                  .read(iotRepositoryProvider)
+                                  .deactivateDrawer(
+                                      widget.medication.drawerNumber!);
+                            }
+                          } catch (e) {
+                            debugPrint('Error deactivating drawer: $e');
                           }
                           // Mark as taken (placeholder logic)
                           if (context.mounted) {

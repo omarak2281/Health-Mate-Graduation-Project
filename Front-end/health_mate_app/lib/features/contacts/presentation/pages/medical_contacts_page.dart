@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/responsive.dart';
 import '../providers/medical_contacts_provider.dart';
@@ -17,9 +16,11 @@ class MedicalContactsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(medicalContactsNotifierProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.pageBackground,
       extendBodyBehindAppBar: true,
       appBar: ExpertAppBar(
         title: LocaleKeys.contactsTitle.tr(),
@@ -56,7 +57,7 @@ class MedicalContactsPage extends ConsumerWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
               child: Icon(Icons.add_rounded,
-                  size: context.sp(32), color: Colors.white),
+                  size: context.sp(32), color: AppColors.white),
             ),
     );
   }
@@ -69,20 +70,18 @@ class MedicalContactsPage extends ConsumerWidget {
     return Container(
       margin: EdgeInsets.only(bottom: context.h(2)),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: typeColor.withValues(alpha: 0.08),
+            color: AppColors.shadow.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
         ],
         border: Border.all(
-          color: isDark
-              ? typeColor.withValues(alpha: 0.2)
-              : typeColor.withValues(alpha: 0.1),
-          width: 1.5,
+          color: isDark ? AppColors.borderDark : AppColors.border,
+          width: 1,
         ),
       ),
       child: Material(
@@ -113,10 +112,11 @@ class MedicalContactsPage extends ConsumerWidget {
                     children: [
                       Text(
                         contact.name,
-                        style: TextStyle(
+                        style: AppStyles.cardTitleStyle.copyWith(
                           fontSize: context.sp(17),
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: context.h(0.5)),
@@ -124,18 +124,17 @@ class MedicalContactsPage extends ConsumerWidget {
                         children: [
                           Icon(Icons.phone_rounded,
                               size: context.sp(14),
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color
-                                  ?.withValues(alpha: 0.6)),
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondary),
                           SizedBox(width: context.w(1.5)),
                           Text(
                             contact.phone,
-                            style: TextStyle(
+                            style: AppStyles.bodyStyle.copyWith(
                               fontSize: context.sp(14),
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondary,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -208,6 +207,7 @@ class MedicalContactsPage extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -218,8 +218,7 @@ class MedicalContactsPage extends ConsumerWidget {
               color: AppColors.primary.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              AppIcons.contacts,
+            child: AppIcons.phone(
               size: context.sp(80),
               color: AppColors.primary.withValues(alpha: 0.5),
             ),
@@ -227,10 +226,10 @@ class MedicalContactsPage extends ConsumerWidget {
           SizedBox(height: context.h(4)),
           Text(
             LocaleKeys.contactsNoContacts.tr(),
-            style: TextStyle(
-                fontSize: context.sp(22),
-                fontWeight: FontWeight.w900,
-                color: Theme.of(context).textTheme.bodyLarge?.color),
+            style: AppStyles.headingStyle.copyWith(
+              fontSize: context.sp(22),
+              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+            ),
           ),
           SizedBox(height: context.h(2)),
           Padding(
@@ -238,27 +237,26 @@ class MedicalContactsPage extends ConsumerWidget {
             child: Text(
               LocaleKeys.contactsAddInstructions.tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: context.sp(15),
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.color
-                      ?.withValues(alpha: 0.7),
-                  height: 1.5),
+              style: AppStyles.bodyStyle.copyWith(
+                fontSize: context.sp(15),
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
           ),
           SizedBox(height: context.h(4)),
           ElevatedButton.icon(
             onPressed: () => _showAddContactDialog(context, ref),
             icon: Icon(Icons.add_rounded,
-                size: context.sp(22), color: Colors.white),
+                size: context.sp(22), color: AppColors.white),
             label: Text(
               LocaleKeys.contactsAddContact.tr(),
               style: TextStyle(
                 fontSize: context.sp(16),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
             style: AppStyles.primaryButtonStyle.copyWith(
@@ -291,7 +289,7 @@ class MedicalContactsPage extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+          backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           titlePadding: EdgeInsets.zero,
@@ -318,17 +316,17 @@ class MedicalContactsPage extends ConsumerWidget {
                 Container(
                   padding: EdgeInsets.all(context.w(3)),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: AppColors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.person_add_rounded,
-                      color: Colors.white, size: context.sp(32)),
+                      color: AppColors.white, size: context.sp(32)),
                 ),
                 SizedBox(height: context.h(1.5)),
                 Text(
                   LocaleKeys.contactsAddContact.tr(),
-                  style: TextStyle(
-                    color: Colors.white,
+                  style: AppStyles.headingStyle.copyWith(
+                    color: AppColors.white,
                     fontSize: context.sp(22),
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.5,
@@ -385,9 +383,10 @@ class MedicalContactsPage extends ConsumerWidget {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 LocaleKeys.cancel.tr(),
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.bold,
+                style: AppStyles.labelStyle.copyWith(
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                   fontSize: context.sp(14),
                 ),
               ),
@@ -414,7 +413,7 @@ class MedicalContactsPage extends ConsumerWidget {
                 style: TextStyle(
                     fontSize: context.sp(16),
                     fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                    color: AppColors.white),
               ),
             ),
           ],
@@ -426,9 +425,8 @@ class MedicalContactsPage extends ConsumerWidget {
   Widget _buildLabel(BuildContext context, String text) {
     return Text(
       text,
-      style: TextStyle(
+      style: AppStyles.labelStyle.copyWith(
         fontSize: context.sp(13),
-        fontWeight: FontWeight.w800,
         color: AppColors.primary,
         letterSpacing: 0.5,
       ),
@@ -448,20 +446,20 @@ class MedicalContactsPage extends ConsumerWidget {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: TextStyle(
+      style: AppStyles.bodyStyle.copyWith(
           fontSize: context.sp(16),
-          color: Theme.of(context).textTheme.bodyLarge?.color),
+          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary),
       decoration: AppStyles.inputDecoration(
         hint: hint,
         icon: icon,
       ).copyWith(
         fillColor: isDark
             ? AppColors.surfaceDark.withValues(alpha: 0.5)
-            : AppColors.backgroundLight,
+            : AppColors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide:
-              BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+              BorderSide(color: isDark ? AppColors.white12 : AppColors.border),
         ),
       ),
     );
@@ -483,20 +481,23 @@ class MedicalContactsPage extends ConsumerWidget {
             AppColors.warning, LocaleKeys.contactsFamily.tr()),
       ],
       onChanged: onChanged,
+      style: AppStyles.bodyStyle.copyWith(
+          fontSize: context.sp(16),
+          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary),
       decoration: AppStyles.inputDecoration(
         hint: "",
         icon: Icons.category_outlined,
       ).copyWith(
         fillColor: isDark
             ? AppColors.surfaceDark.withValues(alpha: 0.5)
-            : AppColors.backgroundLight,
+            : AppColors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide:
-              BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+              BorderSide(color: isDark ? AppColors.white12 : AppColors.border),
         ),
       ),
-      dropdownColor: isDark ? AppColors.surfaceDark : Colors.white,
+      dropdownColor: isDark ? AppColors.surfaceDark : AppColors.white,
       borderRadius: BorderRadius.circular(16),
     );
   }
@@ -524,7 +525,7 @@ class MedicalContactsPage extends ConsumerWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
@@ -532,26 +533,31 @@ class MedicalContactsPage extends ConsumerWidget {
                 color: AppColors.error, size: context.sp(28)),
             SizedBox(width: context.w(3)),
             Text(LocaleKeys.contactsDeleteConfirm.tr(),
-                style: TextStyle(
-                    fontSize: context.sp(18), fontWeight: FontWeight.w900)),
+                style: AppStyles.headingStyle.copyWith(
+                  fontSize: context.sp(18),
+                )),
           ],
         ),
         content: Text(LocaleKeys.contactsDeleteWarning.tr(),
-            style: TextStyle(
-                fontSize: context.sp(15), color: AppColors.textSecondary)),
+            style: AppStyles.bodyStyle.copyWith(
+                fontSize: context.sp(15),
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(LocaleKeys.cancel.tr(),
-                style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.bold)),
+                style: AppStyles.labelStyle.copyWith(
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.white,
               minimumSize: Size(context.w(25), context.h(5.5)),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
@@ -562,7 +568,7 @@ class MedicalContactsPage extends ConsumerWidget {
               style: TextStyle(
                 fontSize: context.sp(14),
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
           ),

@@ -7,13 +7,14 @@ import '../../../../core/utils/responsive.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../linking/presentation/pages/qr_code_page.dart';
 import '../../../linking/presentation/providers/linking_provider.dart';
-import '../../../linking/presentation/pages/qr_scanner_page.dart';
+
 import './edit_profile_page.dart';
 import './change_password_page.dart';
 import '../../../auth/presentation/pages/splash_page.dart';
 import '../../../../core/theme/app_styles.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/widgets/expert_app_bar.dart';
+import '../../../contacts/presentation/pages/medical_contacts_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -414,11 +415,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                if (user?.isPatient == false) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const QRScannerPage()),
-                  );
-                }
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const MedicalContactsPage()),
+                );
               },
               child: Text(
                 LocaleKeys.manage.tr(),

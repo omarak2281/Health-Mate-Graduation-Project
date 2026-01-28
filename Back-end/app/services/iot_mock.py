@@ -33,7 +33,9 @@ class IoTMockService:
             "ppg": 0.95,
             "ecg": 0.92
         }
-        self.drawer_states = {i: {"led_on": False, "buzzer_on": False} for i in range(1, 9)}
+        self.drawer_states = {i: {"led_on": False, "buzzer_on": False} for i in range(1, 11)}
+        self.battery_level = 88
+        self.box_id = "MB-1024"
     
     def get_sensor_status(self, sensor_type: str) -> Dict:
         """
@@ -170,7 +172,7 @@ class IoTMockService:
         Activate medicine box drawer (LED + buzzer)
         
         Args:
-            drawer_number: Drawer number (1-8)
+            drawer_number: Drawer number (1-10)
         
         Returns:
             Status dict
@@ -193,7 +195,7 @@ class IoTMockService:
         Deactivate medicine box drawer
         
         Args:
-            drawer_number: Drawer number (1-8)
+            drawer_number: Drawer number (1-10)
         
         Returns:
             Status dict
@@ -227,6 +229,15 @@ class IoTMockService:
             {"drawer": num, **state}
             for num, state in self.drawer_states.items()
         ]
+    
+    def get_box_status(self) -> Dict:
+        """Get overall status of medicine box"""
+        return {
+            "box_id": self.box_id,
+            "battery_level": self.battery_level,
+            "status": DeviceStatus.CONNECTED.value,
+            "last_ping": datetime.utcnow().isoformat()
+        }
 
 
 # Singleton instance
