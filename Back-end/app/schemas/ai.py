@@ -4,6 +4,8 @@ AI schemas for inference requests and responses
 
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict
+from datetime import datetime
+from uuid import UUID
 
 
 class SymptomCheckRequest(BaseModel):
@@ -43,6 +45,18 @@ class ChatResponse(BaseModel):
     session_id: Optional[str] = None
     disease_info: Optional[DiseaseInfo] = None
     options: Optional[List[str]] = None
+
+
+class ChatMessageResponse(BaseModel):
+    """Single chat message in history"""
+    id: UUID
+    role: str
+    message: str
+    disease_predicted: Optional[str] = None
+    confidence: Optional[float] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SymptomCategory(BaseModel):

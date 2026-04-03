@@ -3,8 +3,7 @@ User model with role-based access control
 Supports Patient and Caregiver roles
 """
 
-from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum, Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -29,7 +28,7 @@ class User(Base):
     __tablename__ = "users"
     
     # Primary Key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     
     # Authentication
     email = Column(String(255), unique=True, nullable=False, index=True)

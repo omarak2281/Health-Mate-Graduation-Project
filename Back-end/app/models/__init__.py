@@ -12,6 +12,7 @@ from app.models.medical_contact import MedicalContact, ContactType
 from app.models.notification import Notification, NotificationType
 from app.models.iot_device import IoTDevice, MedicineBoxDrawer, DeviceType, DeviceStatus
 from app.models.audit_log import AuditLog
+from app.models.ai_chat import AIChatMessage
 
 __all__ = [
     "Base",
@@ -33,4 +34,5 @@ __all__ = [
     "DeviceType",
     "DeviceStatus",
     "AuditLog",
+    "AIChatMessage",
 ]

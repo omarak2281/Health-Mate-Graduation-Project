@@ -3,9 +3,15 @@ AI inference router for Symptom Checker
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import List
+import uuid
 
 from app.api.dependencies import get_current_user
+from app.core.database import get_db
 from app.models.user import User
+from app.models.ai_chat import AIChatMessage
 from app.services.ai_service import get_symptom_checker, SymptomCheckerService
 from app.schemas.ai import (
     SymptomCheckRequest, 
@@ -13,6 +19,7 @@ from app.schemas.ai import (
     DiseaseInfo, 
     ChatRequest, 
     ChatResponse,
+    ChatMessageResponse,
     SymptomCategory,
     SymptomListResponse
 )
@@ -164,6 +171,7 @@ async def check_symptoms(
 async def chat_symptom_checker(
     request: ChatRequest,
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
     symptom_checker: SymptomCheckerService = Depends(get_symptom_checker)
 ):
     """
@@ -177,7 +185,19 @@ async def chat_symptom_checker(
                 detail="AI model is not available."
             )
 
-    # 1. Extract Symptoms from Message
+    # session_id generation if not provided
+    session_id = request.session_id or str(uuid.uuid4())
+
+    # 1. Save User Message
+    user_msg = AIChatMessage(
+        user_id=current_user.id,
+        session_id=session_id,
+        message=request.message,
+        role="user"
+    )
+    db.add(user_msg)
+
+    # 2. Extract Symptoms from Message
     message = request.message.lower()
     known_symptoms = symptom_checker.metadata.get("symptoms", [])
     found_symptoms = []
@@ -190,24 +210,44 @@ async def chat_symptom_checker(
         if symptom_clean in message or symptom in message:
             found_symptoms.append(symptom)
             
-    # 2. Logic Branching
+    # 3. Logic Branching
     if not found_symptoms:
+        response_msg = "I'm listening. Please describe your symptoms clearly (e.g., 'I have high fever and cough')."
+        ai_msg = AIChatMessage(
+            user_id=current_user.id,
+            session_id=session_id,
+            message=response_msg,
+            role="ai"
+        )
+        db.add(ai_msg)
+        await db.commit()
+
         return ChatResponse(
-            message="I'm listening. Please describe your symptoms clearly (e.g., 'I have high fever and cough').",
-            session_id=request.session_id,
+            message=response_msg,
+            session_id=session_id,
             options=["High Fever", "Cough", "Headache", "Fatigue", "Nausea"]
         )
         
-    # 3. Predict
+    # 4. Predict
     result = symptom_checker.predict_disease(found_symptoms)
     
     if not result:
-         return ChatResponse(
-            message=f"I noted these symptoms: {', '.join(found_symptoms).replace('_', ' ')}. However, I can't determine a specific condition yet. Please provide more details or consult a doctor.",
-            session_id=request.session_id
+        response_msg = f"I noted these symptoms: {', '.join(found_symptoms).replace('_', ' ')}. However, I can't determine a specific condition yet. Please provide more details or consult a doctor."
+        ai_msg = AIChatMessage(
+            user_id=current_user.id,
+            session_id=session_id,
+            message=response_msg,
+            role="ai"
+        )
+        db.add(ai_msg)
+        await db.commit()
+
+        return ChatResponse(
+            message=response_msg,
+            session_id=session_id
         )
 
-    # 4. Success Response
+    # 5. Success Response
     disease_name = result["disease"]
     confidence = result["confidence"]
     
@@ -226,9 +266,21 @@ async def chat_symptom_checker(
 
     response_msg += "\n\n⚠️ Disclaimer: This is for educational purposes only. Please consult a healthcare professional."
 
+    # Save AI Response
+    ai_msg = AIChatMessage(
+        user_id=current_user.id,
+        session_id=session_id,
+        message=response_msg,
+        role="ai",
+        disease_predicted=disease_name,
+        confidence=confidence
+    )
+    db.add(ai_msg)
+    await db.commit()
+
     return ChatResponse(
         message=response_msg,
-        session_id=request.session_id,
+        session_id=session_id,
         disease_info=d_info
     )
 
@@ -256,26 +308,21 @@ async def get_model_info(
         "diseases_count": len(symptom_checker.metadata.get("diseases", {})),
         "symptoms_count": len(symptom_checker.metadata.get("symptoms", []))
     }
-@router.get("/symptom-checker/history/{session_id}")
+@router.get("/symptom-checker/history/{session_id}", response_model=List[ChatMessageResponse])
 async def get_chat_history(
     session_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get chat history for a specific symptom checker session
-    
-    Returns recent interactions (Mocked for now since DB persistence for AI chat not yet implemented)
     """
-    # In a full implementation, you would query the database for this user and session
-    return [
-        {
-            "role": "user",
-            "message": "I have a fever and headache.",
-            "timestamp": "2024-01-01T10:00:00Z"
-        },
-        {
-            "role": "ai",
-            "message": "Based on your symptoms, you might have a common cold. Please consult a doctor.",
-            "timestamp": "2024-01-01T10:00:05Z"
-        }
-    ]
+    result = await db.execute(
+        select(AIChatMessage)
+        .where(AIChatMessage.user_id == current_user.id)
+        .where(AIChatMessage.session_id == session_id)
+        .order_by(AIChatMessage.created_at.asc())
+    )
+    messages = result.scalars().all()
+
+    return messages
