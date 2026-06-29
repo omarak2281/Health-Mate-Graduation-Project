@@ -1,0 +1,264 @@
+{
+  "Coronary Artery Disease": {
+    "nameAr": "مرض الشريان التاجي",
+    "description": "Narrowing or blockage of coronary arteries that supply blood to heart muscle",
+    "descriptionAr": "ضيق أو انسداد في الشرايين التاجية التي تزود عضلة القلب بالدم",
+    "severity": "high",
+    "category": "Coronary Artery Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Shortness of Breath",
+      "Fatigue",
+      "Palpitations",
+      "Nausea",
+      "Dizziness"
+    ]
+  },
+  "Acute Myocardial Infarction": {
+    "nameAr": "احتشاء عضلة القلب الحاد",
+    "description": "Sudden blockage of coronary artery causing death of heart muscle tissue",
+    "descriptionAr": "انسداد مفاجئ في الشريان التاجي يسبب موت نسيج عضلة القلب",
+    "severity": "critical",
+    "category": "Coronary Artery Disease",
+    "relatedSymptoms": [
+      "Crushing Chest Pain",
+      "Radiating Pain to Left Arm",
+      "Profuse Sweating",
+      "Shortness of Breath",
+      "Nausea",
+      "Sense of Impending Doom"
+    ]
+  },
+  "Stable Angina": {
+    "nameAr": "الذبحة الصدرية المستقرة",
+    "description": "Predictable chest pain triggered by physical exertion or emotional stress",
+    "descriptionAr": "ألم صدري متوقع يحدث بسبب المجهود البدني أو التوتر العاطفي",
+    "severity": "moderate",
+    "category": "Coronary Artery Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Shortness of Breath",
+      "Fatigue",
+      "Nausea"
+    ]
+  },
+  "Heart Failure": {
+    "nameAr": "فشل القلب",
+    "description": "Heart's inability to pump enough blood to meet body's needs",
+    "descriptionAr": "عجز القلب عن ضخ كمية كافية من الدم لتلبية احتياجات الجسم",
+    "severity": "high",
+    "category": "Heart Failure",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Fatigue",
+      "Peripheral Edema",
+      "Weight Gain",
+      "Cough",
+      "Palpitations"
+    ]
+  },
+  "Congestive Heart Failure": {
+    "nameAr": "فشل القلب الاحتقاني",
+    "description": "Heart failure with fluid accumulation in lungs and other tissues",
+    "descriptionAr": "فشل القلب مع تراكم السوائل في الرئتين والأنسجة الأخرى",
+    "severity": "high",
+    "category": "Heart Failure",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Peripheral Edema",
+      "Weight Gain",
+      "Fatigue",
+      "Cough",
+      "Pink Frothy Sputum"
+    ]
+  },
+  "Aortic Stenosis": {
+    "nameAr": "تضيق الصمام الأبهري",
+    "description": "Narrowing of aortic valve opening restricting blood flow from heart",
+    "descriptionAr": "ضيق في فتحة الصمام الأبهري يحد من تدفق الدم من القلب",
+    "severity": "high",
+    "category": "Valvular Heart Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Shortness of Breath",
+      "Syncope",
+      "Dizziness",
+      "Heart Murmur",
+      "Fatigue"
+    ]
+  },
+  "Mitral Regurgitation": {
+    "nameAr": "قصور الصمام التاجي",
+    "description": "Leakage of mitral valve causing backflow of blood into left atrium",
+    "descriptionAr": "تسرب في الصمام التاجي يسبب ارتداد الدم إلى الأذين الأيسر",
+    "severity": "moderate",
+    "category": "Valvular Heart Disease",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Fatigue",
+      "Weakness",
+      "Palpitations",
+      "Heart Murmur"
+    ]
+  },
+  "Dilated Cardiomyopathy": {
+    "nameAr": "اعتلال عضلة القلب التوسعي",
+    "description": "Enlargement and weakening of heart muscle leading to pumping dysfunction",
+    "descriptionAr": "تضخم وضعف عضلة القلب مما يؤدي إلى خلل في الضخ",
+    "severity": "high",
+    "category": "Cardiomyopathy",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Fatigue",
+      "Peripheral Edema",
+      "Palpitations",
+      "Dizziness",
+      "Reduced Exercise Tolerance"
+    ]
+  },
+  "Hypertrophic Cardiomyopathy": {
+    "nameAr": "اعتلال عضلة القلب الضخامي",
+    "description": "Abnormal thickening of heart muscle, especially interventricular septum",
+    "descriptionAr": "تثخن غير طبيعي لعضلة القلب، خاصة الحاجز بين البطينين",
+    "severity": "high",
+    "category": "Cardiomyopathy",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Chest Pain",
+      "Palpitations",
+      "Syncope",
+      "Dizziness",
+      "Heart Murmur"
+    ]
+  },
+  "Atrial Fibrillation": {
+    "nameAr": "الرجفان الأذيني",
+    "description": "Irregular and often rapid heart rhythm originating in atria",
+    "descriptionAr": "إيقاع قلب غير منتظم وغالبًا سريع ينشأ في الأذينين",
+    "severity": "high",
+    "category": "Arrhythmia",
+    "relatedSymptoms": [
+      "Palpitations",
+      "Irregular Heartbeat",
+      "Shortness of Breath",
+      "Fatigue",
+      "Dizziness",
+      "Anxiety"
+    ]
+  },
+  "Ventricular Tachycardia": {
+    "nameAr": "تسرع القلب البطيني",
+    "description": "Rapid heart rhythm originating in ventricles, potentially life-threatening",
+    "descriptionAr": "إيقاع قلب سريع ينشأ في البطينين، قد يهدد الحياة",
+    "severity": "critical",
+    "category": "Arrhythmia",
+    "relatedSymptoms": [
+      "Palpitations",
+      "Dizziness",
+      "Shortness of Breath",
+      "Chest Pain",
+      "Syncope",
+      "Loss of Consciousness"
+    ]
+  },
+  "Myocarditis": {
+    "nameAr": "التهاب عضلة القلب",
+    "description": "Inflammation of heart muscle usually caused by viral infection",
+    "descriptionAr": "التهاب عضلة القلب عادةً بسبب عدوى فيروسية",
+    "severity": "high",
+    "category": "Inflammatory Heart Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Shortness of Breath",
+      "Fatigue",
+      "Fever",
+      "Palpitations",
+      "Heart Murmur"
+    ]
+  },
+  "Pericarditis": {
+    "nameAr": "التهاب التامور",
+    "description": "Inflammation of pericardium, the sac-like membrane around heart",
+    "descriptionAr": "التهاب التامور، الغشاء الشبيه بالكيس المحيط بالقلب",
+    "severity": "moderate",
+    "category": "Inflammatory Heart Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Fever",
+      "Shortness of Breath",
+      "Fatigue",
+      "Palpitations",
+      "Cough"
+    ]
+  },
+  "Infective Endocarditis": {
+    "nameAr": "التهاب الشغاف العدوائي",
+    "description": "Infection of inner lining of heart chambers and valves",
+    "descriptionAr": "عدوى في البطانة الداخلية لحجرات القلب والصمامات",
+    "severity": "critical",
+    "category": "Inflammatory Heart Disease",
+    "relatedSymptoms": [
+      "Fever",
+      "Chills",
+      "Night Sweats",
+      "Fatigue",
+      "Heart Murmur",
+      "Shortness of Breath"
+    ]
+  },
+  "Pulmonary Hypertension": {
+    "nameAr": "ارتفاع ضغط الدم الرئوي",
+    "description": "High blood pressure in the arteries to your lungs",
+    "descriptionAr": "ارتفاع ضغط الدم في الشرايين المؤدية إلى الرئتين",
+    "severity": "high",
+    "category": "Vascular Disease",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Fatigue",
+      "Dizziness",
+      "Chest Pain",
+      "Swelling in Legs",
+      "Cyanosis"
+    ]
+  },
+  "Deep Vein Thrombosis (DVT)": {
+    "nameAr": "تجلط الأوردة العميقة",
+    "description": "Blood clot forms in a deep vein, usually in the legs",
+    "descriptionAr": "تشكل جلطة دموية في وريد عميق، عادة في الساقين",
+    "severity": "high",
+    "category": "Vascular Disease",
+    "relatedSymptoms": [
+      "Leg Pain",
+      "Swelling in Legs",
+      "Warmth over Area",
+      "Redness of Skin"
+    ]
+  },
+  "Aortic Aneurysm": {
+    "nameAr": "تمدد الأوعية الدموية الأبهري",
+    "description": "Abnormal bulge in the wall of the aorta",
+    "descriptionAr": "انتفاخ غير طبيعي في جدار الشريان الأبهري",
+    "severity": "critical",
+    "category": "Vascular Disease",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Back Pain",
+      "Shortness of Breath",
+      "Difficulty Swallowing"
+    ]
+  },
+  "Atrial Septal Defect (ASD)": {
+    "nameAr": "عيت الحاجز الأذيني",
+    "description": "Hole in the wall (septum) between the two upper chambers of your heart",
+    "descriptionAr": "ثقب في الجدار (الحاجز) بين الغرفتين العلويتين للقلب",
+    "severity": "moderate",
+    "category": "Congenital Heart Defect",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Fatigue",
+      "Swelling in Legs",
+      "Heart Murmur",
+      "Palpitations"
+    ]
+  }
+}

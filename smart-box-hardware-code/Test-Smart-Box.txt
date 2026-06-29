@@ -1,0 +1,74 @@
+const int dataPin = 23;   // DS
+const int clockPin = 18;  // SH_CP
+const int latchPin = 5;   // ST_CP
+const int buzzerPin = 4;  // Buzzer
+
+void setup() {
+  Serial.begin(115200);
+  
+  pinMode(dataPin, OUTPUT);
+  pinMode(clockPin, OUTPUT);
+  pinMode(latchPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  // إطفاء كل شيء في البداية
+  updateShiftRegister(0b00000000);
+  digitalWrite(buzzerPin, LOW);
+
+  Serial.println("\n--- Interactive Hardware Debugger ---");
+  Serial.println("Enter a number (0 to 7):");
+  Serial.println("1-6: Turn on specific drawer");
+  Serial.println("7  : Turn on ALL drawers");
+  Serial.println("0  : Turn off everything");
+  Serial.println("-------------------------------------");
+}
+
+void loop() {
+  // التحقق من أن المستخدم كتب رقم في السيريال
+  if (Serial.available() > 0) {
+    char inputChar = Serial.read();
+    
+    // تجاهل الـ Newline أو Carriage Return
+    if (inputChar == '\n' || inputChar == '\r') return;
+
+    int command = inputChar - '0'; // تحويل الـ Char لرقم Int
+    
+    Serial.print("Received Command: ");
+    Serial.println(command);
+
+    if (command >= 1 && command <= 6) {
+      Serial.print("Lighting up Drawer ");
+      Serial.println(command);
+      byte ledPattern = (1 << (command - 1));
+      updateShiftRegister(ledPattern);
+      triggerBuzzer();
+    } 
+    else if (command == 7) {
+      Serial.println("Lighting up ALL 6 Drawers!");
+      updateShiftRegister(0b00111111); // تشغيل أول 6 بتات (من Q0 لـ Q5)
+      triggerBuzzer();
+    } 
+    else if (command == 0) {
+      Serial.println("Turning OFF everything.");
+      updateShiftRegister(0b00000000);
+      digitalWrite(buzzerPin, LOW);
+    } 
+    else {
+      Serial.println("Invalid number! Please enter a number between 0 and 7.");
+    }
+  }
+}
+
+void updateShiftRegister(byte data) {
+  digitalWrite(latchPin, LOW);
+  delayMicroseconds(5);
+  shiftOut(dataPin, clockPin, MSBFIRST, data);
+  delayMicroseconds(5);
+  digitalWrite(latchPin, HIGH);
+}
+
+void triggerBuzzer() {
+  digitalWrite(buzzerPin, HIGH);
+  delay(100);
+  digitalWrite(buzzerPin, LOW);
+}

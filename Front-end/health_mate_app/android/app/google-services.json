@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "738117892214",
+    "project_id": "healt-mate-44e8b",
+    "storage_bucket": "healt-mate-44e8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738117892214:android:3e2bb03b6b82bae4c14757",
+        "android_client_info": {
+          "package_name": "com.example.health_mate_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "738117892214-ghig2jh026jm30s6cko51j0scd8avk4f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.health_mate_app",
+            "certificate_hash": "87d13b863d836fbf3d92e5cb3a3098df4b14ff1d"
+          }
+        },
+        {
+          "client_id": "738117892214-qilbsaj1326hrotb24qcuhhrsuk7fc9r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.health_mate_app",
+            "certificate_hash": "43f4183eeb6f54ed12a209ee0b84f8fa47cc068f"
+          }
+        },
+        {
+          "client_id": "738117892214-mfve0hahuov39fpdbt3scegsmt4rdfah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1pWuTlXTlyBVxyPRQ79GNnMVLez9H2Kk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "738117892214-mfve0hahuov39fpdbt3scegsmt4rdfah.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

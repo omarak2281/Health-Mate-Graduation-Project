@@ -1,0 +1,326 @@
+{
+  "Common Cold": {
+    "nameAr": "الزكام",
+    "description": "Viral infection of nose and throat",
+    "descriptionAr": "عدوى فيروسية في الأنف والحلق",
+    "severity": "low",
+    "category": "Respiratory Infection",
+    "relatedSymptoms": [
+      "Runny Nose",
+      "Sore Throat",
+      "Cough",
+      "Sneezing",
+      "Mild Headache",
+      "Low-Grade Fever"
+    ]
+  },
+  "Influenza": {
+    "nameAr": "الإنفلونزا",
+    "description": "Contagious respiratory illness caused by influenza viruses",
+    "descriptionAr": "مرض تنفسي معدي تسببه فيروسات الإنفلونزا",
+    "severity": "moderate",
+    "category": "Respiratory Infection",
+    "relatedSymptoms": [
+      "Fever",
+      "Muscle Pain",
+      "Fatigue",
+      "Cough",
+      "Headache",
+      "Sore Throat"
+    ]
+  },
+  "Pneumonia": {
+    "nameAr": "الالتهاب الرئوي",
+    "description": "Infection that inflames air sacs in one or both lungs",
+    "descriptionAr": "عدوى تسبب التهاب الحويصلات الهوائية في إحدى الرئتين أو كلتيهما",
+    "severity": "high",
+    "category": "Respiratory Infection",
+    "relatedSymptoms": [
+      "Chest Pain",
+      "Cough with Phlegm",
+      "Fever",
+      "Shortness of Breath",
+      "Fatigue"
+    ]
+  },
+  "Asthma": {
+    "nameAr": "الربو",
+    "description": "Condition in which airways narrow and swell producing extra mucus",
+    "descriptionAr": "حالة تضيق فيها الممرات الهوائية وتنتفخ وتنتج مخاطًا إضافيًا",
+    "severity": "moderate",
+    "category": "Chronic Respiratory",
+    "relatedSymptoms": [
+      "Shortness of Breath",
+      "Wheezing",
+      "Chest Tightness",
+      "Coughing",
+      "Difficulty Breathing"
+    ]
+  },
+  "Gastroenteritis": {
+    "nameAr": "التهاب المعدة والأمعاء",
+    "description": "Inflammation of stomach and intestines",
+    "descriptionAr": "التهاب المعدة والأمعاء",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedSymptoms": [
+      "Diarrhea",
+      "Nausea",
+      "Vomiting",
+      "Abdominal Pain",
+      "Fever",
+      "Loss of Appetite"
+    ]
+  },
+  "Irritable Bowel Syndrome (IBS)": {
+    "nameAr": "متلازمة القولون العصبي",
+    "description": "Common disorder affecting large intestine",
+    "descriptionAr": "اضطراب شائع يؤثر على الأمعاء الغليظة",
+    "severity": "moderate",
+    "category": "Gastrointestinal",
+    "relatedSymptoms": [
+      "Abdominal Pain",
+      "Bloating",
+      "Gas",
+      "Diarrhea",
+      "Constipation"
+    ]
+  },
+  "Diabetes Mellitus Type 2": {
+    "nameAr": "داء السكري النوع الثاني",
+    "description": "Chronic condition affecting how body processes blood sugar",
+    "descriptionAr": "حالة مزمنة تؤثر على كيفية معالجة الجسم لسكر الدم",
+    "severity": "high",
+    "category": "Metabolic",
+    "relatedSymptoms": [
+      "Increased Thirst",
+      "Frequent Urination",
+      "Increased Hunger",
+      "Fatigue",
+      "Blurred Vision"
+    ]
+  },
+  "Hypothyroidism": {
+    "nameAr": "قصور الغدة الدرقية",
+    "description": "Underactive thyroid gland producing insufficient hormones",
+    "descriptionAr": "خمول في الغدة الدرقية ينتج هرمونات غير كافية",
+    "severity": "moderate",
+    "category": "Endocrine",
+    "relatedSymptoms": [
+      "Fatigue",
+      "Weight Gain",
+      "Cold Intolerance",
+      "Constipation",
+      "Dry Skin"
+    ]
+  },
+  "Osteoarthritis": {
+    "nameAr": "التهاب المفاصل التنكسي",
+    "description": "Degenerative joint disease causing cartilage breakdown",
+    "descriptionAr": "مرض مفاصل تنكسي يسبب تدهور الغضروف",
+    "severity": "moderate",
+    "category": "Musculoskeletal",
+    "relatedSymptoms": [
+      "Joint Pain",
+      "Stiffness",
+      "Tenderness",
+      "Loss of Flexibility",
+      "Swelling"
+    ]
+  },
+  "Rheumatoid Arthritis": {
+    "nameAr": "التهاب المفاصل الروماتويدي",
+    "description": "Autoimmune disorder causing joint inflammation and damage",
+    "descriptionAr": "اضطراب مناعي ذاتي يسبب التهاب المفاصل وتلفها",
+    "severity": "high",
+    "category": "Musculoskeletal",
+    "relatedSymptoms": [
+      "Joint Pain",
+      "Joint Swelling",
+      "Joint Stiffness",
+      "Fatigue",
+      "Fever"
+    ]
+  },
+  "Migraine": {
+    "nameAr": "الصداع النصفي",
+    "description": "Neurological condition causing severe recurrent headaches",
+    "descriptionAr": "حالة عصبية تسبب صداعًا شديدًا متكررًا",
+    "severity": "moderate",
+    "category": "Neurological",
+    "relatedSymptoms": [
+      "Throbbing Head Pain",
+      "Nausea",
+      "Vomiting",
+      "Sensitivity to Light",
+      "Sensitivity to Sound"
+    ]
+  },
+  "Epilepsy": {
+    "nameAr": "الصرع",
+    "description": "Neurological disorder characterized by recurrent seizures",
+    "descriptionAr": "اضطراب عصبي يتميز بنوبات متكررة",
+    "severity": "high",
+    "category": "Neurological",
+    "relatedSymptoms": [
+      "Seizures",
+      "Temporary Confusion",
+      "Staring Spells",
+      "Loss of Consciousness"
+    ]
+  },
+  "Major Depressive Disorder": {
+    "nameAr": "الاكتئاب الشديد",
+    "description": "Mood disorder causing persistent sadness and loss of interest",
+    "descriptionAr": "اضطراب المزاج يسبب حزنًا مستمرًا وفقدان الاهتمام",
+    "severity": "high",
+    "category": "Psychiatric",
+    "relatedSymptoms": [
+      "Persistent Sadness",
+      "Loss of Interest",
+      "Changes in Appetite",
+      "Sleep Problems",
+      "Fatigue",
+      "Feelings of Worthlessness"
+    ]
+  },
+  "Eczema": {
+    "nameAr": "الإكزيما",
+    "description": "Chronic skin condition causing inflamed, itchy, and cracked skin",
+    "descriptionAr": "حالة جلدية مزمنة تسبب التهاب وحكة وتشقق الجلد",
+    "severity": "moderate",
+    "category": "Dermatological",
+    "relatedSymptoms": [
+      "Dry Skin",
+      "Intense Itching",
+      "Red Patches",
+      "Cracked Skin"
+    ]
+  },
+  "COVID-19": {
+    "nameAr": "كوفيد-19",
+    "description": "Respiratory illness caused by coronavirus SARS-CoV-2",
+    "descriptionAr": "مرض تنفسي يسببه فيروس كورونا سارس-كوف-2",
+    "severity": "moderate",
+    "category": "Infectious Disease",
+    "relatedSymptoms": [
+      "Fever",
+      "Cough",
+      "Shortness of Breath",
+      "Fatigue",
+      "Loss of Taste/Smell"
+    ]
+  },
+  "Tuberculosis": {
+    "nameAr": "السل",
+    "description": "Bacterial infection primarily affecting lungs",
+    "descriptionAr": "عدوى بكتيرية تؤثر بشكل أساسي على الرئتين",
+    "severity": "high",
+    "category": "Infectious Disease",
+    "relatedSymptoms": [
+      "Persistent Cough",
+      "Coughing up Blood",
+      "Chest Pain",
+      "Unintentional Weight Loss",
+      "Night Sweats"
+    ]
+  },
+  "Anemia": {
+    "nameAr": "فقر الدم",
+    "description": "Condition with deficiency of red blood cells or hemoglobin",
+    "descriptionAr": "حالة نقص في خلايا الدم الحمراء أو الهيموجلوبين",
+    "severity": "moderate",
+    "category": "Hematological",
+    "relatedSymptoms": [
+      "Fatigue",
+      "Weakness",
+      "Pale Skin",
+      "Shortness of Breath",
+      "Dizziness"
+    ]
+  },
+  "Hepatitis B": {
+    "nameAr": "التهاب الكبد الوبائي ب",
+    "description": "Viral infection causing liver inflammation and damage",
+    "descriptionAr": "عدوى فيروسية تسبب التهاب وتلف الكبد",
+    "severity": "high",
+    "category": "Liver Disease",
+    "relatedSymptoms": [
+      "Jaundice",
+      "Dark Urine",
+      "Fatigue",
+      "Nausea",
+      "Abdominal Pain"
+    ]
+  },
+  "Liver Cirrhosis": {
+    "nameAr": "تليف الكبد",
+    "description": "Late-stage scarring (fibrosis) of the liver",
+    "descriptionAr": "مرحلة متأخرة من تندب (تليف) الكبد",
+    "severity": "critical",
+    "category": "Liver Disease",
+    "relatedSymptoms": [
+      "Jaundice",
+      "Fatigue",
+      "Weight Loss",
+      "Swelling in Legs",
+      "Ascites"
+    ]
+  },
+  "Chronic Kidney Disease": {
+    "nameAr": "مرض الكلى المزمن",
+    "description": "Gradual loss of kidney function over time",
+    "descriptionAr": "فقدان تدريجي لوظائف الكلى بمرور الوقت",
+    "severity": "high",
+    "category": "Renal",
+    "relatedSymptoms": [
+      "Fatigue",
+      "Swelling in Ankles",
+      "Shortness of Breath",
+      "Nausea",
+      "Blood in Urine"
+    ]
+  },
+  "Kidney Stones": {
+    "nameAr": "حصى الكلى",
+    "description": "Hard deposits made of minerals and salts that form inside kidneys",
+    "descriptionAr": "رواسب صلبة من المعادن والأملاح تتشكل داخل الكلى",
+    "severity": "moderate",
+    "category": "Renal",
+    "relatedSymptoms": [
+      "Severe Flank Pain",
+      "Pain on Urination",
+      "Pink, Red or Brown Urine",
+      "Nausea",
+      "Vomiting"
+    ]
+  },
+  "Stroke": {
+    "nameAr": "السكتة الدماغية",
+    "description": "Damage to the brain from interruption of its blood supply",
+    "descriptionAr": "تلف في الدماغ ناتج عن انقطاع إمدادات الدم عنه",
+    "severity": "critical",
+    "category": "Neurological",
+    "relatedSymptoms": [
+      "Sudden Numbness",
+      "Confusion",
+      "Trouble Speaking",
+      "Vision Problems",
+      "Loss of Balance"
+    ]
+  },
+  "Hypertension": {
+    "nameAr": "ارتفاع ضغط الدم",
+    "description": "Long-term force of the blood against your artery walls is high",
+    "descriptionAr": "قوة دفع الدم ضد جدران الشرايين مرتفعة لفترة طويلة",
+    "severity": "moderate",
+    "category": "Cardiovascular",
+    "relatedSymptoms": [
+      "Headache",
+      "Shortness of Breath",
+      "Nosebleeds",
+      "Dizziness",
+      "Chest Pain"
+    ]
+  }
+}

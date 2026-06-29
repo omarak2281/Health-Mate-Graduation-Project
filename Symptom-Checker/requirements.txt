@@ -1,0 +1,7 @@
+streamlit
+joblib
+numpy
+fpdf
+arabic-reshaper
+python-bidi
+scikit-learn>=1.7.2

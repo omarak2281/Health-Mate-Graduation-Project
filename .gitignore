@@ -1,0 +1,60 @@
+# Flutter/Dart Build Artifacts
+**/build/
+**/.dart_tool/
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/Flutter.podspec
+**/android/key.properties
+**/*.jks
+**/*.keystore
+**/*.apk
+**/*.aab
+
+# Python Virtual Environments & Cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.venv/
+**/venv/
+**/env/
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+**/predict_abp_env/
+**/symptom_checker_env/
+**/predict_abp_venv/
+**/symptom_checker_venv/
+**/predict_abp/venv/
+**/symptom_checker/venv/
+**/Back-end/venv/
+**/prediction-backend/venv/
+
+# Database Data (Heavy and local-only)
+**/db_data/
+**/postgres_data/
+**/redis_data/
+
+# IDE & OS Files
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+.DS_Store
+Thumbs.db
+
+# ALLOWING ALL CONFIG AND MODELS (As requested for easy team setup)
+# The following files will NOT be ignored:
+# .env files
+# .json config files
+# .pkl model files
+# Translation keys
+# Firebase keys
+
+# Exclude folders by user request
+/Predict-ABP/
+/bp-hardware-code/
+

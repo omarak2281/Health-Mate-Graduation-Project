@@ -1,0 +1,263 @@
+{
+  "Chest Pain": {
+    "nameAr": "ألم الصدر",
+    "description": "Pain or discomfort in the chest area that may indicate heart problems",
+    "descriptionAr": "ألم أو انزعاج في منطقة الصدر قد يشير إلى مشاكل قلبية",
+    "severity": "high",
+    "category": "Cardiac Pain",
+    "relatedDiseases": [
+      "Coronary Artery Disease",
+      "Acute Myocardial Infarction",
+      "Angina Pectoris",
+      "Unstable Angina",
+      "Myocarditis",
+      "Pericarditis",
+      "Pulmonary Hypertension",
+      "Aortic Aneurysm"
+    ]
+  },
+  "Angina Pectoris": {
+    "nameAr": "الذبحة الصدرية",
+    "description": "Chest pain caused by reduced blood flow to the heart muscle",
+    "descriptionAr": "ألم صدري ناتج عن انخفاض تدفق الدم إلى عضلة القلب",
+    "severity": "high",
+    "category": "Cardiac Pain",
+    "relatedDiseases": [
+      "Coronary Artery Disease",
+      "Stable Angina",
+      "Unstable Angina",
+      "Aortic Stenosis",
+      "Hypertrophic Cardiomyopathy"
+    ]
+  },
+  "Shortness of Breath": {
+    "nameAr": "ضيق التنفس",
+    "description": "Difficulty breathing or feeling unable to get enough air",
+    "descriptionAr": "صعوبة في التنفس أو الشعور بعدم القدرة على الحصول على هواء كافٍ",
+    "severity": "high",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Heart Failure",
+      "Congestive Heart Failure",
+      "Acute Heart Failure",
+      "Pulmonary Edema",
+      "Cardiomyopathy",
+      "Pulmonary Hypertension",
+      "Atrial Septal Defect (ASD)",
+      "Aortic Aneurysm"
+    ]
+  },
+  "Orthopnea": {
+    "nameAr": "ضيق النفس عند الاستلقاء",
+    "description": "Shortness of breath that occurs when lying flat and improves when sitting up",
+    "descriptionAr": "ضيق التنفس الذي يحدث عند الاستلقاء ويتحسن عند الجلوس",
+    "severity": "high",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Congestive Heart Failure",
+      "Left Ventricular Failure",
+      "Mitral Stenosis",
+      "Aortic Regurgitation",
+      "Cardiomyopathy"
+    ]
+  },
+  "Paroxysmal Nocturnal Dyspnea": {
+    "nameAr": "ضيق النفس الليلي الانتيابي",
+    "description": "Sudden episodes of shortness of breath that wake the person from sleep",
+    "descriptionAr": "نوبات مفاجئة من ضيق التنفس توقظ الشخص من النوم",
+    "severity": "high",
+    "category": "Respiratory",
+    "relatedDiseases": [
+      "Congestive Heart Failure",
+      "Left Heart Failure",
+      "Mitral Stenosis",
+      "Cardiac Asthma"
+    ]
+  },
+  "Palpitations": {
+    "nameAr": "خفقان القلب",
+    "description": "Awareness of abnormal heartbeats, either too fast, too strong, or irregular",
+    "descriptionAr": "إدراك دقات قلب غير طبيعية، إما سريعة جدًا، قوية جدًا، أو غير منتظمة",
+    "severity": "moderate",
+    "category": "Arrhythmia",
+    "relatedDiseases": [
+      "Atrial Fibrillation",
+      "Atrial Flutter",
+      "Supraventricular Tachycardia",
+      "Ventricular Tachycardia",
+      "Wolff-Parkinson-White Syndrome",
+      "Sick Sinus Syndrome"
+    ]
+  },
+  "Tachycardia": {
+    "nameAr": "تسرع القلب",
+    "description": "Heart rate faster than 100 beats per minute at rest",
+    "descriptionAr": "معدل ضربات القلب أسرع من 100 نبضة في الدقيقة أثناء الراحة",
+    "severity": "moderate",
+    "category": "Arrhythmia",
+    "relatedDiseases": [
+      "Supraventricular Tachycardia",
+      "Ventricular Tachycardia",
+      "Atrial Fibrillation",
+      "Heart Failure",
+      "Hyperthyroidism"
+    ]
+  },
+  "Peripheral Edema": {
+    "nameAr": "الوذمة المحيطية",
+    "description": "Swelling in the legs, ankles, and feet due to fluid accumulation",
+    "descriptionAr": "تورم في الساقين والكاحلين والقدمين بسبب تراكم السوائل",
+    "severity": "moderate",
+    "category": "Heart Failure",
+    "relatedDiseases": [
+      "Right Heart Failure",
+      "Congestive Heart Failure",
+      "Biventricular Failure",
+      "Tricuspid Regurgitation",
+      "Constrictive Pericarditis",
+      "Deep Vein Thrombosis (DVT)",
+      "Pulmonary Hypertension"
+    ]
+  },
+  "Jugular Venous Distension": {
+    "nameAr": "انتفاخ الوريد الوداجي",
+    "description": "Visible bulging of the jugular veins in the neck",
+    "descriptionAr": "انتفاخ مرئي في أوردة الرقبة الوداجية",
+    "severity": "high",
+    "category": "Heart Failure",
+    "relatedDiseases": [
+      "Right Heart Failure",
+      "Congestive Heart Failure",
+      "Cardiac Tamponade",
+      "Constrictive Pericarditis",
+      "Tricuspid Regurgitation"
+    ]
+  },
+  "Heart Murmur": {
+    "nameAr": "النفخة القلبية",
+    "description": "Abnormal heart sounds heard through a stethoscope",
+    "descriptionAr": "أصوات قلب غير طبيعية تسمع من خلال السماعة الطبية",
+    "severity": "moderate",
+    "category": "Valvular",
+    "relatedDiseases": [
+      "Aortic Stenosis",
+      "Aortic Regurgitation",
+      "Mitral Stenosis",
+      "Mitral Regurgitation",
+      "Endocarditis",
+      "Rheumatic Heart Disease"
+    ]
+  },
+  "Crushing Chest Pain": {
+    "nameAr": "ألم صدري ساحق",
+    "description": "Severe, intense chest pain that feels like heavy pressure",
+    "descriptionAr": "ألم صدري شديد وحاد يشعر وكأنه ضغط ثقيل",
+    "severity": "critical",
+    "category": "Emergency",
+    "relatedDiseases": [
+      "Acute Myocardial Infarction",
+      "Unstable Angina",
+      "Aortic Dissection",
+      "Pericarditis",
+      "Pulmonary Embolism"
+    ]
+  },
+  "Sudden Loss of Consciousness": {
+    "nameAr": "فقدان مفاجئ للوعي",
+    "description": "Abrupt loss of consciousness without warning",
+    "descriptionAr": "فقدان مفاجئ للوعي بدون سابق إنذار",
+    "severity": "critical",
+    "category": "Emergency",
+    "relatedDiseases": [
+      "Cardiac Arrest",
+      "Ventricular Fibrillation",
+      "Ventricular Tachycardia",
+      "Complete Heart Block",
+      "Pulmonary Embolism"
+    ]
+  },
+  "Cardiac Arrest": {
+    "nameAr": "السكتة القلبية",
+    "description": "Sudden cessation of heart function and blood circulation",
+    "descriptionAr": "توقف مفاجئ لوظيفة القلب والدورة الدموية",
+    "severity": "critical",
+    "category": "Emergency",
+    "relatedDiseases": [
+      "Ventricular Fibrillation",
+      "Ventricular Tachycardia",
+      "Asystole",
+      "Myocardial Infarction",
+      "Electrolyte Imbalance"
+    ]
+  },
+  "Fever": {
+    "nameAr": "الحمى",
+    "description": "Elevated body temperature above normal range",
+    "descriptionAr": "ارتفاع درجة حرارة الجسم فوق المعدل الطبيعي",
+    "severity": "moderate",
+    "category": "Inflammatory",
+    "relatedDiseases": [
+      "Infective Endocarditis",
+      "Myocarditis",
+      "Pericarditis",
+      "Rheumatic Fever",
+      "Post-cardiac Surgery Infection"
+    ]
+  },
+  "Chills": {
+    "nameAr": "القشعريرة",
+    "description": "Sensation of cold with shivering",
+    "descriptionAr": "إحساس بالبرودة مع رعشة",
+    "severity": "moderate",
+    "category": "Inflammatory",
+    "relatedDiseases": [
+      "Infective Endocarditis",
+      "Myocarditis",
+      "Pericarditis",
+      "Sepsis",
+      "Bacteremia"
+    ]
+  },
+  "Syncope": {
+    "nameAr": "الإغماء",
+    "description": "Temporary loss of consciousness due to decreased blood flow to the brain",
+    "descriptionAr": "فقدان مؤقت للوعي بسبب انخفاض تدفق الدم إلى الدماغ",
+    "severity": "high",
+    "category": "Neurological",
+    "relatedDiseases": [
+      "Cardiac Syncope",
+      "Vasovagal Syncope",
+      "Aortic Stenosis",
+      "Hypertrophic Cardiomyopathy",
+      "Pulmonary Hypertension",
+      "Arrhythmias"
+    ]
+  },
+  "Claudication": {
+    "nameAr": "العرج",
+    "description": "Pain in legs induced by exercise, caused by obstruction of arteries",
+    "descriptionAr": "ألم في الساقين يسببه التمرين، ناتج عن انسداد الشرايين",
+    "severity": "moderate",
+    "category": "Vascular",
+    "relatedDiseases": [
+      "Peripheral Artery Disease",
+      "Deep Vein Thrombosis (DVT)",
+      "Aortic Aneurysm",
+      "Atherosclerosis"
+    ]
+  },
+  "Cyanosis": {
+    "nameAr": "الزرقة",
+    "description": "Bluish discoloration of skin due to poor circulation or inadequate oxygenation",
+    "descriptionAr": "تلون مزرق للجلد بسبب ضعف الدورة الدموية أو عدم كفاية الأكسجين",
+    "severity": "high",
+    "category": "Vascular/Respiratory",
+    "relatedDiseases": [
+      "Congenital Heart Defects",
+      "Pulmonary Hypertension",
+      "Heart Failure",
+      "Severe Pneumonia",
+      "COPD"
+    ]
+  }
+}
