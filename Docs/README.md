@@ -56,16 +56,80 @@ of that older description — see `BP_PREDICTION.md` §8 and
 
 ## Networking configuration
 
-The backend, Flutter app, and both IoT devices communicate over plain HTTP on
-a shared Wi-Fi network, with IP addresses hardcoded in source rather than
-resolved dynamically. If the network changes, update all of the following:
+The backend, Flutter app, and both IoT devices all talk over plain HTTP on a
+shared Wi-Fi network — no domain name, no HTTPS, no service discovery. Every
+component that needs to reach another one has that other one's LAN IP
+hardcoded in source. This is the single most common reason the app "doesn't
+work" for a new team member, so here is exactly what talks to what, with the
+IPs currently committed as a worked example.
 
-| Component | File | Value |
-|---|---|---|
-| Backend API base URL | `Front-end/health_mate_app/lib/core/constants/api_constants.dart` | `devBaseUrl` |
-| Smart-box ESP32 IP (frontend) | `Front-end/health_mate_app/lib/core/constants/iot_constants.dart` | `esp32BaseUrl` |
-| Smart-box ESP32 IP (backend) | `Back-end/app/core/config.py` | `esp32_local_ip` |
-| BP-unit backend target (firmware) | `bp-hardware-code/bp-hardware-code.ino` | `serverUrl` |
+### Who calls whom
+
+```
+                 same Wi-Fi network
+┌──────────────┐   http://<backend-IP>:8000/api/v1   ┌──────────────┐
+│  Flutter app │ ───────────────────────────────────▶│   Backend    │
+│ (phone/emu)  │◀─────────────────────────────────── │ (Docker, PC) │
+└──────────────┘         JSON responses               └──────┬───────┘
+       │                                                      │
+       │ http://<esp32-IP>/activate                           │ (backend also
+       ▼                                                      │  polls/receives
+┌──────────────┐                                              │  from devices)
+│ Smart-box    │                                               ▼
+│ ESP32        │                                        ┌──────────────┐
+└──────────────┘   http://<backend-IP>:8000/api/v1/...  │  BP unit     │
+                    (device pushes readings directly) ◀──│  (ESP32/ESP8266)│
+                                                          └──────────────┘
+```
+
+- The **Flutter app** never talks to the IoT devices' backend endpoint
+  directly for BP submission — the BP unit pushes straight to the backend.
+  The app *does* call the smart-box ESP32 directly (to open/close drawers).
+- The **backend binds `0.0.0.0:8000`** inside the Docker container (see
+  `command: uvicorn app.main:app --host 0.0.0.0 --port 8000` in
+  `docker-compose.yml`) and `docker-compose.yml` maps `8000:8000` to the
+  host. That means once `docker-compose up` is running, the backend is
+  already reachable from any other device on the same Wi-Fi at
+  `http://<host-machine's-LAN-IP>:8000` — nothing to configure on the
+  backend side itself.
+
+### Worked example — what's committed right now
+
+The repo currently has one developer's machine (`10.229.183.149`) and one
+ESP32 device (`10.229.183.78`) hardcoded as the example values:
+
+| Component | File | Current value | What it means |
+|---|---|---|---|
+| Backend API base URL | `Front-end/health_mate_app/lib/core/constants/api_constants.dart` (`devBaseUrl`, line ~21) | `http://10.229.183.149:8000/api/v1` | The Flutter app will try to reach the backend at this exact IP. If your laptop running Docker has a different LAN IP, every API call from the app fails silently or times out until you change this. |
+| Smart-box ESP32 IP (frontend) | `Front-end/health_mate_app/lib/core/constants/iot_constants.dart` (`esp32BaseUrl`) | `http://10.229.183.78` | The app uses this to send drawer open/close commands directly to the smart-box hardware. |
+| Smart-box ESP32 IP (backend) | `Back-end/app/core/config.py` (`esp32_local_ip`) | `10.229.183.78` | The backend also needs the smart-box's IP for server-initiated actions (reminders, etc). Must match the value above. |
+| BP-unit backend target (firmware) | `bp-hardware-code/bp-hardware-code.ino` (`serverUrl`, line 10) | `http://10.229.183.149:8000/api/v1/vitals/bp/submit` | Baked into the ESP32/ESP8266 firmware at flash time — this is where the BP unit pushes readings. Must point at whoever is running the backend. |
+
+### What you actually need to change to test on your own phone
+
+1. **Find the LAN IP of the machine running `docker-compose up`** (not the
+   phone). On Windows: `ipconfig` → look for the Wi-Fi adapter's IPv4
+   address (e.g. `192.168.1.23`). It must be on the **same Wi-Fi network**
+   the phone will use.
+2. Update `devBaseUrl` in `api_constants.dart` to
+   `http://<that-IP>:8000/api/v1`, replacing `10.229.183.149`.
+3. Rebuild/hot-restart the Flutter app (a plain hot-reload won't pick up a
+   `const` change).
+4. You do **not** need to touch the backend, Docker, or `.env` for this —
+   the backend already listens on `0.0.0.0:8000`, so it accepts connections
+   from any device on the LAN as soon as it's running.
+5. Only touch `iot_constants.dart` / `config.py` / the `.ino` files if
+   you're also testing with the physical IoT hardware — for pure app +
+   backend testing without the hardware, these two files are irrelevant.
+
+Two gotchas that look like network bugs but aren't:
+- **Phone on mobile data / a different Wi-Fi than the PC** → nothing will
+  ever connect; there's no public tunnel. Phone and backend machine must be
+  on the same network.
+- **Windows Firewall blocking inbound port 8000** → the backend runs fine
+  locally (`localhost:8000/docs` works) but other devices on the LAN get
+  connection refused/timeout. Allow inbound TCP 8000 for Docker/the
+  relevant process if this happens.
 
 See `ARCHITECTURE.md` §6 for the full deployment picture.
 
