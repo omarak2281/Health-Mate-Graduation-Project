@@ -58,4 +58,10 @@ Thumbs.db
 /Predict-ABP/
 Back-end/.env
 
+# Firebase service account key - real GCP credentials, must never be committed.
+# A leaked key was auto-revoked by Google after being pushed to GitHub.
+# See Docs/README.md "Firebase service account key" section for setup steps.
+Back-end/serviceAccountKey.json
+Back-end/*firebase-adminsdk*.json
+
 

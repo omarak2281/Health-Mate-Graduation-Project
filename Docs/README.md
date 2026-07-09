@@ -133,6 +133,34 @@ Two gotchas that look like network bugs but aren't:
 
 See `ARCHITECTURE.md` §6 for the full deployment picture.
 
+## Firebase service account key
+
+`Back-end/serviceAccountKey.json` is **not committed to git** and is listed
+in `.gitignore`. This is deliberate: an earlier commit that included a real
+copy of this file was auto-revoked by Google within minutes of being pushed
+to GitHub — GitHub's secret scanning reports any recognized GCP service
+account key to Google the moment it appears in a push, even on a private
+repo and even if push protection is manually overridden, and Google
+disables the key automatically as a security measure. There is no way to
+keep a real key committed to git without it getting killed again.
+
+Each team member who needs to run the backend must fetch their own copy:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) →
+   select the `healt-mate-44e8b` project.
+2. **Project Settings** (gear icon) → **Service Accounts** tab.
+3. Click **Generate new private key** → confirm. A `.json` file downloads.
+4. Rename it to `serviceAccountKey.json` and place it at
+   `Back-end/serviceAccountKey.json` (same folder as `docker-compose.yml`).
+5. That's it — `docker-compose.yml` already mounts this exact path into the
+   container, and `.env` already points Firebase Admin SDK config at it.
+   No other file needs to change.
+
+If you don't have access to the Firebase project, ask the project owner to
+add you as a member under **Project Settings → Users and permissions**, or
+to send you a key file directly over a private channel (not git, not
+Slack/WhatsApp in a public/shared channel).
+
 ## Running the project locally
 
 ### 1. Backend
@@ -142,6 +170,8 @@ Requires Docker Desktop.
 ```bash
 cd Back-end
 # verify .env exists (already provided in the repo)
+# verify Back-end/serviceAccountKey.json exists — see "Firebase service
+# account key" above if it doesn't
 docker-compose up -d --build
 ```
 
