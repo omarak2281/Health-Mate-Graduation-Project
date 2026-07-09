@@ -32,6 +32,11 @@ class ApiConstants {
     return environment == 'prod' ? prodBaseUrl : devBaseUrl;
   }
 
+  static const bool symptomCheckerV2Enabled = bool.fromEnvironment(
+    'SYMPTOM_CHECKER_V2_ENABLED',
+    defaultValue: true,
+  );
+
   // Endpoints
   static const String auth = '/auth';
   static const String login = '$auth/login';
@@ -51,13 +56,20 @@ class ApiConstants {
 
   static const String vitals = '/vitals';
   static const String bpCreate = '$vitals/bp';
+  static const String bpSubmit = '$vitals/bp/submit';
+  static const String bpComplete = '$vitals/bp/complete';
   static const String bpCurrent = '$vitals/bp/current';
   static const String bpHistory = '$vitals/bp/history';
   static const String bpStats = '$vitals/bp/stats';
+  static const String bpCalibrationStatus = '$vitals/bp/calibration/status';
   static String patientBPCurrent(String patientId) =>
       '$vitals/patient/$patientId/current';
   static String patientBPHistory(String patientId) =>
       '$vitals/patient/$patientId/history';
+
+  static const String bpReminders = '/bp/reminders';
+  static const String bpRemindersScheduleDaily =
+      '$bpReminders/schedule-daily';
 
   static const String medications = '/medications';
   static const String medicationsTaken = '$medications/taken';
@@ -94,6 +106,14 @@ class ApiConstants {
   static const String notificationMarkRead = '$notifications/mark-read';
   static String notificationRead(String id) => '$notifications/$id/read';
 
+  static const String calls = '/calls';
+  static String call(String id) => '$calls/$id';
+  static String callOffer(String id) => '$calls/$id/offer';
+  static String callAccept(String id) => '$calls/$id/accept';
+  static String callReject(String id) => '$calls/$id/reject';
+  static String callBusy(String id) => '$calls/$id/busy';
+  static String callEnd(String id) => '$calls/$id/end';
+
   static const String ai = '/ai';
   static const String aiSymptomCheck = '$ai/symptom-checker';
   static const String aiChat = '$ai/chat';
@@ -101,6 +121,12 @@ class ApiConstants {
   static const String availableSymptoms = '$ai/available-symptoms';
   static const String aiModelInfo = '$ai/model-info';
   static const String aiCategories = '$ai/categories';
+  static const String aiTaxonomySymptoms = '$ai/taxonomy/symptoms';
+  static const String aiAssessment = '$ai/assessment';
+  static const String aiBpTriage = '$ai/bp-triage';
+  static const String aiChatFromAssessment = '$ai/chat/from-assessment';
+  static const String aiAssessmentNotifyCaregiver =
+      '$ai/assessment/notify-caregiver';
   static String aiChatHistory(String sessionId) =>
       '$aiSymptomCheck/history/$sessionId';
 

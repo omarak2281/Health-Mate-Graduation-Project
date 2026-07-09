@@ -8,6 +8,7 @@ import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/constants/iot_constants.dart';
 import '../../../../core/services/iot_service.dart';
 import '../../../../core/services/local_notification_service.dart';
+import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/models/medication.dart';
 import '../../data/medications_repository.dart';
 import './medications_provider.dart';
@@ -94,16 +95,24 @@ class MedicationAlarmNotifier extends StateNotifier<MedicationAlarmState> {
     }
   }
 
-  Future<void> snooze() async {
+  /// [skipNetworkCalls]: set true when the caller (e.g. the notification's
+  /// "Snooze" action button, handled in PushNotificationService) already
+  /// hit the hardware-silence and cloud-snooze endpoints itself. Without
+  /// this, MedicationAlarmPage's `initState` (initialSnooze: true) would
+  /// call snooze() again and fire a second `POST /medications/snooze`,
+  /// creating two scheduler jobs and a duplicate re-alarm.
+  Future<void> snooze({bool skipNetworkCalls = false}) async {
     state = state.copyWith(isSnoozeLoading: true);
     _autoSnoozeTimer?.cancel();
 
-    try {
-      await _medicationsRepository
-          .snoozeHardware()
-          .timeout(const Duration(seconds: 5));
-    } catch (e) {
-      debugPrint('⚠️ [Snooze] Hardware silence failed: $e');
+    if (!skipNetworkCalls) {
+      try {
+        await _medicationsRepository
+            .snoozeHardware()
+            .timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint('⚠️ [Snooze] Hardware silence failed: $e');
+      }
     }
 
     final snoozeDuration =
@@ -116,14 +125,16 @@ class MedicationAlarmNotifier extends StateNotifier<MedicationAlarmState> {
       snoozeRemaining: snoozeDuration,
     );
 
-    // ☁️ CLOUD SNOOZE: Tell the backend to remind us in 5 minutes
-    // This is 100% reliable even if the app process is killed.
-    try {
-      await _medicationsRepository.snoozeMedications(medIds);
-      debugPrint('✅ [Snooze] Cloud snooze scheduled successfully');
-    } catch (e) {
-      debugPrint(
-          '⚠️ [Snooze] Cloud snooze failed (falling back to local timer): $e');
+    if (!skipNetworkCalls) {
+      // ☁️ CLOUD SNOOZE: Tell the backend to remind us in 5 minutes
+      // This is 100% reliable even if the app process is killed.
+      try {
+        await _medicationsRepository.snoozeMedications(medIds);
+        debugPrint('✅ [Snooze] Cloud snooze scheduled successfully');
+      } catch (e) {
+        debugPrint(
+            '⚠️ [Snooze] Cloud snooze failed (falling back to local timer): $e');
+      }
     }
 
     await _localNotifications.cancelAllAlarms();
@@ -156,6 +167,15 @@ class MedicationAlarmNotifier extends StateNotifier<MedicationAlarmState> {
         } catch (e) {
           debugPrint('⚠️ [Snooze] Failed to bring app to foreground: $e');
         }
+
+        // 📱 RE-SHOW THE ALARM SCREEN. `bringToForeground` only raises
+        // whatever screen is currently on top (Home, since `_navigateHome`
+        // already popped MedicationAlarmPage when the user snoozed) -- it
+        // does NOT push MedicationAlarmPage back on its own. The page's own
+        // `ref.listen` for isSnoozed flipping false only exists while that
+        // widget is mounted, which it no longer is, so we must push it
+        // explicitly here instead of relying on that listener.
+        PushNotificationService.instance.pushAlarmPage(medications);
 
         state =
             state.copyWith(isSnoozed: false, snoozeRemaining: Duration.zero);

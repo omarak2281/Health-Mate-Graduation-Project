@@ -21,6 +21,7 @@ class VitalsRepository {
     required int systolic,
     required int diastolic,
     int? heartRate,
+    int? spo2,
     String source = 'manual',
   }) async {
     try {
@@ -30,7 +31,66 @@ class VitalsRepository {
           'systolic': systolic,
           'diastolic': diastolic,
           'heart_rate': heartRate,
+          'spo2': spo2,
           'source': source,
+        },
+      );
+
+      final vitalSign = VitalSign.fromJson(response.data);
+
+      // Cache latest reading
+      await _hiveCache.cacheLatestBP(vitalSign.toJson());
+      await _sharedPrefsCache.setLatestBP(
+        systolic.toString(),
+        diastolic.toString(),
+      );
+
+      return vitalSign;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Submit device signal reading
+  Future<VitalSign> submitDeviceReading({
+    required String userId,
+    required String deviceId,
+    required List<double> ppgSignal,
+    required List<double> ecgSignal,
+    int? heartRate,
+    int? spo2,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        ApiConstants.bpSubmit,
+        data: {
+          'user_id': userId,
+          'device_id': deviceId,
+          'ppg_signal': ppgSignal,
+          'ecg_signal': ecgSignal,
+          'heart_rate': heartRate,
+          'spo2': spo2,
+        },
+      );
+      return VitalSign.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Complete pending BP reading with manual cuff measurement
+  Future<VitalSign> completeReading({
+    required String vitalSignId,
+    required int systolic,
+    required int diastolic,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        ApiConstants.bpComplete,
+        data: {
+          'vital_sign_id': vitalSignId,
+          'systolic': systolic,
+          'diastolic': diastolic,
         },
       );
 
@@ -60,13 +120,18 @@ class VitalsRepository {
       if (response.data != null) {
         final vitalSign = VitalSign.fromJson(response.data);
 
-        // Cache it
-        await _hiveCache.cacheLatestBP(vitalSign.toJson());
+        if (patientId == null) {
+          await _hiveCache.cacheLatestBP(vitalSign.toJson());
+        }
 
         return vitalSign;
       }
       return null;
     } catch (e) {
+      if (patientId != null) {
+        return null;
+      }
+
       // Try cache
       final cachedBP = _hiveCache.getCachedLatestBP();
       if (cachedBP != null) {
@@ -88,18 +153,24 @@ class VitalsRepository {
           : ApiConstants.bpHistory;
       final response = await _dioClient.dio.get(
         url,
-        queryParameters: {'skip': skip, 'limit': limit},
+        queryParameters: {'offset': skip, 'limit': limit},
       );
 
       final List<VitalSign> history = (response.data as List)
           .map((json) => VitalSign.fromJson(json))
           .toList();
 
-      // Cache history
-      await _hiveCache.cacheBPHistory(history.map((v) => v.toJson()).toList());
+      if (patientId == null) {
+        await _hiveCache
+            .cacheBPHistory(history.map((v) => v.toJson()).toList());
+      }
 
       return history;
     } catch (e) {
+      if (patientId != null) {
+        rethrow;
+      }
+
       // Try cache
       final cachedHistory = _hiveCache.getCachedBPHistory();
       if (cachedHistory != null) {
@@ -117,6 +188,33 @@ class VitalsRepository {
     } catch (e) {
       rethrow;
     }
+  }
+
+  // Get calibration status (drives whether the cuff-entry step is shown)
+  Future<Map<String, dynamic>> getCalibrationStatus() async {
+    try {
+      final response =
+          await _dioClient.dio.get(ApiConstants.bpCalibrationStatus);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Schedule the 3 fixed daily BP reminders from one chosen start time
+  Future<List<Map<String, dynamic>>> scheduleDailyBPReminders(
+      String startTime) async {
+    final response = await _dioClient.dio.post(
+      ApiConstants.bpRemindersScheduleDaily,
+      data: {'start_time': startTime},
+    );
+    return List<Map<String, dynamic>>.from(response.data as List);
+  }
+
+  // Fetch the currently scheduled daily BP reminders (read-only display)
+  Future<List<Map<String, dynamic>>> getBPReminders() async {
+    final response = await _dioClient.dio.get(ApiConstants.bpReminders);
+    return List<Map<String, dynamic>>.from(response.data as List);
   }
 
   // Get cached BP (offline)

@@ -55,7 +55,7 @@ services:
       - ./alembic.ini:/app/alembic.ini
       - ../Symptom-Checker:/app/Symptom-Checker
       - ../Predict-ABP:/app/Predict-ABP
-      - ./healt-mate-44e8b-firebase-adminsdk-fbsvc-ff9a15b67d.json:/app/healt-mate-44e8b-firebase-adminsdk-fbsvc-ff9a15b67d.json
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 volumes:

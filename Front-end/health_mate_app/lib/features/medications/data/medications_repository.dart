@@ -28,13 +28,18 @@ class MedicationsRepository {
           .map((json) => Medication.fromJson(json))
           .toList();
 
-      // Cache medications
-      await _hiveCache.cacheMedications(
-        medications.map((m) => m.toJson()).toList(),
-      );
+      if (patientId == null) {
+        await _hiveCache.cacheMedications(
+          medications.map((m) => m.toJson()).toList(),
+        );
+      }
 
       return medications;
     } catch (e) {
+      if (patientId != null) {
+        rethrow;
+      }
+
       // Try cache
       final cachedMeds = _hiveCache.getCachedMedications();
       if (cachedMeds != null) {

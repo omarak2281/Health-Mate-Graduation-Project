@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Health Monitor — Smart Box</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0c0c12;color:#d0d0d8;font-family:system-ui,-apple-system,sans-serif}
+body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.header{display:flex;justify-content:space-between;align-items:center}
+.brand h1{font-size:18px;font-weight:500;color:#fff}
+.brand p{font-size:12px;color:#444;margin-top:3px}
+.btns{display:flex;gap:8px}
+button{padding:8px 18px;border-radius:8px;border:1px solid #2a2a3a;background:#16161f;color:#888;font-size:13px;cursor:pointer;font-family:inherit;transition:all 0.12s}
+button:hover:not(:disabled){background:#1e1e2e;border-color:#3a3a50}
+button:disabled{opacity:0.3;cursor:default}
+#btnConnect{background:#0d2b1e;border-color:#175c38;color:#5ddaa5}
+#btnConnect:hover:not(:disabled){background:#122e22}
+#btnConnect.disc{background:#2b0d0d;border-color:#5c1717;color:#f09595}
+.statusbar{background:#0f0f18;border:1px solid #1a1a28;border-radius:8px;padding:8px 14px;font-size:12px;color:#555;display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#252535;flex-shrink:0;transition:background 0.3s}
+.dot.live{background:#5ddaa5;animation:bl 1.2s ease-in-out infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0.35}}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:#0f0f18;border:1px solid #1a1a28;border-radius:12px;padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.card-lbl{font-size:11px;color:#3a3a5a;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase}
+.card-val{font-size:48px;font-weight:400;line-height:1;font-variant-numeric:tabular-nums}
+.card-unit{font-size:12px;color:#3a3a5a;margin-top:7px}
+.v-bpm{color:#5ddaa5}
+.v-spo2{color:#85b7eb}
+.v-ok{color:#5ddaa5;font-size:28px}
+.v-off{color:#f09595;font-size:28px}
+.v-idle{color:#333;font-size:28px}
+.fbadge{font-size:10px;margin-top:8px;padding:2px 10px;border-radius:10px;letter-spacing:0.5px}
+.fb-ok{background:#0d2b1e;color:#5ddaa5;border:1px solid #175c38}
+.fb-no{background:#2b0d0d;color:#f09595;border:1px solid #5c1717}
+.fb-idle{background:#1a1a28;color:#3a3a5a;border:1px solid #2a2a38}
+.chart-wrap{background:#0f0f18;border:1px solid #1a1a28;border-radius:12px;padding:16px;flex:1}
+.chart-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.chart-hd span{font-size:12px;color:#3a3a5a}
+.recrow{display:flex;align-items:center;gap:6px;font-size:12px;color:#444}
+.recdot{width:7px;height:7px;border-radius:50%;background:#252535;transition:background 0.3s}
+.recdot.live{background:#5ddaa5;animation:bl 0.9s ease-in-out infinite}
+.recdot.warn{background:#f09595;animation:bl 0.9s ease-in-out infinite}
+canvas{display:block;width:100%;border-radius:4px;background:#0c0c12}
+.foot{font-size:11px;color:#2a2a3a;text-align:center;padding-bottom:4px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <h1>Health Monitor</h1>
+    <p>Smart Box — Real-time ECG &amp; Vitals</p>
+  </div>
+  <div class="btns">
+    <button id="btnPause" onclick="togglePause()" disabled>Pause</button>
+    <button id="btnConnect" onclick="toggleConnect()">Connect Serial</button>
+  </div>
+</div>
+
+<div class="statusbar">
+  <div class="dot" id="dot"></div>
+  <span id="stText">افتح الملف في Chrome أو Edge مباشرةً ثم اضغط Connect Serial</span>
+</div>
+
+<div class="metrics">
+  <div class="card">
+    <div class="card-lbl">Heart Rate</div>
+    <div class="card-val v-bpm" id="vBpm">--</div>
+    <div class="card-unit">BPM</div>
+    <div class="fbadge fb-idle" id="fBadge">No Finger</div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">SpO₂</div>
+    <div class="card-val v-spo2" id="vSpo2">--</div>
+    <div class="card-unit">%</div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">ECG Leads</div>
+    <div class="card-val v-idle" id="vLeads">—</div>
+    <div class="card-unit">electrode</div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <div class="chart-hd">
+    <span>ECG Waveform — Live</span>
+    <div class="recrow"><div class="recdot" id="recdot"></div><span id="recLbl">idle</span></div>
+  </div>
+  <canvas id="ecg" height="220"></canvas>
+</div>
+
+<div class="foot">Web Serial API — Chrome / Edge only &nbsp;|&nbsp; Smart Box Project</div>
+
+<script>
+const canvas=document.getElementById('ecg'),ctx=canvas.getContext('2d');
+const BUF=700,buf=new Array(BUF).fill(512);
+let W=0,H=220,port,reader,connected=false,paused=false,leadsOk=false,lineBuffer='';
+
+function resize(){W=canvas.parentElement.clientWidth-32;canvas.width=W;canvas.height=H;}
+resize();window.addEventListener('resize',resize);
+
+function draw(){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0c0c12';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#141422';ctx.lineWidth=0.5;
+  for(let x=0;x<=W;x+=W/12){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=H/5){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.strokeStyle='#1a1a2e';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+  ctx.strokeStyle=!connected||paused?'#252535':leadsOk?'#5ddaa5':'#f09595';
+  ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.beginPath();
+  const step=W/(BUF-1);
+  buf.forEach((v,i)=>{const x=i*step,y=H-((v/1023)*H*0.82)-H*0.09;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();requestAnimationFrame(draw);
+}
+draw();
+
+function push(v){buf.shift();buf.push(v);}
+function el(id){return document.getElementById(id);}
+function setStatus(msg,live){el('stText').textContent=msg;el('dot').className='dot'+(live?' live':'');}
+
+async function toggleConnect(){connected?await doDisconnect():await doConnect();}
+
+async function doConnect(){
+  if(!navigator.serial){setStatus('Web Serial غير متاح — افتح الملف مباشرة في Chrome أو Edge وليس من داخل أي موقع');return;}
+  try{
+    port=await navigator.serial.requestPort();
+    await port.open({baudRate:115200});
+    connected=true;
+    el('btnConnect').textContent='Disconnect';el('btnConnect').classList.add('disc');
+    el('btnPause').disabled=false;
+    el('recdot').className='recdot live';el('recLbl').textContent='live';
+    setStatus('Connected — receiving data from ESP8266',true);
+    readLoop();
+  }catch(e){setStatus('Connection failed: '+e.message);}
+}
+
+async function doDisconnect(){
+  connected=false;paused=false;leadsOk=false;
+  try{await reader?.cancel();}catch(_){}try{await port?.close();}catch(_){}
+  el('btnConnect').textContent='Connect Serial';el('btnConnect').classList.remove('disc');
+  el('btnPause').disabled=true;el('btnPause').textContent='Pause';
+  el('recdot').className='recdot';el('recLbl').textContent='idle';
+  el('vLeads').textContent='—';el('vLeads').className='card-val v-idle';
+  el('vBpm').textContent='--';el('vSpo2').textContent='--';
+  el('fBadge').textContent='No Finger';el('fBadge').className='fbadge fb-idle';
+  setStatus('Disconnected');
+}
+
+function togglePause(){
+  paused=!paused;
+  el('btnPause').textContent=paused?'Resume':'Pause';
+  setStatus(paused?'Paused — chart frozen':'Resumed — live display',!paused);
+}
+
+async function readLoop(){
+  const dec=new TextDecoderStream(),pipe=port.readable.pipeTo(dec.writable);
+  reader=dec.readable.getReader();
+  try{
+    while(connected){
+      const{value,done}=await reader.read();if(done)break;
+      lineBuffer+=value;
+      const lines=lineBuffer.split('\n');lineBuffer=lines.pop();
+      lines.forEach(l=>parseLine(l.trim()));
+    }
+  }catch(e){if(connected)setStatus('Read error: '+e.message);}
+  finally{reader.releaseLock();try{await pipe;}catch(_){}}
+}
+
+function parseLine(line){
+  if(!line)return;
+
+  if(line.startsWith('ECG:')){
+    const v=parseInt(line.slice(4));
+    if(!isNaN(v)&&!paused)push(v);
+    return;
+  }
+
+  if(line.startsWith('LEADS:')){
+    leadsOk=line.trim().endsWith('1');
+    el('vLeads').textContent=leadsOk?'OK':'OFF';
+    el('vLeads').className='card-val '+(leadsOk?'v-ok':'v-off');
+    el('recdot').className='recdot '+(leadsOk?'live':'warn');
+    el('recLbl').textContent=leadsOk?'leads OK':'leads OFF';
+    return;
+  }
+
+  if(line.startsWith('BPM:')){
+    const obj={};
+    line.split(',').forEach(p=>{const[k,v]=p.split(':');if(k&&v!==undefined)obj[k.trim()]=parseInt(v.trim());});
+    const bpm=obj['BPM']||0,spo=obj['SpO2']||0;
+    el('vBpm').textContent=bpm>0?bpm:'--';
+    el('vSpo2').textContent=spo>0?spo:'--';
+    el('fBadge').textContent=bpm>0?'Finger OK':'No Finger';
+    el('fBadge').className='fbadge '+(bpm>0?'fb-ok':'fb-no');
+    return;
+  }
+
+  const v=parseInt(line);
+  if(!isNaN(v)&&v>=0&&v<=1023&&!paused)push(v);
+}
+</script>
+</body>
+</html>

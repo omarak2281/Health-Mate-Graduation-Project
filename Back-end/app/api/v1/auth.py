@@ -83,6 +83,8 @@ async def register(
                     caregiver_id=new_user.id,
                     is_active=True
                 )
+                from app.services.patient_caregiver_service import assign_is_primary_for_new_link
+                await assign_is_primary_for_new_link(db, patient.id, new_link)
                 db.add(new_link)
                 await db.commit()
                 print(f"✅ Auto-linked caregiver {new_user.email} to patient {patient.email}")

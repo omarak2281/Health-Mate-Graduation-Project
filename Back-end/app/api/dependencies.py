@@ -93,3 +93,43 @@ def require_role(required_role: UserRole):
 # Convenience dependencies
 require_patient = require_role(UserRole.PATIENT)
 require_caregiver = require_role(UserRole.CAREGIVER)
+
+
+from fastapi import Header
+import bcrypt
+from app.models.registered_device import RegisteredDevice
+
+async def get_device_from_headers(
+    x_device_id: str = Header(..., alias="X-Device-ID"),
+    x_device_token: str = Header(..., alias="X-Device-Token"),
+    db: AsyncSession = Depends(get_db)
+) -> RegisteredDevice:
+    """Imported from device auth dependency block. Authenticates IoT hardware devices"""
+    stmt = select(RegisteredDevice).where(
+        RegisteredDevice.device_id == x_device_id,
+        RegisteredDevice.is_active == True
+    )
+    res = await db.execute(stmt)
+    device = res.scalar_one_or_none()
+    
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Registered IoT Device not found or is inactive"
+        )
+        
+    # Verify token
+    try:
+        # bcrypt requires bytes
+        hashed = device.token_hash.encode('utf-8')
+        raw = x_device_token.encode('utf-8')
+        if not bcrypt.checkpw(raw, hashed):
+            raise ValueError()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid IoT Device credentials"
+        )
+        
+    return device
+

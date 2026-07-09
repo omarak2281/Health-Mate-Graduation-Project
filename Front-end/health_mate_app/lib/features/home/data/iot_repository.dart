@@ -12,8 +12,11 @@ class IoTRepository {
   IoTRepository(this._dioClient);
 
   // Get sensors status
-  Future<List<dynamic>> getSensorsStatus() async {
-    final response = await _dioClient.dio.get(ApiConstants.sensorsStatus);
+  Future<List<dynamic>> getSensorsStatus({String? patientId}) async {
+    final response = await _dioClient.dio.get(
+      ApiConstants.sensorsStatus,
+      queryParameters: patientId != null ? {'patient_id': patientId} : null,
+    );
     return response.data;
   }
 

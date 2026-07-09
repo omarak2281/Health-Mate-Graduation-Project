@@ -334,6 +334,10 @@ class AuthRepository {
     return token != null;
   }
 
+  Future<String?> getAccessToken() async {
+    return _secureStorage.getAccessToken();
+  }
+
   // Get cached user (offline)
   User? getCachedUser() {
     final cachedUserData = _hiveCache.getCachedUser();

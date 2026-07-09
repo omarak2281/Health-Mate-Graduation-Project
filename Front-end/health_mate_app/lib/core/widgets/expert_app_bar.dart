@@ -24,6 +24,19 @@ class ExpertAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `onBackTap` used to be accepted but never actually rendered anywhere,
+    // so pages passing it (expecting a tappable back arrow) silently got
+    // none. Render it explicitly here, unless an explicit `leading` widget
+    // was already supplied.
+    final effectiveLeading = leading ??
+        (onBackTap != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white),
+                onPressed: onBackTap,
+              )
+            : null);
+
     return AppBar(
       title: Text(
         title,
@@ -45,7 +58,7 @@ class ExpertAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       backgroundColor: Colors.transparent,
       automaticallyImplyLeading: automaticallyImplyLeading,
-      leading: leading,
+      leading: effectiveLeading,
       actions: actions,
       flexibleSpace: Container(
         decoration: BoxDecoration(

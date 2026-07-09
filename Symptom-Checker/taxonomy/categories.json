@@ -1,0 +1,56 @@
+[
+  {
+    "id": "heart_bp",
+    "name_en": "Heart & Blood Pressure",
+    "name_ar": "القلب وضغط الدم",
+    "order": 1
+  },
+  {
+    "id": "respiratory",
+    "name_en": "Respiratory",
+    "name_ar": "الجهاز التنفسي",
+    "order": 2
+  },
+  {
+    "id": "neurological",
+    "name_en": "Neurological",
+    "name_ar": "الجهاز العصبي",
+    "order": 3
+  },
+  {
+    "id": "digestive",
+    "name_en": "Digestive",
+    "name_ar": "الجهاز الهضمي",
+    "order": 4
+  },
+  {
+    "id": "general_fever",
+    "name_en": "General & Fever",
+    "name_ar": "أعراض عامة وحمى",
+    "order": 5
+  },
+  {
+    "id": "muscles_joints",
+    "name_en": "Muscles & Joints",
+    "name_ar": "العضلات والمفاصل",
+    "order": 6
+  },
+  {
+    "id": "skin",
+    "name_en": "Skin",
+    "name_ar": "الجلد",
+    "order": 7
+  },
+  {
+    "id": "urinary_kidney",
+    "name_en": "Urinary & Kidney",
+    "name_ar": "الجهاز البولي والكلى",
+    "order": 8
+  },
+  {
+    "id": "mental_health",
+    "name_en": "Mental Health",
+    "name_ar": "الصحة النفسية",
+    "order": 9
+  }
+]

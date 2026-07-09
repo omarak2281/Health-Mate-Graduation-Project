@@ -1,0 +1,153 @@
+<style>
+*{box-sizing:border-box}
+.wrap{padding:4px 0;font-size:13px}
+.sensor-block{margin-bottom:20px}
+.sensor-header{margin-bottom:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.pill-teal{background:var(--bg-success);color:var(--text-success);border:0.5px solid var(--border-success)}
+.pill-coral{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger)}
+.pill-gray{background:var(--surface-1);color:var(--text-secondary);border:0.5px solid var(--border-strong)}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:500;color:var(--text-secondary);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
+td{padding:8px 10px;border-bottom:0.5px solid var(--border);color:var(--text-primary);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.chip{display:inline-block;padding:1px 8px;border-radius:4px;font-family:var(--font-mono);font-size:12px;font-weight:500}
+.chip-s{background:var(--surface-0);border:0.5px solid var(--border-strong);color:var(--text-primary)}
+.chip-e{background:var(--bg-accent);border:0.5px solid var(--border-accent);color:var(--text-accent)}
+.gpio{color:var(--text-muted);font-family:var(--font-mono);font-size:11px}
+.note{font-size:11px;color:var(--text-secondary);line-height:1.4}
+.note-warn{color:var(--text-warning)}
+.sep{height:1px;background:var(--border);margin:18px 0}
+.elec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.elec-card{background:var(--surface-1);border:0.5px solid var(--border);border-radius:6px;padding:10px 8px;text-align:center}
+.elec-dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-bottom:5px}
+.elec-label{font-size:13px;font-weight:500;color:var(--text-primary);font-family:var(--font-mono)}
+.elec-place{font-size:11px;color:var(--text-secondary);margin-top:2px;line-height:1.4}
+.tip-box{background:var(--surface-1);border:0.5px solid var(--border);border-left:3px solid var(--border-accent);border-radius:0;padding:10px 14px;margin-top:16px}
+.tip-box p{margin:4px 0;font-size:12px;color:var(--text-secondary);line-height:1.5}
+.tip-box strong{color:var(--text-primary);font-weight:500}
+code{font-family:var(--font-mono);font-size:11px;background:var(--surface-0);padding:1px 4px;border-radius:3px;color:var(--text-primary)}
+</style>
+
+<div class="wrap">
+
+<div class="sensor-block">
+  <div class="sensor-header"><span class="pill pill-teal">MAX30102 — I2C</span></div>
+  <table>
+    <thead><tr><th>MAX30102 Pin</th><th>NodeMCU Pin</th><th>GPIO</th><th>وظيفة</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="chip chip-s">VIN</span></td>
+        <td><span class="chip chip-e">3V3</span></td>
+        <td><span class="gpio">—</span></td>
+        <td><span class="note">3.3V فقط — مش 5V أبداً</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">GND</span></td>
+        <td><span class="chip chip-e">GND</span></td>
+        <td><span class="gpio">—</span></td>
+        <td><span class="note">مشترك مع AD8232</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">SDA</span></td>
+        <td><span class="chip chip-e">D2</span></td>
+        <td><span class="gpio">GPIO4</span></td>
+        <td><span class="note">I2C data line</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">SCL</span></td>
+        <td><span class="chip chip-e">D1</span></td>
+        <td><span class="gpio">GPIO5</span></td>
+        <td><span class="note">I2C clock line</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">INT</span></td>
+        <td><span class="chip chip-s">—</span></td>
+        <td><span class="gpio">—</span></td>
+        <td><span class="note">اتركه مفصول دلوقتي للتست</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="sep"></div>
+
+<div class="sensor-block">
+  <div class="sensor-header"><span class="pill pill-coral">AD8232 ECG — Analog</span></div>
+  <table>
+    <thead><tr><th>AD8232 Pin</th><th>NodeMCU Pin</th><th>GPIO</th><th>وظيفة</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="chip chip-s">3.3V</span></td>
+        <td><span class="chip chip-e">3V3</span></td>
+        <td><span class="gpio">—</span></td>
+        <td><span class="note">مشترك مع MAX30102</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">GND</span></td>
+        <td><span class="chip chip-e">GND</span></td>
+        <td><span class="gpio">—</span></td>
+        <td><span class="note">مشترك</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">OUTPUT</span></td>
+        <td><span class="chip chip-e">A0</span></td>
+        <td><span class="gpio">ADC0</span></td>
+        <td><span class="note note-warn">الإشارة التناظرية — A0 الوحيد على الـ ESP8266</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">SDN</span></td>
+        <td><span class="chip chip-e">D5</span></td>
+        <td><span class="gpio">GPIO14</span></td>
+        <td><span class="note">HIGH = شغال · LOW = نوم</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">LO+</span></td>
+        <td><span class="chip chip-e">D6</span></td>
+        <td><span class="gpio">GPIO12</span></td>
+        <td><span class="note">Electrode off detection (+)</span></td>
+      </tr>
+      <tr>
+        <td><span class="chip chip-s">LO−</span></td>
+        <td><span class="chip chip-e">D7</span></td>
+        <td><span class="gpio">GPIO13</span></td>
+        <td><span class="note">Electrode off detection (−)</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="sep"></div>
+
+<div class="sensor-block">
+  <div class="sensor-header"><span class="pill pill-gray">AD8232 Electrodes — وضع الـ leads على الجسم</span></div>
+  <div class="elec-grid">
+    <div class="elec-card">
+      <div><span class="elec-dot" style="background:#d94f4f"></span></div>
+      <div class="elec-label">RA</div>
+      <div class="elec-place">أعلى يمين الصدر (Red)</div>
+    </div>
+    <div class="elec-card">
+      <div><span class="elec-dot" style="background:#c8b020"></span></div>
+      <div class="elec-label">LA</div>
+      <div class="elec-place">أعلى شمال الصدر (Yellow)</div>
+    </div>
+    <div class="elec-card">
+      <div><span class="elec-dot" style="background:#3d9e3d"></span></div>
+      <div class="elec-label">RL</div>
+      <div class="elec-place">أسفل يسار الصدر (Green)</div>
+    </div>
+  </div>
+</div>
+
+<div class="tip-box">
+  <p><strong>ملاحظات التوصيل:</strong></p>
+  <p>• الـ <strong>3V3 والـ GND مشتركين</strong> بين الاتنين على الـ NodeMCU — وصّل كل منهم على نفس الـ rail</p>
+  <p>• MAX30102 على <strong>I2C</strong> والـ AD8232 على <strong>A0 الأنالوج</strong> — مفيش أي تعارض بينهم</p>
+  <p>• NodeMCU A0 بيقبل <code>0–3.3V</code> مباشرة بسبب voltage divider داخلي</p>
+  <p>• في الكود: اعمل <code>digitalWrite(D5, HIGH)</code> أول حاجة عشان توقظ الـ AD8232</p>
+  <p>• لو <code>digitalRead(D6)</code> أو <code>digitalRead(D7)</code> = <code>HIGH</code>، الـ electrode منفصل — مش هياخد قراءة صح</p>
+  <p>• I2C address للـ MAX30102: <code>0x57</code></p>
+</div>
+
+</div>

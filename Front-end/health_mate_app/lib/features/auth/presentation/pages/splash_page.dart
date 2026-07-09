@@ -13,6 +13,7 @@ import 'onboarding_language_page.dart';
 import '../../../../core/storage/shared_prefs_cache.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/ecg_heart_line.dart';
+import '../../../../core/services/push_notification_service.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -132,6 +133,15 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   void _navigateTo(Widget screen) {
+    // A medication alarm may have been pushed on top of this splash screen
+    // (cold-start via a tapped/full-screen-intent notification). Blindly
+    // calling pushReplacement here would replace whatever is currently on
+    // top of the navigator -- the alarm screen -- with the home page. Skip
+    // it; MedicationAlarmPage clears the stack itself once dismissed/snoozed.
+    if (PushNotificationService.instance.isAlarmScreenActive) {
+      debugPrint('⏰ Skipping splash navigation — alarm screen is active');
+      return;
+    }
     Navigator.of(context).pushReplacement(
       FadePageRoute(page: screen),
     );

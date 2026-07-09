@@ -28,6 +28,9 @@ class LocalNotificationService {
   // ─── Notification Action IDs ──────────────────────────────────────────────
   static const String actionTaken = 'TAKEN';
   static const String actionSnooze = 'SNOOZE';
+  static const String actionMeasureNow = 'MEASURE_NOW';
+  static const String actionCallAccept = 'CALL_ACCEPT';
+  static const String actionCallDecline = 'CALL_DECLINE';
   static const int _snoozeChannelId = 1002; // ✅ Changed ID to force refresh
 
   // ─── Initialise ───────────────────────────────────────────────────────────
@@ -67,6 +70,7 @@ class LocalNotificationService {
       onDidReceiveNotificationResponse: _handleNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
+    await _requestAndroidNotificationPermissions();
 
     // Handle the case where the notification launched the app
     final details = await _plugin.getNotificationAppLaunchDetails();
@@ -84,6 +88,26 @@ class LocalNotificationService {
 
     _initialized = true;
     debugPrint('[LocalNotificationService] initialised with TimeZones');
+  }
+
+  Future<void> _requestAndroidNotificationPermissions() async {
+    try {
+      final androidPlugin =
+          _plugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final notificationGranted =
+          await androidPlugin?.requestNotificationsPermission();
+      debugPrint(
+          '[LocalNotificationService] Android notification permission: $notificationGranted');
+
+      final fullScreenGranted =
+          await androidPlugin?.requestFullScreenIntentPermission();
+      debugPrint(
+          '[LocalNotificationService] Android full-screen permission: $fullScreenGranted');
+    } catch (e) {
+      debugPrint(
+          '[LocalNotificationService] Could not request Android notification permissions: $e');
+    }
   }
 
   /// Requests battery optimization exemption.
@@ -112,8 +136,25 @@ class LocalNotificationService {
       _lastHandledResponseId = responseId;
 
       try {
-        final data = jsonDecode(response.payload!);
-        if (response.actionId == actionTaken) {
+        final data = Map<String, dynamic>.from(jsonDecode(response.payload!));
+        if (response.actionId == actionCallAccept ||
+            response.actionId == actionCallDecline) {
+          PushNotificationService.instance.handleIncomingCallAction(
+            response.actionId!,
+            data,
+          );
+        } else if (data['type'] == 'bp_reminder') {
+          // BP reminder actions/tap are handled separately from medication
+          // ones -- no medication list to parse, no hardware/cloud calls.
+          if (response.actionId == actionSnooze ||
+              response.actionId == actionMeasureNow) {
+            instance.cancelAllAlarms();
+            PushNotificationService.instance
+                .handleBpReminderAction(response.actionId!, data);
+          } else {
+            PushNotificationService.instance.handleNotificationTap(data);
+          }
+        } else if (response.actionId == actionTaken) {
           // Clear all notifications to ensure no ghost alarms
           instance.cancelAllAlarms();
           PushNotificationService.instance
@@ -160,18 +201,195 @@ class LocalNotificationService {
           actionTaken,
           translator.translate(LocaleKeys.medicationsConfirmTakenShort),
           titleColor: AppColors.expertTeal,
-          showsUserInterface: false, // Handle in background without opening app
+          // showsUserInterface MUST be true: false routes the tap through a
+          // separate background isolate where `navigatorKey` is always null
+          // (isolates don't share globals), so the alarm screen can never be
+          // dismissed/updated and, on some devices, secure-storage/network
+          // calls made from that isolate silently fail. Launching the app
+          // reuses the same reliable main-isolate path as tapping the
+          // notification body.
+          showsUserInterface: true,
           cancelNotification: true,
         ),
         AndroidNotificationAction(
           actionSnooze,
           translator.translate(LocaleKeys.medicationsSnoozeAction),
-          showsUserInterface:
-              false, // ✅ Don't interrupt user, handle in background
+          showsUserInterface: true,
           cancelNotification: true,
         ),
       ],
     );
+  }
+
+  /// BP reminders now ring like a real alarm -- `ongoing` + FLAG_INSISTENT +
+  /// Snooze/Measure Now actions, matching [_buildAndroidAlarmDetails] for
+  /// medications, so tapping or the full-screen intent opens
+  /// `BPReminderAlarmPage` (ring/vibrate/snooze/dismiss) instead of a plain
+  /// dismissible notification.
+  AndroidNotificationDetails _buildAndroidBpReminderDetails() {
+    final translator = BackgroundTranslationService.instance;
+
+    return AndroidNotificationDetails(
+      'bp_reminders_v2',
+      'Blood Pressure Reminders',
+      channelDescription: 'Reminders to take a scheduled blood pressure measurement',
+      importance: Importance.max,
+      priority: Priority.max,
+      fullScreenIntent: true,
+      ongoing: true,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
+      styleInformation: const BigTextStyleInformation(''),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      autoCancel: false,
+      additionalFlags: Int32List.fromList([4]), // FLAG_INSISTENT
+      actions: [
+        AndroidNotificationAction(
+          actionMeasureNow,
+          translator.translate(LocaleKeys.vitalsBpMeasureNow),
+          titleColor: AppColors.expertTeal,
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+        AndroidNotificationAction(
+          actionSnooze,
+          translator.translate(LocaleKeys.medicationsSnoozeAction),
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+      ],
+    );
+  }
+
+  /// Distinct ID from the medication alarm (100) / snooze reminder so a BP
+  /// reminder never overwrites or gets cancelled by medication alarm logic.
+  static const int bpReminderId = 200;
+
+  Future<void> showBpReminder({
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    if (!_initialized) await init();
+
+    await _plugin.show(
+      bpReminderId,
+      title,
+      body,
+      NotificationDetails(
+        android: _buildAndroidBpReminderDetails(),
+        iOS: _iOSDetails,
+      ),
+      payload: payload,
+    );
+  }
+
+  Future<void> showGenericAlert({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    if (!_initialized) await init();
+
+    const androidDetails = AndroidNotificationDetails(
+      'health_alerts',
+      'Health Alerts',
+      channelDescription: 'Important Health Mate alerts',
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.status,
+      visibility: NotificationVisibility.public,
+      styleInformation: BigTextStyleInformation(''),
+    );
+
+    await _plugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(
+        android: androidDetails,
+        iOS: _iOSDetails,
+      ),
+      payload: payload,
+    );
+  }
+
+  AndroidNotificationDetails _buildAndroidIncomingCallDetails() {
+    final translator = BackgroundTranslationService.instance;
+
+    return AndroidNotificationDetails(
+      // Bumped from 'incoming_calls' -- Android locks a channel's sound in
+      // at first creation, so devices that already created the old channel
+      // (with the default notification tone) would never pick up the real
+      // ringtone below without a new channel id forcing recreation.
+      'incoming_calls_v2',
+      'Incoming Calls',
+      channelDescription: 'Incoming audio and video calls',
+      importance: Importance.max,
+      priority: Priority.max,
+      fullScreenIntent: true,
+      ongoing: true,
+      autoCancel: false,
+      category: AndroidNotificationCategory.call,
+      visibility: NotificationVisibility.public,
+      styleInformation: const BigTextStyleInformation(''),
+      sound: const UriAndroidNotificationSound(
+          'content://settings/system/ringtone'),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      additionalFlags: Int32List.fromList([4]), // FLAG_INSISTENT: loop until answered
+      actions: [
+        AndroidNotificationAction(
+          actionCallDecline,
+          translator.translate(LocaleKeys.communicationDecline),
+          titleColor: AppColors.error,
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+        AndroidNotificationAction(
+          actionCallAccept,
+          translator.translate(LocaleKeys.communicationAccept),
+          titleColor: AppColors.success,
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+      ],
+    );
+  }
+
+  static int incomingCallNotificationId(String callId) {
+    return callId.hashCode & 0x7fffffff;
+  }
+
+  Future<void> showIncomingCall({
+    required String callId,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    if (!_initialized) await init();
+    await BackgroundTranslationService.instance.refreshLocale();
+
+    await _plugin.show(
+      incomingCallNotificationId(callId),
+      title,
+      body,
+      NotificationDetails(
+        android: _buildAndroidIncomingCallDetails(),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          categoryIdentifier: 'INCOMING_CALL',
+        ),
+      ),
+      payload: payload,
+    );
+  }
+
+  Future<void> cancelIncomingCall(String callId) async {
+    if (!_initialized) await init();
+    await _plugin.cancel(incomingCallNotificationId(callId));
   }
 
   DarwinNotificationDetails get _iOSDetails => const DarwinNotificationDetails(
@@ -330,13 +548,33 @@ void notificationTapBackground(NotificationResponse response) async {
 
   if (response.payload != null && response.payload!.isNotEmpty) {
     try {
-      final data = jsonDecode(response.payload!);
+      final data = Map<String, dynamic>.from(jsonDecode(response.payload!));
 
-      if (response.actionId == LocalNotificationService.actionTaken ||
+      if (response.actionId == LocalNotificationService.actionCallAccept ||
+          response.actionId == LocalNotificationService.actionCallDecline) {
+        await PushNotificationService.instance.handleIncomingCallAction(
+          response.actionId!,
+          data,
+        );
+      } else if (data['type'] == 'bp_reminder') {
+        if (response.actionId == LocalNotificationService.actionSnooze ||
+            response.actionId == LocalNotificationService.actionMeasureNow) {
+          await PushNotificationService.instance
+              .handleBpReminderAction(response.actionId!, data);
+        } else {
+          PushNotificationService.instance.handleNotificationTap(data);
+        }
+      } else if (response.actionId == LocalNotificationService.actionTaken ||
           response.actionId == LocalNotificationService.actionSnooze) {
         // We use the singleton instance which will re-init if needed in this isolate
         await PushNotificationService.instance
             .handleNotificationAction(response.actionId!, data);
+      } else {
+        // Plain tap on the notification body (no action button). This was
+        // previously a no-op here -- the app would launch/resume via the OS
+        // but nothing ever navigated to the alarm screen, so it silently
+        // landed on whatever page was last shown instead.
+        PushNotificationService.instance.handleNotificationTap(data);
       }
     } catch (e) {
       debugPrint('❌ [BackgroundAction] Error: $e');

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:ui' as ui;
 import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
@@ -424,12 +425,15 @@ class LinkedPatientCard extends StatelessWidget {
                             color: AppColors.primary,
                           ),
                           SizedBox(width: context.w(1)),
-                          Text(
-                            lastBpReading!,
-                            style: TextStyle(
-                              fontSize: context.sp(11),
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
+                          Directionality(
+                            textDirection: ui.TextDirection.ltr,
+                            child: Text(
+                              lastBpReading!,
+                              style: TextStyle(
+                                fontSize: context.sp(11),
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -579,6 +583,10 @@ class CaregiverAlertCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool isEmpty;
+  final bool isUnread;
+  final VoidCallback? onTap;
+  final VoidCallback? onMarkRead;
+  final VoidCallback? onDelete;
 
   const CaregiverAlertCard({
     super.key,
@@ -587,6 +595,10 @@ class CaregiverAlertCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.isEmpty = false,
+    this.isUnread = false,
+    this.onTap,
+    this.onMarkRead,
+    this.onDelete,
   });
 
   @override
@@ -650,10 +662,15 @@ class CaregiverAlertCard extends StatelessWidget {
       );
     }
 
-    return Container(
+    return Material(
+      color: Theme.of(context).cardTheme.color,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
       padding: EdgeInsets.all(context.w(4)),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
@@ -682,17 +699,39 @@ class CaregiverAlertCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: context.sp(14),
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
+                Row(
+                  children: [
+                    if (isUnread) ...[
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: context.w(1.5)),
+                    ],
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: context.sp(14),
+                          fontWeight:
+                              isUnread ? FontWeight.w700 : FontWeight.w600,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: context.h(0.3)),
                 Text(
                   subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: context.sp(12),
                     color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -701,7 +740,56 @@ class CaregiverAlertCard extends StatelessWidget {
               ],
             ),
           ),
+          if (onMarkRead != null && isUnread) ...[
+            SizedBox(width: context.w(1)),
+            _AlertIconAction(
+              icon: Icons.check_circle_outline_rounded,
+              color: AppColors.success,
+              tooltip: LocaleKeys.notificationsMarkAllRead.tr(),
+              onTap: onMarkRead!,
+            ),
+          ],
+          if (onDelete != null) ...[
+            SizedBox(width: context.w(1)),
+            _AlertIconAction(
+              icon: Icons.delete_outline_rounded,
+              color: AppColors.error,
+              tooltip: LocaleKeys.delete.tr(),
+              onTap: onDelete!,
+            ),
+          ],
         ],
+      ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AlertIconAction extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _AlertIconAction({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: EdgeInsets.all(context.w(1.5)),
+          child: Icon(icon, size: context.sp(20), color: color),
+        ),
       ),
     );
   }

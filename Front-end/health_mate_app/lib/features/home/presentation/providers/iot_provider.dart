@@ -74,3 +74,18 @@ final iotNotifierProvider = StateNotifierProvider<IoTNotifier, IoTState>((ref) {
   final repository = ref.watch(iotRepositoryProvider);
   return IoTNotifier(repository);
 });
+
+final patientSensorsStreamProvider =
+    StreamProvider.family<List<dynamic>, String>(
+        (ref, String patientId) async* {
+  final repository = ref.read(iotRepositoryProvider);
+  while (true) {
+    try {
+      final status = await repository.getSensorsStatus(patientId: patientId);
+      yield status;
+    } catch (_) {
+      yield const [];
+    }
+    await Future.delayed(const Duration(seconds: 5));
+  }
+});

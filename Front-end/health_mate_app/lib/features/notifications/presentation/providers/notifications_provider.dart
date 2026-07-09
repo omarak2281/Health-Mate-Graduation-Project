@@ -84,6 +84,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
             title: n.title,
             message: n.message,
             type: n.type,
+            data: n.data,
             isRead: true,
             createdAt: n.createdAt,
           );

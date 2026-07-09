@@ -1,7 +1,20 @@
 streamlit
-joblib
+joblib>=1.5.0
 numpy
 fpdf
 arabic-reshaper
 python-bidi
-scikit-learn>=1.7.2
+scikit-learn>=1.9.0
+pandas>=2.0.3
+lightgbm>=4.6.0
+xgboost>=2.1.4
+pydantic>=2.5.3
+
+# Phase 4 note: scikit-learn was bumped from the previously-pinned >=1.7.2 to >=1.9.0 because
+# lightgbm==4.5.0 (the version available when Phase 4 was implemented) calls a check_X_y()
+# argument (`force_all_finite`) that scikit-learn 1.7-1.8 removed; lightgbm>=4.6.0 fixed that
+# call. If you pin an older lightgbm, pin scikit-learn<1.9 to match, or training will raise
+# `TypeError: check_X_y() got an unexpected keyword argument 'force_all_finite'`. This is
+# exactly the version-drift risk flagged in Plans/SYMPTOM_CHECKER_IMPLEMENTATION_PLAN.md §1.4 —
+# Back-end/requirements.txt must pin the SAME scikit-learn version once Phase 5 wires model
+# loading into the backend.

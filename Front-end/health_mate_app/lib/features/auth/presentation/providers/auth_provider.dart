@@ -4,6 +4,7 @@ import '../../../../core/models/user.dart';
 import '../../data/auth_repository.dart';
 import '../../../../core/error/auth_error_handler.dart';
 import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../../../core/storage/shared_prefs_cache.dart';
 
 /// Auth State
@@ -47,10 +48,18 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final SharedPrefsCache _sharedPrefs;
+  final SocketService _socketService;
 
-  AuthNotifier(this._authRepository, this._sharedPrefs)
+  AuthNotifier(this._authRepository, this._sharedPrefs, this._socketService)
       : super(AuthState(status: AuthStatus.initial)) {
     _checkAuthStatus();
+  }
+
+  Future<void> _startRealtime() async {
+    final token = await _authRepository.getAccessToken();
+    if (token != null) {
+      _socketService.init(token);
+    }
   }
 
   // Check if user is already logged in
@@ -70,6 +79,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         } else {
           // Mark onboarding as completed if already authenticated
           _sharedPrefs.setOnboardingCompleted(true);
+          await _startRealtime();
           state = state.copyWith(status: AuthStatus.authenticated, user: user);
         }
       } catch (e) {
@@ -77,6 +87,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // Try cached user
         final cachedUser = _authRepository.getCachedUser();
         if (cachedUser != null) {
+          await _startRealtime();
           state = state.copyWith(
             status: AuthStatus.authenticated,
             user: cachedUser,
@@ -117,6 +128,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         // Mark onboarding as completed upon successful login
         _sharedPrefs.setOnboardingCompleted(true);
+        await _startRealtime();
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
@@ -313,6 +325,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // Mark onboarding as completed upon successful Google login
       _sharedPrefs.setOnboardingCompleted(true);
+      await _startRealtime();
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
@@ -447,6 +460,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       try {
         // Exchange Firebase ID Token for Backend JWT
         final user = await _authRepository.verifyAndLogin();
+        await _startRealtime();
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
@@ -469,6 +483,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   // Logout
   Future<void> logout() async {
     await _authRepository.logout();
+    _socketService.dispose();
     state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
   }
 
@@ -477,6 +492,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       await _authRepository.deleteAccount();
+      _socketService.dispose();
       state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
     } catch (e) {
       state = state.copyWith(
@@ -600,5 +616,6 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((
 ) {
   final authRepository = ref.watch(authRepositoryProvider);
   final sharedPrefs = ref.watch(sharedPrefsCacheProvider);
-  return AuthNotifier(authRepository, sharedPrefs);
+  final socketService = ref.watch(socketServiceProvider);
+  return AuthNotifier(authRepository, sharedPrefs, socketService);
 });

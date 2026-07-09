@@ -17,40 +17,31 @@ def initialize_firebase():
         # Check if already initialized
         firebase_admin.get_app()
     except ValueError:
-        # Not initialized, proceed with initialization
+        # Not initialized, proceed with initialization.
+        # Single source of truth: FIREBASE_CREDENTIALS_PATH env var, falling
+        # back to "serviceAccountKey.json" in the working directory. Do NOT
+        # add extra fallback filenames here -- silently picking whichever
+        # credential file happens to exist on disk is what caused stale/
+        # rotated keys to be loaded and produce "Invalid JWT Signature".
         import json
-        possible_files = [
-            os.getenv('FIREBASE_CREDENTIALS_PATH'),
-            "serviceAccountKey.json",
-            "health-mate-44e8b-firebase-adminsdk-fbsvc-ff9a15b67d.json",
-            "healt-mate-44e8b-firebase-adminsdk-fbsvc-ff9a15b67d.json"
-        ]
-        
-        cred_dict = None
-        for file_name in possible_files:
-            if file_name and os.path.exists(file_name):
-                print(f"📂 Reading and sanitizing Firebase credentials: {file_name}")
-                try:
-                    with open(file_name, 'r') as f:
-                        cred_dict = json.load(f)
-                    # FIX: Manually ensure the private key has real newlines
-                    if 'private_key' in cred_dict:
-                        cred_dict['private_key'] = cred_dict['private_key'].replace('\\n', '\n')
-                    cred = credentials.Certificate(cred_dict)
-                    break
-                except Exception as e:
-                    print(f"⚠️ Error reading {file_name}: {e}")
-        
+        file_name = os.getenv('FIREBASE_CREDENTIALS_PATH') or "serviceAccountKey.json"
+
+        cred = None
+        if os.path.exists(file_name):
+            print(f"📂 Reading and sanitizing Firebase credentials: {file_name}")
+            try:
+                with open(file_name, 'r') as f:
+                    cred_dict = json.load(f)
+                # FIX: Manually ensure the private key has real newlines
+                if 'private_key' in cred_dict:
+                    cred_dict['private_key'] = cred_dict['private_key'].replace('\\n', '\n')
+                cred = credentials.Certificate(cred_dict)
+            except Exception as e:
+                print(f"⚠️ Error reading {file_name}: {e}")
+
         if not cred:
-            # Check environment variables
-            firebase_project_id = os.getenv('FIREBASE_PROJECT_ID')
-            # ... (rest of logic)
-            if firebase_project_id:
-                 # ... construct cred_dict
-                 pass
-            else:
-                 print("WARNING: Firebase Credentials not found. Authentication may fail.")
-                 return
+            print(f"WARNING: Firebase credentials not found at '{file_name}'. Authentication may fail.")
+            return
 
         import datetime
         try:
@@ -201,56 +192,72 @@ async def send_push_notification(
     title: str,
     body: str,
     data: Optional[Dict[str, str]] = None
-) -> str:
+) -> tuple[Optional[str], bool]:
     """
     Send a push notification to a specific device via FCM
-    
+
     Args:
         token: Device registration token
         title: Notification title
         body: Notification body
         data: Additional data payload (all values must be strings)
-        
-    Returns:
-        Message ID string
-    """
-    try:
-        # Prepare data payload (ensure all values are strings)
-        payload = data or {}
-        # Firebase requires all data values to be strings
-        string_payload = {k: str(v) for k, v in payload.items()}
-        
-        # Add title and body to payload so the app can use them
-        if 'title' not in string_payload:
-            string_payload['title'] = title
-        if 'body' not in string_payload:
-            string_payload['body'] = body
 
-        # THE FIX: By NOT providing the 'notification' parameter, 
-        # Firebase sends a "Data-only" message. This prevents the OS 
-        # from showing its own silent notification, avoiding duplication.
-        message = messaging.Message(
-            data=string_payload,
-            token=token,
-            android=messaging.AndroidConfig(
-                priority='high',
-            ),
-        )
-        
+    Returns:
+        Tuple of (message_id or None, token_is_invalid).
+        `token_is_invalid` is only True when FCM confirms the *device token*
+        itself is dead (unregistered/mismatched sender) -- callers should
+        only wipe the user's stored fcm_token in that case. Any other
+        failure (credentials, network, quota) is transient and must not be
+        mistaken for a bad device token.
+    """
+    # Firebase requires all data values to be strings
+    payload = data or {}
+    string_payload = {k: str(v) for k, v in payload.items()}
+    if 'title' not in string_payload:
+        string_payload['title'] = title
+    if 'body' not in string_payload:
+        string_payload['body'] = body
+
+    # By NOT providing the 'notification' parameter, Firebase sends a
+    # "Data-only" message. This prevents the OS from showing its own silent
+    # notification, avoiding duplication.
+    message = messaging.Message(
+        data=string_payload,
+        token=token,
+        android=messaging.AndroidConfig(
+            priority='high',
+        ),
+    )
+
+    try:
         response = messaging.send(message)
         print(f"✅ Successfully sent push notification: {response}")
-        return response
+        return response, False
+    except (messaging.UnregisteredError, messaging.SenderIdMismatchError) as e:
+        # The device token itself is dead -- safe to clear it.
+        print(f"❌ FCM token invalid for this device: {str(e)}")
+        return None, True
     except Exception as e:
         import datetime
         print(f"⏰ Server Local Time: {datetime.datetime.now()}")
         print(f"❌ FCM Error: {str(e)}")
-        
-        # If it's an auth error, try to force re-initialize for next time
+
+        # If it's a credential/auth error, re-initialize and retry ONCE so
+        # the notification isn't silently dropped for this trigger.
         if "invalid_grant" in str(e).lower() or "signature" in str(e).lower():
-            print("� Attempting to refresh Firebase initialization...")
+            print("🔄 Attempting to refresh Firebase initialization and retry send...")
             try:
                 firebase_admin.delete_app(firebase_admin.get_app())
                 initialize_firebase()
-            except:
-                pass
-        return ""
+                response = messaging.send(message)
+                print(f"✅ Retry succeeded: {response}")
+                return response, False
+            except (messaging.UnregisteredError, messaging.SenderIdMismatchError) as e2:
+                print(f"❌ FCM token invalid for this device: {str(e2)}")
+                return None, True
+            except Exception as e2:
+                print(f"❌ Retry after credential refresh also failed: {str(e2)}")
+                return None, False
+
+        # Transient/unknown error -- do NOT report the token as invalid.
+        return None, False

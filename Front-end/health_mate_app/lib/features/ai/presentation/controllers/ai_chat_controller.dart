@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../../../core/constants/app_constants.dart';
 import '../../data/ai_repository.dart';
 import '../../domain/chat_message.dart';
-import '../../../../core/constants/app_constants.dart';
 
 class AiChatState {
   final List<ChatMessage> messages;
@@ -39,23 +40,56 @@ class AiChatState {
   }
 }
 
+class AiChatProviderArgs {
+  final String locale;
+  final String? initialSessionId;
+  final String? initialContextMessage;
+
+  const AiChatProviderArgs({
+    required this.locale,
+    this.initialSessionId,
+    this.initialContextMessage,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is AiChatProviderArgs &&
+        other.locale == locale &&
+        other.initialSessionId == initialSessionId &&
+        other.initialContextMessage == initialContextMessage;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        locale,
+        initialSessionId,
+        initialContextMessage,
+      );
+}
+
 class AiChatController extends StateNotifier<AiChatState> {
   final AIRepository _repository;
   final String _locale;
+  final String? _initialContextMessage;
 
-  AiChatController(this._repository, this._locale)
-      : super(AiChatState(
-          messages: [],
-          sessionId: const Uuid().v4(),
-          currentSymptoms: [],
-        )) {
+  AiChatController(this._repository, AiChatProviderArgs args)
+      : _locale = args.locale,
+        _initialContextMessage = args.initialContextMessage,
+        super(
+          AiChatState(
+            messages: [],
+            sessionId: args.initialSessionId ?? const Uuid().v4(),
+            currentSymptoms: [],
+          ),
+        ) {
     _sendInitialMessage();
   }
 
   void _sendInitialMessage() {
-    final initialText = _locale == 'ar'
-        ? SymptomCheckerConstants.chatInitialMessageAr
-        : SymptomCheckerConstants.chatInitialMessageEn;
+    final initialText = _initialContextMessage ??
+        (_locale == 'ar'
+            ? SymptomCheckerConstants.chatInitialMessageAr
+            : SymptomCheckerConstants.chatInitialMessageEn);
 
     state = state.copyWith(
       messages: [
@@ -84,14 +118,13 @@ class AiChatController extends StateNotifier<AiChatState> {
       error: null,
     );
 
-    // Language Mismatch Guard (Bidirectional)
     final bool isInputArabic = _isArabic(text);
     final bool isInputEnglish = _isEnglish(text);
     final bool isAppArabic = _locale == 'ar';
     final bool isAppEnglish = _locale == 'en';
 
     bool mismatchDetected = false;
-    String adviceText = "";
+    String adviceText = '';
 
     if (isInputArabic && isAppEnglish) {
       mismatchDetected = true;
@@ -100,7 +133,7 @@ class AiChatController extends StateNotifier<AiChatState> {
     } else if (isInputEnglish && isAppArabic) {
       mismatchDetected = true;
       adviceText =
-          "لاحظت أنك تكتب بالإنجليزية بينما التطبيق باللغة العربية. للحصول على نتائج أكثر دقة، هل تود تحويل لغة التطبيق إلى الإنجليزية؟";
+          'لاحظت أنك تكتب بالإنجليزية بينما التطبيق باللغة العربية. للحصول على نتائج أكثر دقة، هل تود تحويل لغة التطبيق إلى الإنجليزية؟';
     }
 
     if (mismatchDetected) {
@@ -130,10 +163,23 @@ class AiChatController extends StateNotifier<AiChatState> {
 
       final aiMessage = ChatMessage.fromJson(response);
 
+      // Union with the previous list rather than replacing it outright.
+      // The backend's `found_symptoms` is normally already the full
+      // cumulative list for the session (chat_symptom_checker appends new
+      // extractions server-side), but after a final diagnosis the server
+      // resets its session state for the *next* cycle -- the very next
+      // response can come back with a short/empty list even though the
+      // conversation continues. Blindly replacing on that turn made
+      // previously-mentioned symptoms disappear from the UI. Unioning never
+      // loses a symptom the user already reported; `clearChat()` is the only
+      // place currentSymptoms should ever actually shrink.
+      final newSymptoms = aiMessage.foundSymptoms ?? const [];
+      final mergedSymptoms = <String>{...state.currentSymptoms, ...newSymptoms}.toList();
+
       state = state.copyWith(
         messages: [...state.messages, aiMessage],
         isLoading: false,
-        currentSymptoms: aiMessage.foundSymptoms ?? state.currentSymptoms,
+        currentSymptoms: mergedSymptoms,
       );
     } catch (e) {
       state = state.copyWith(
@@ -148,7 +194,6 @@ class AiChatController extends StateNotifier<AiChatState> {
   }
 
   bool _isEnglish(String text) {
-    // Detect if text contains primarily Latin characters
     return text.contains(RegExp(r'[a-zA-Z]'));
   }
 
@@ -162,9 +207,8 @@ class AiChatController extends StateNotifier<AiChatState> {
   }
 }
 
-final aiChatProvider =
-    StateNotifierProvider.family<AiChatController, AiChatState, String>(
-        (ref, locale) {
+final aiChatProvider = StateNotifierProvider.family<AiChatController,
+    AiChatState, AiChatProviderArgs>((ref, args) {
   final repository = ref.watch(aiRepositoryProvider);
-  return AiChatController(repository, locale);
+  return AiChatController(repository, args);
 });

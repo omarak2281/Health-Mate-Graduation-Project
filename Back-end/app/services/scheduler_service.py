@@ -3,6 +3,7 @@ import logging
 import datetime
 import asyncio
 from typing import List
+from apscheduler.jobstores.base import JobLookupError
 from sqlalchemy import select
 from app.core.scheduler import scheduler
 from app.core.database import AsyncSessionLocal
@@ -106,7 +107,12 @@ async def schedule_snooze_job(user_id: uuid.UUID, medication_ids: List[uuid.UUID
     Schedules a one-time 'snooze' alarm to fire after a delay.
     Convert UUIDs to strings for safe serialization in APScheduler.
     """
-    run_time = datetime.datetime.now() + datetime.timedelta(minutes=delay_minutes)
+    # Use the scheduler's own timezone (Africa/Cairo) for "now" -- a naive
+    # datetime.now() reflects the container's OS clock (UTC by default in
+    # Docker), which APScheduler then mislabels as Africa/Cairo time,
+    # shifting every snooze run_date ~3 hours into the past and causing it
+    # to be silently dropped as "missed" once past misfire_grace_time.
+    run_time = datetime.datetime.now(scheduler.timezone) + datetime.timedelta(minutes=delay_minutes)
     job_id = f"snooze_{user_id}_{uuid.uuid4().hex[:8]}"
     
     # Convert UUIDs to strings to avoid serialization issues
@@ -262,3 +268,58 @@ async def delete_medication_jobs(medication_id: uuid.UUID, user_id: uuid.UUID, d
     else:
         async with AsyncSessionLocal() as session:
             await sync_user_medication_jobs(session, user_id)
+
+
+async def trigger_bp_reminder(patient_id: uuid.UUID, time_str: str):
+    """
+    Core BP measurement reminder trigger: runs at one of the 3 daily scheduled times.
+    """
+    logger.info(f"🔔 Triggering BP measurement reminder for patient: {patient_id} at {time_str}")
+
+    async with AsyncSessionLocal() as db:
+        try:
+            await notification_service.create_notification(
+                db=db,
+                user_id=str(patient_id),
+                notification_type=NotificationType.BP_MEASUREMENT_REMINDER,
+                title="vitals.bp_reminder_title",
+                message="vitals.bp_reminder_body",
+                data={"scheduled_time": time_str, "type": "bp_reminder"},
+            )
+            await db.commit()
+        except Exception as e:
+            logger.error(f"❌ Error in trigger_bp_reminder: {str(e)}", exc_info=True)
+
+
+async def run_daily_drift_check():
+    """Scheduled task to check for blood pressure calibration drift"""
+    from app.services.bp_drift_service import get_bp_drift_service
+    logger.info("Starting daily BP calibration drift and staleness check")
+    async with AsyncSessionLocal() as db:
+        try:
+            drift_service = get_bp_drift_service()
+            await drift_service.check_all_patients(db)
+            logger.info("Finished daily BP calibration drift and staleness check")
+        except Exception as e:
+            logger.error(f"Error checking BP drift: {e}", exc_info=True)
+
+
+def register_system_jobs():
+    """Register application-wide periodic tasks"""
+    logger.info("Registering system periodic jobs")
+    drift_job_id = "bp_daily_drift_check"
+    try:
+        if scheduler.get_job(drift_job_id):
+            scheduler.remove_job(drift_job_id)
+    except JobLookupError:
+        pass
+
+    # Run once per day at 3:00 AM Cairo time
+    scheduler.add_job(
+        run_daily_drift_check,
+        "cron",
+        hour=3,
+        minute=0,
+        id=drift_job_id,
+        misfire_grace_time=3600
+    )

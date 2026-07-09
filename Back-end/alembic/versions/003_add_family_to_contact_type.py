@@ -17,12 +17,13 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Add 'family' to ContactType enum
+    # Add 'FAMILY' to ContactType enum.
+    # SQLAlchemy persists Python enum member names for this model.
     # PostgreSQL doesn't allow ALTER TYPE ... ADD VALUE in a transaction until PG 12+, 
     # but Alembic can handle it if we use autocommit.
     # However, for simplicity in dev/production, we use this:
     with op.get_context().autocommit_block():
-        op.execute("ALTER TYPE contacttype ADD VALUE IF NOT EXISTS 'family'")
+        op.execute("ALTER TYPE contacttype ADD VALUE IF NOT EXISTS 'FAMILY'")
 
 
 def downgrade() -> None:

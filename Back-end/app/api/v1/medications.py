@@ -27,6 +27,46 @@ from datetime import datetime
 router = APIRouter(prefix="/medications", tags=["Medications"])
 
 
+async def _is_linked_caregiver(
+    db: AsyncSession,
+    caregiver_id: uuid.UUID,
+    patient_id: uuid.UUID,
+) -> bool:
+    link_result = await db.execute(
+        select(PatientCaregiverLink)
+        .where(PatientCaregiverLink.caregiver_id == caregiver_id)
+        .where(PatientCaregiverLink.patient_id == patient_id)
+        .where(PatientCaregiverLink.is_active == True)
+    )
+    return link_result.scalar_one_or_none() is not None
+
+
+async def _get_medication_with_access(
+    db: AsyncSession,
+    medication_id: uuid.UUID,
+    current_user: User,
+) -> Medication:
+    result = await db.execute(select(Medication).where(Medication.id == medication_id))
+    medication = result.scalar_one_or_none()
+
+    if not medication:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medication not found"
+        )
+
+    if medication.user_id == current_user.id:
+        return medication
+
+    if await _is_linked_caregiver(db, current_user.id, medication.user_id):
+        return medication
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Not authorized"
+    )
+
+
 @router.post("", response_model=MedicationResponse, status_code=status.HTTP_201_CREATED)
 async def create_medication(
     med_data: MedicineCreate,
@@ -84,6 +124,29 @@ async def list_medications(
     return result.scalars().all()
 
 
+@router.get("/patient/{patient_id}", response_model=List[MedicationResponse])
+async def list_patient_medications(
+    patient_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """List medications for a linked patient."""
+    if current_user.id != patient_id and not await _is_linked_caregiver(
+        db, current_user.id, patient_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Patient is not linked to you."
+        )
+
+    result = await db.execute(
+        select(Medication)
+        .where(Medication.user_id == patient_id)
+        .order_by(Medication.created_at.desc())
+    )
+    return result.scalars().all()
+
+
 @router.get("/{medication_id}", response_model=MedicationResponse)
 async def get_medication(
     medication_id: uuid.UUID,
@@ -91,20 +154,7 @@ async def get_medication(
     db: AsyncSession = Depends(get_db)
 ):
     """Get specific medication details"""
-    result = await db.execute(
-        select(Medication)
-        .where(Medication.id == medication_id)
-        .where(Medication.user_id == current_user.id)
-    )
-    medication = result.scalar_one_or_none()
-    
-    if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found"
-        )
-    
-    return medication
+    return await _get_medication_with_access(db, medication_id, current_user)
 
 
 @router.put("/{medication_id}", response_model=MedicationResponse)
@@ -115,18 +165,7 @@ async def update_medication(
     db: AsyncSession = Depends(get_db)
 ):
     """Update medication details"""
-    result = await db.execute(
-        select(Medication)
-        .where(Medication.id == medication_id)
-        .where(Medication.user_id == current_user.id)
-    )
-    medication = result.scalar_one_or_none()
-    
-    if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found"
-        )
+    medication = await _get_medication_with_access(db, medication_id, current_user)
     
     # Update fields
     for field, value in med_data.model_dump(exclude_unset=True).items():
@@ -148,18 +187,8 @@ async def delete_medication(
     db: AsyncSession = Depends(get_db)
 ):
     """Delete medication and all associated adherence records."""
-    result = await db.execute(
-        select(Medication)
-        .where(Medication.id == medication_id)
-        .where(Medication.user_id == current_user.id)
-    )
-    medication = result.scalar_one_or_none()
-
-    if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found"
-        )
+    medication = await _get_medication_with_access(db, medication_id, current_user)
+    medication_owner_id = medication.user_id
 
     # 1. Explicitly delete all adherence logs for this medication first.
     #    This avoids the IntegrityError caused by SQLAlchemy attempting to
@@ -178,7 +207,7 @@ async def delete_medication(
 
     # 3. Remove scheduled alarm jobs from the background scheduler AFTER commit,
     #    so sync_user_medication_jobs won't find the deleted medication.
-    await delete_medication_jobs(medication_id, current_user.id, db)
+    await delete_medication_jobs(medication_id, medication_owner_id, db)
 
     return None
 
@@ -242,6 +271,7 @@ async def confirm_medication_taken(
             select(PatientCaregiverLink)
             .where(PatientCaregiverLink.caregiver_id == current_user.id)
             .where(PatientCaregiverLink.patient_id == medication.user_id)
+            .where(PatientCaregiverLink.is_active == True)
         )
         if not link_check.scalar_one_or_none():
             raise HTTPException(status_code=403, detail="Not authorized")
@@ -270,12 +300,7 @@ async def get_medication_adherence(
 ):
     """Get adherence history for a specific medication"""
     # Verify ownership or link
-    result = await db.execute(select(Medication).where(Medication.id == medication_id))
-    medication = result.scalar_one_or_none()
-    
-    if not medication or (medication.user_id != current_user.id):
-        # Basic check, caregiver check could be added here too
-        raise HTTPException(status_code=403, detail="Not authorized")
+    medication = await _get_medication_with_access(db, medication_id, current_user)
 
     adherence_result = await db.execute(
         select(MedicationAdherence)

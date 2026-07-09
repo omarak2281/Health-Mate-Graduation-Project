@@ -15,12 +15,15 @@ from app.core.database import Base
 class NotificationType(str, enum.Enum):
     """Type of notification"""
     EMERGENCY_BP_ALERT = "emergency_bp_alert"
+    SYMPTOM_ASSESSMENT_ALERT = "symptom_assessment_alert"
     MEDICATION_REMINDER = "medication_reminder"
     SENSOR_DISCONNECTION = "sensor_disconnection"
     MEDICINE_BOX_FAULT = "medicine_box_fault"
     NEW_CAREGIVER_LINKED = "new_caregiver_linked"
     INCOMING_CALL = "incoming_call"
     MISSED_CALL = "missed_call"
+    BP_DRIFT_ALERT = "bp_drift_alert"
+    BP_MEASUREMENT_REMINDER = "bp_measurement_reminder"
 
 
 class Notification(Base):

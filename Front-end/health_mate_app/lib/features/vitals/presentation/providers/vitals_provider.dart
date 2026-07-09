@@ -26,9 +26,10 @@ class VitalsState {
     Map<String, dynamic>? stats,
     bool? isLoading,
     String? errorMessage,
+    bool clearCurrentBP = false,
   }) {
     return VitalsState(
-      currentBP: currentBP ?? this.currentBP,
+      currentBP: clearCurrentBP ? null : currentBP ?? this.currentBP,
       history: history ?? this.history,
       stats: stats ?? this.stats,
       isLoading: isLoading ?? this.isLoading,
@@ -54,10 +55,20 @@ class VitalsNotifier extends StateNotifier<VitalsState> {
       final bp = await _repository.getCurrentBP(patientId: patientId);
       state = state.copyWith(
         currentBP: bp,
+        clearCurrentBP: bp == null,
         isLoading: false,
         errorMessage: null,
       );
     } catch (e) {
+      if (patientId != null) {
+        state = state.copyWith(
+          clearCurrentBP: true,
+          isLoading: false,
+          errorMessage: e.toString(),
+        );
+        return;
+      }
+
       // Try cache
       final cachedBP = _repository.getCachedLatestBP();
       state = state.copyWith(
@@ -69,7 +80,7 @@ class VitalsNotifier extends StateNotifier<VitalsState> {
   }
 
   // Create BP reading
-  Future<void> createBPReading({
+  Future<VitalSign?> createBPReading({
     required int systolic,
     required int diastolic,
     int? heartRate,
@@ -93,8 +104,10 @@ class VitalsNotifier extends StateNotifier<VitalsState> {
 
       // Reload history
       await loadHistory();
+      return newBP;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return null;
     }
   }
 
@@ -123,16 +136,83 @@ class VitalsNotifier extends StateNotifier<VitalsState> {
 // Provider for current user
 final vitalsNotifierProvider =
     StateNotifierProvider<VitalsNotifier, VitalsState>((ref) {
-      final repository = ref.watch(vitalsRepositoryProvider);
-      return VitalsNotifier(repository);
-    });
+  final repository = ref.watch(vitalsRepositoryProvider);
+  return VitalsNotifier(repository);
+});
 
 // Family provider for patients (for caregivers)
 final patientVitalsNotifierProvider =
     StateNotifierProvider.family<VitalsNotifier, VitalsState, String>((
-      ref,
-      patientId,
-    ) {
-      final repository = ref.watch(vitalsRepositoryProvider);
-      return VitalsNotifier(repository, patientId: patientId);
-    });
+  ref,
+  patientId,
+) {
+  final repository = ref.watch(vitalsRepositoryProvider);
+  return VitalsNotifier(repository, patientId: patientId);
+});
+
+/// State for the 8-hour BP reminder settings section.
+class BPReminderState {
+  final List<String> scheduledTimes; // "HH:MM", ordered
+  final bool isLoading;
+  final String? errorMessage;
+
+  BPReminderState({
+    this.scheduledTimes = const [],
+    this.isLoading = false,
+    this.errorMessage,
+  });
+
+  BPReminderState copyWith({
+    List<String>? scheduledTimes,
+    bool? isLoading,
+    String? errorMessage,
+  }) {
+    return BPReminderState(
+      scheduledTimes: scheduledTimes ?? this.scheduledTimes,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
+    );
+  }
+}
+
+class BPReminderNotifier extends StateNotifier<BPReminderState> {
+  final VitalsRepository _repository;
+
+  BPReminderNotifier(this._repository) : super(BPReminderState()) {
+    loadReminders();
+  }
+
+  Future<void> loadReminders() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final reminders = await _repository.getBPReminders();
+      final times = reminders.map((r) => r['scheduled_time'] as String).toList()
+        ..sort();
+      state = state.copyWith(
+          scheduledTimes: times, isLoading: false, errorMessage: null);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  Future<bool> scheduleDaily(String startTime) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final reminders = await _repository.scheduleDailyBPReminders(startTime);
+      final times = reminders.map((r) => r['scheduled_time'] as String).toList()
+        ..sort();
+      state = state.copyWith(
+          scheduledTimes: times, isLoading: false, errorMessage: null);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+}
+
+final bpReminderNotifierProvider =
+    StateNotifierProvider<BPReminderNotifier, BPReminderState>((ref) {
+  final repository = ref.watch(vitalsRepositoryProvider);
+  return BPReminderNotifier(repository);
+});

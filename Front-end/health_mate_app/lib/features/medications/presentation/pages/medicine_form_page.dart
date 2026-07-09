@@ -182,7 +182,12 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iotState = ref.watch(iotNotifierProvider);
-    final medsState = ref.watch(medicationsNotifierProvider);
+    final medsState = widget.patientId != null
+        ? ref.watch(patientMedicationsNotifierProvider(widget.patientId!))
+        : ref.watch(medicationsNotifierProvider);
+    final fieldTextStyle = AppStyles.bodyStyle.copyWith(
+      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+    );
 
     return Scaffold(
       backgroundColor:
@@ -223,7 +228,10 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
               _buildLabel(LocaleKeys.medicationsMedicationName.tr(), isDark),
               TextFormField(
                 controller: _nameController,
+                style: fieldTextStyle,
+                cursorColor: AppColors.expertTeal,
                 decoration: AppStyles.inputDecoration(
+                    context: context,
                     hint: LocaleKeys.medicationsMedicationNameHint.tr(),
                     icon: Icons.medication),
                 validator: (v) => v == null || v.isEmpty
@@ -236,8 +244,11 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
               _buildLabel(LocaleKeys.medicationsInstructions.tr(), isDark),
               TextFormField(
                 controller: _instructionsController,
+                style: fieldTextStyle,
+                cursorColor: AppColors.expertTeal,
                 maxLines: 3,
                 decoration: AppStyles.inputDecoration(
+                    context: context,
                     hint: LocaleKeys.medicationsInstructionsHint.tr(),
                     icon: Icons.description),
               ),
@@ -247,7 +258,10 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
               _buildLabel(LocaleKeys.medicationsDosage.tr(), isDark),
               TextFormField(
                 controller: _doseController,
+                style: fieldTextStyle,
+                cursorColor: AppColors.expertTeal,
                 decoration: AppStyles.inputDecoration(
+                    context: context,
                     hint: LocaleKeys.medicationsDosageHint.tr(),
                     icon: Icons.monitor_weight),
                 validator: (v) => v == null || v.isEmpty
@@ -260,6 +274,11 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
               _buildLabel(LocaleKeys.medicationsFrequency.tr(), isDark),
               DropdownButtonFormField<int>(
                 initialValue: _timesPerDay,
+                dropdownColor: isDark ? AppColors.surfaceDark : AppColors.white,
+                style: fieldTextStyle,
+                iconEnabledColor: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
                 items: List.generate(3, (i) => i + 1)
                     .map((val) => DropdownMenuItem(
                         value: val,
@@ -268,6 +287,7 @@ class _MedicineFormPageState extends ConsumerState<MedicineFormPage> {
                     .toList(),
                 onChanged: (val) => _updateTimesPerDay(val ?? 1),
                 decoration: AppStyles.inputDecoration(
+                    context: context,
                     hint: LocaleKeys.medicationsFrequency.tr(),
                     icon: Icons.repeat),
               ),

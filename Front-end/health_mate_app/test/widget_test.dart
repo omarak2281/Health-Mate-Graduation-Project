@@ -1,30 +1,49 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:health_mate_app/main.dart';
+import 'package:health_mate_app/features/symptom_checker/data/models/symptom_checker_models.dart';
+import 'package:health_mate_app/features/symptom_checker/domain/entities/assessment_entities.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const HealthMateApp());
+  test('structured assessment input serializes to the backend contract', () {
+    const input = AssessmentInputEntity(
+      sourceVitalId: '11111111-1111-1111-1111-111111111111',
+      categoryId: 'heart_bp',
+      symptoms: [
+        SelectedSymptomEntity(
+          id: 'chest_pain',
+          name: 'Chest Pain',
+          severity: 3,
+          redFlag: true,
+        ),
+      ],
+      durationDays: 1,
+      ageGroup: 'adult',
+      knownConditions: ['hypertension'],
+      vitals: AssessmentVitalsEntity(systolic: 150, diastolic: 95),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(input.toJson(), {
+      'source_vital_id': '11111111-1111-1111-1111-111111111111',
+      'category_id': 'heart_bp',
+      'symptoms': [
+        {'id': 'chest_pain', 'severity': 3},
+      ],
+      'duration_days': 1,
+      'age_group': 'adult',
+      'known_conditions': ['hypertension'],
+      'vitals': {'systolic': 150, 'diastolic': 95},
+    });
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('symptom model parses synonyms for local search', () {
+    final symptom = SymptomModel.fromJson({
+      'id': 'cough',
+      'name': 'Cough',
+      'description': 'Airway clearing cough',
+      'red_flag': false,
+      'synonyms': ['coughing', 'كحة'],
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(symptom.synonyms, contains('coughing'));
+    expect(symptom.synonyms, contains('كحة'));
   });
 }

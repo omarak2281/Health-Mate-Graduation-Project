@@ -39,7 +39,7 @@ class MedicalContact(Base):
     # Contact Info
     name = Column(String(255), nullable=False)
     phone = Column(String(50), nullable=False)
-    contact_type = Column(SQLEnum(ContactType), nullable=False)
+    contact_type = Column(SQLEnum(ContactType, name="contacttype"), nullable=False)
     notes = Column(Text, nullable=True)
     
     # Timestamps

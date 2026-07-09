@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/responsive.dart';
@@ -7,16 +8,17 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../../core/providers/navigation_provider.dart';
-import '../../../ai/presentation/pages/ai_symptom_chat_page.dart';
+import '../../../symptom_checker/presentation/pages/symptom_checker_wizard_page.dart';
+import '../../../ai/presentation/pages/symptom_checker_page.dart';
 import '../../../medications/presentation/pages/medications_page.dart';
-import '../../../../core/services/socket_service.dart';
-import '../../../communication/presentation/pages/incoming_call_page.dart';
 import '../widgets/patient_dashboard_widgets.dart';
 import '../widgets/patient_graphs.dart';
 import '../../../contacts/presentation/pages/medical_contacts_page.dart';
 import '../../../../core/widgets/connectivity_status_widget.dart';
 import '../providers/iot_provider.dart';
 import '../../../../core/services/overlay_permission_service.dart';
+import '../../../vitals/presentation/pages/bp_measurement_guide_page.dart';
+import '../../../vitals/presentation/providers/vitals_provider.dart';
 
 class PatientHomePage extends ConsumerStatefulWidget {
   const PatientHomePage({super.key});
@@ -29,23 +31,7 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
   @override
   void initState() {
     super.initState();
-    // Initialize Socket Service for Incoming Calls
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final socketService = ref.read(socketServiceProvider);
-
-      socketService.onCallOffer((data) {
-        if (!mounted) return;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => IncomingCallPage(
-              callerName: data['callerName'] ?? 'Contact',
-              callerId: data['callerId'],
-              isVideo: data['isVideo'] ?? false,
-            ),
-          ),
-        );
-      });
-
       // Request overlay permission after a short delay so the home page
       // is fully rendered before showing the dialog (better UX).
       Future.delayed(const Duration(seconds: 2), () {
@@ -202,12 +188,14 @@ class _PatientHomePageState extends ConsumerState<PatientHomePage> {
   Widget _buildBody(int selectedIndex) {
     return IndexedStack(
       index: selectedIndex,
-      children: const [
+      children: [
         _DashboardWrapper(), // Case 0
-        AiSymptomChatPage(), // Case 1
-        MedicationsPage(), // Case 2
-        MedicalContactsPage(), // Case 3
-        SettingsPage(), // Case 4
+        ApiConstants.symptomCheckerV2Enabled
+            ? const SymptomCheckerWizardPage()
+            : const SymptomCheckerPage(), // Case 1
+        const MedicationsPage(), // Case 2
+        const MedicalContactsPage(), // Case 3
+        const SettingsPage(), // Case 4
       ],
     );
   }
@@ -232,15 +220,80 @@ class _PatientHomePageStateWrapper extends ConsumerStatefulWidget {
 
 class _PatientHomePageStateWrapperState
     extends ConsumerState<_PatientHomePageStateWrapper> {
+  Timer? _statusTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Poll sensor status every 5 seconds for real-time dashboard accuracy
+    _statusTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) {
+        ref.read(iotNotifierProvider.notifier).loadStatus();
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(vitalsNotifierProvider.notifier).loadCurrentBP();
+        ref.read(vitalsNotifierProvider.notifier).loadHistory();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This is essentially moving the _buildDashboard logic here
     // but simplified to ensure it works within IndexedStack
     final user = ref.watch(authNotifierProvider).user;
+    final vitalsState = ref.watch(vitalsNotifierProvider);
+    final currentBP = vitalsState.currentBP;
+
+    // Calculate today's average and max heart rates
+    final today = DateTime.now();
+    final todayReadings = vitalsState.history.where((reading) =>
+        reading.measuredAt.year == today.year &&
+        reading.measuredAt.month == today.month &&
+        reading.measuredAt.day == today.day &&
+        reading.heartRate != null);
+
+    final avgHeartRate = todayReadings.isEmpty
+        ? 0
+        : (todayReadings.map((r) => r.heartRate!).reduce((a, b) => a + b) /
+                todayReadings.length)
+            .round();
+    final maxHeartRate = todayReadings.isEmpty
+        ? 0
+        : todayReadings
+            .map((r) => r.heartRate!)
+            .reduce((a, b) => a > b ? a : b);
+
+    // Same aggregation as heart rate, over readings that carry an SpO2 value
+    // instead -- a reading can have one field without the other.
+    final todaySpo2Readings = vitalsState.history.where((reading) =>
+        reading.measuredAt.year == today.year &&
+        reading.measuredAt.month == today.month &&
+        reading.measuredAt.day == today.day &&
+        reading.spo2 != null);
+
+    final avgSpo2 = todaySpo2Readings.isEmpty
+        ? 0
+        : (todaySpo2Readings.map((r) => r.spo2!).reduce((a, b) => a + b) /
+                todaySpo2Readings.length)
+            .round();
+    final maxSpo2 = todaySpo2Readings.isEmpty
+        ? 0
+        : todaySpo2Readings.map((r) => r.spo2!).reduce((a, b) => a > b ? a : b);
 
     return RefreshIndicator(
       onRefresh: () async {
-        // ref.read(vitalsProvider.notifier).fetchVitals();
+        await ref.read(vitalsNotifierProvider.notifier).loadCurrentBP();
+        await ref.read(vitalsNotifierProvider.notifier).loadHistory();
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -249,108 +302,61 @@ class _PatientHomePageStateWrapperState
           children: [
             PatientUserHeader(user: user),
             SizedBox(height: context.h(2)),
-            const _SensorsStatusRow(),
-            SizedBox(height: context.h(1.5)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: context.w(5)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const HeartRateCard(
-                    heartRate: 0,
-                    avgToday: 0,
-                    maxToday: 0,
-                  ),
-                  SizedBox(height: context.h(2.5)),
-                  BloodPressureCardExpert(
-                    systolic: '0',
-                    diastolic: '0',
-                    time: '--:--',
-                    onCheckNow: () {
-                      ref.read(navigationProvider.notifier).setIndex(1);
+                  PatientQuickActionCard(
+                    icon: Icons.monitor_heart,
+                    label: 'vitals.bp_check_now'.tr(),
+                    subtitle: 'vitals.bp_check_now_desc'.tr(),
+                    color: AppColors.primary,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BPMeasurementGuidePage(),
+                        ),
+                      );
                     },
                   ),
                   SizedBox(height: context.h(2.5)),
-                  MeasurementsHistoryCard(
-                    onTap: () {},
+                  HeartRateCard(
+                    heartRate: currentBP?.heartRate,
+                    avgToday: todayReadings.isEmpty ? null : avgHeartRate,
+                    maxToday: todayReadings.isEmpty ? null : maxHeartRate,
+                    riskLevel: currentBP?.heartRateRiskLevel,
+                  ),
+                  SizedBox(height: context.h(2.5)),
+                  SpO2Card(
+                    spo2: currentBP?.spo2,
+                    avgToday: todaySpo2Readings.isEmpty ? null : avgSpo2,
+                    maxToday: todaySpo2Readings.isEmpty ? null : maxSpo2,
+                    riskLevel: currentBP?.spo2RiskLevel,
+                  ),
+                  SizedBox(height: context.h(2.5)),
+                  BloodPressureCardExpert(
+                    systolic: currentBP?.displaySystolic?.toString(),
+                    diastolic: currentBP?.displayDiastolic?.toString(),
+                    time: currentBP != null
+                        ? DateFormat.jm().format(currentBP.measuredAt)
+                        : '--:--',
+                    signalQuality: currentBP?.signalQuality,
+                    calibrationStatus: currentBP?.effectiveCalibrationStatus,
+                    onCheckNow: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BPMeasurementGuidePage(),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: context.h(2.5)),
                   const BloodPressureTrendCard(),
                   SizedBox(height: context.h(4)),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SensorsStatusRow extends ConsumerWidget {
-  const _SensorsStatusRow();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final iotState = ref.watch(iotNotifierProvider);
-    final sensors = iotState.sensors;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: context.w(5)),
-      child: Row(
-        children: [
-          _buildSensorPill(context, 'PPG', _getStatus(sensors, 'ppg')),
-          SizedBox(width: context.w(3)),
-          _buildSensorPill(context, 'ECG', _getStatus(sensors, 'ecg')),
-        ],
-      ),
-    );
-  }
-
-  String _getStatus(List sensors, String type) {
-    if (sensors.isEmpty) return 'disconnected';
-    try {
-      final s = sensors.firstWhere((s) => s['sensor_type'] == type,
-          orElse: () => null);
-      if (s == null) return 'disconnected';
-      return s['status'] ?? 'disconnected';
-    } catch (_) {
-      return 'disconnected';
-    }
-  }
-
-  Widget _buildSensorPill(BuildContext context, String name, String status) {
-    final isConnected = status == 'connected';
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color:
-              (isConnected ? Colors.green : Colors.red).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: (isConnected ? Colors.green : Colors.red)
-                .withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: isConnected ? Colors.green : Colors.red,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$name: ${isConnected ? "ON" : "OFF"}',
-              style: TextStyle(
-                fontSize: context.sp(12),
-                fontWeight: FontWeight.bold,
-                color: isConnected ? Colors.green : Colors.red,
               ),
             ),
           ],
@@ -428,45 +434,73 @@ class PatientUserHeader extends StatelessWidget {
                 children: [
                   // Profile Avatar with glow
                   Container(
-                    padding: EdgeInsets.all(context.w(0.8)),
+                    width: context.sp(48),
+                    height: context.sp(48),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3), width: 2),
+                        color: Colors.white.withValues(alpha: 0.5),
+                        width: 2,
+                      ),
                     ),
                     child: ClipOval(
                       child: user?.profileImage != null
-                          ? Image.network(user!.profileImage!,
-                              width: 60, height: 60, fit: BoxFit.cover)
-                          : Icon(Icons.person,
-                              size: 40,
-                              color: Colors.white.withValues(alpha: 0.9)),
+                          ? Image.network(
+                              user!.profileImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  child: Icon(
+                                    AppIcons.person,
+                                    color: Colors.white,
+                                    size: context.sp(24),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              child: Icon(
+                                AppIcons.person,
+                                color: Colors.white,
+                                size: context.sp(24),
+                              ),
+                            ),
                     ),
                   ),
                   SizedBox(width: context.w(4)),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        LocaleKeys.homeWelcome.tr(),
-                        style: TextStyle(
-                          fontSize: context.sp(14),
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontWeight: FontWeight.w400,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          LocaleKeys.homeWelcome.tr(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: context.sp(14),
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                      Text(
-                        user?.fullName ?? 'Patient',
-                        style: TextStyle(
-                          fontSize: context.sp(22),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        Text(
+                          user?.fullName ?? LocaleKeys.authPatient.tr(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: context.sp(22),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Spacer(),
+                  SizedBox(width: context.w(2)),
+                  const SensorsDeviceStatusWidget(showText: false),
+                  const SizedBox(width: 8),
                   const ConnectivityStatusWidget(showText: false),
                 ],
               ),

@@ -6,17 +6,19 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/models/user.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../../core/services/socket_service.dart';
 import '../../../contacts/presentation/pages/medical_contacts_page.dart';
-import '../../../communication/presentation/pages/incoming_call_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../linking/presentation/providers/linking_provider.dart';
 import '../../../../core/providers/navigation_provider.dart';
-import '../../../ai/presentation/pages/ai_symptom_chat_page.dart';
+import '../../../symptom_checker/presentation/pages/symptom_checker_wizard_page.dart';
+import '../../../ai/presentation/pages/symptom_checker_page.dart';
 import '../widgets/caregiver_dashboard_widgets.dart';
 import './caregiver_patient_detail_page.dart';
 import './linked_patients_page.dart';
 import '../../../../core/services/overlay_permission_service.dart';
+import '../../../vitals/presentation/providers/vitals_provider.dart';
+import '../../../notifications/presentation/providers/notifications_provider.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
 
 class CaregiverHomePage extends ConsumerStatefulWidget {
   const CaregiverHomePage({super.key});
@@ -29,22 +31,7 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
   @override
   void initState() {
     super.initState();
-    // Initialize Socket Listener for Incoming Calls from Patients
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final socketService = ref.read(socketServiceProvider);
-      socketService.onCallOffer((data) {
-        if (!mounted) return;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => IncomingCallPage(
-              callerName: data['callerName'] ?? 'Patient',
-              callerId: data['callerId'],
-              isVideo: data['isVideo'] ?? false,
-            ),
-          ),
-        );
-      });
-
       // Request overlay permission on first launch (with a 2s delay for UX)
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
@@ -199,7 +186,9 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
       case 0:
         return _buildDashboard();
       case 1:
-        return const AiSymptomChatPage();
+        return ApiConstants.symptomCheckerV2Enabled
+            ? const SymptomCheckerWizardPage()
+            : const SymptomCheckerPage();
       case 2:
         return const MedicalContactsPage();
       case 3:
@@ -212,10 +201,30 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
   Widget _buildDashboard() {
     final user = ref.watch(authNotifierProvider).user;
     final linkingState = ref.watch(linkingNotifierProvider);
+    final notificationsState = ref.watch(notificationsNotifierProvider);
+
+    final sortedNotifications = [...notificationsState.notifications]
+      ..sort((a, b) {
+        if (a.isRead != b.isRead) return a.isRead ? 1 : -1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+    final previewNotifications = sortedNotifications.take(3).toList();
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.read(linkingNotifierProvider.notifier).getLinkedUsers();
+        await Future.wait([
+          ref.read(linkingNotifierProvider.notifier).getLinkedUsers(),
+          ref.read(notificationsNotifierProvider.notifier).loadNotifications(),
+          ref.read(notificationsNotifierProvider.notifier).loadUnreadCount(),
+        ]);
+        final refreshedPatients = ref.read(linkingNotifierProvider).linkedUsers;
+
+        // Load latest vitals for all linked patients
+        for (final patient in refreshedPatients) {
+          ref
+              .read(patientVitalsNotifierProvider(patient.id).notifier)
+              .loadCurrentBP();
+        }
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -231,7 +240,7 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
                 children: [
                   CaregiverStatsCard(
                     patientCount: linkingState.linkedUsers.length,
-                    activeAlerts: 0,
+                    activeAlerts: notificationsState.unreadCount,
                   ),
                   SizedBox(height: context.h(3)),
                   CaregiverSectionHeader(
@@ -271,45 +280,108 @@ class _CaregiverHomePageState extends ConsumerState<CaregiverHomePage> {
                         .entries
                         .map((entry) {
                       final patient = entry.value;
+                      final vitals =
+                          ref.watch(patientVitalsNotifierProvider(patient.id));
+                      final currentBP = vitals.currentBP;
+
+                      String? lastBpReading;
+                      if (currentBP != null &&
+                          currentBP.displaySystolic != null &&
+                          currentBP.displayDiastolic != null) {
+                        lastBpReading =
+                            '${currentBP.displaySystolic}/${currentBP.displayDiastolic}';
+                      }
+
+                      Color statusColor = AppColors.riskNormal;
+                      String statusLabel = LocaleKeys.authLinkedPatient.tr();
+
+                      if (currentBP != null) {
+                        if (currentBP.isLow) {
+                          statusColor = AppColors.riskLow;
+                          statusLabel = LocaleKeys.vitalsRiskLow.tr();
+                        } else if (currentBP.isNormal) {
+                          statusColor = AppColors.riskNormal;
+                          statusLabel = LocaleKeys.vitalsRiskNormal.tr();
+                        } else if (currentBP.isModerate) {
+                          statusColor = AppColors.riskModerate;
+                          statusLabel = LocaleKeys.vitalsRiskModerate.tr();
+                        } else if (currentBP.isHigh) {
+                          statusColor = AppColors.riskHigh;
+                          statusLabel = LocaleKeys.vitalsRiskHigh.tr();
+                        } else if (currentBP.isCritical) {
+                          statusColor = AppColors.riskCritical;
+                          statusLabel = LocaleKeys.vitalsRiskCritical.tr();
+                        }
+                      }
+
                       return LinkedPatientCard(
                         patient: patient,
                         onTap: () => _openPatientDetail(patient),
-                        lastBpReading: null,
-                        statusLabel: LocaleKeys.authLinkedPatient.tr(),
-                        statusColor: AppColors.riskNormal,
+                        lastBpReading: lastBpReading,
+                        statusLabel: statusLabel,
+                        statusColor: statusColor,
                       );
                     }),
-                  if (linkingState.linkedUsers.length > 2)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: context.h(1)),
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const LinkedPatientsPage(),
-                          ),
-                        ),
-                        child: Text(
-                          LocaleKeys.viewAll.tr(),
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: context.sp(14),
-                          ),
-                        ),
-                      ),
-                    ),
                   SizedBox(height: context.h(3)),
                   CaregiverSectionHeader(
                     title: LocaleKeys.homeRecentAlerts.tr(),
+                    trailing: TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationsPage(),
+                        ),
+                      ),
+                      child: Text(
+                        LocaleKeys.manage.tr(),
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: context.sp(14),
+                        ),
+                      ),
+                    ),
                   ),
                   SizedBox(height: context.h(1.5)),
-                  const CaregiverAlertCard(
-                    title: '',
-                    subtitle: '',
-                    icon: Icons.notifications_none_outlined,
-                    color: AppColors.riskNormal,
-                    isEmpty: true,
-                  ),
+                  if (previewNotifications.isEmpty)
+                    const CaregiverAlertCard(
+                      title: '',
+                      subtitle: '',
+                      icon: Icons.notifications_none_outlined,
+                      color: AppColors.riskNormal,
+                      isEmpty: true,
+                    )
+                  else
+                    ...previewNotifications.map((notification) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: context.h(1.2)),
+                        child: CaregiverAlertCard(
+                          title: notification.title,
+                          subtitle: notification.message,
+                          icon: notification.isEmergency
+                              ? Icons.warning_rounded
+                              : Icons.notifications_active_rounded,
+                          color: notification.isEmergency
+                              ? AppColors.riskCritical
+                              : AppColors.primary,
+                          isUnread: !notification.isRead,
+                          onTap: () {
+                            if (!notification.isRead) {
+                              ref
+                                  .read(notificationsNotifierProvider.notifier)
+                                  .markAsRead([notification.id]);
+                            }
+                          },
+                          onMarkRead: notification.isRead
+                              ? null
+                              : () => ref
+                                  .read(notificationsNotifierProvider.notifier)
+                                  .markAsRead([notification.id]),
+                          onDelete: () => ref
+                              .read(notificationsNotifierProvider.notifier)
+                              .deleteNotification(notification.id),
+                        ),
+                      );
+                    }),
                   SizedBox(height: context.h(4)),
                 ],
               ),

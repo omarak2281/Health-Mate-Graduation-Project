@@ -12,7 +12,17 @@ from app.models.call_session import CallSession, CallType, CallStatus
 from app.models.medical_contact import MedicalContact, ContactType
 from app.models.notification import Notification, NotificationType
 from app.models.iot_device import IoTDevice, MedicineBoxDrawer, DeviceType, DeviceStatus
+from app.models.registered_device import RegisteredDevice
+from app.models.patient_calibration import PatientCalibration, CalibrationSample
+from app.models.bp_reminder import BPReminder
 from app.models.audit_log import AuditLog
+from app.models.symptom_assessment import (
+    Assessment,
+    AssessmentSymptom,
+    RedFlagTriggered,
+    SymptomChatMessage,
+    SymptomChatSession,
+)
 
 __all__ = [
     "Base",
@@ -34,5 +44,14 @@ __all__ = [
     "MedicineBoxDrawer",
     "DeviceType",
     "DeviceStatus",
+    "RegisteredDevice",
+    "PatientCalibration",
+    "CalibrationSample",
+    "BPReminder",
     "AuditLog",
+    "Assessment",
+    "AssessmentSymptom",
+    "RedFlagTriggered",
+    "SymptomChatSession",
+    "SymptomChatMessage",
 ]

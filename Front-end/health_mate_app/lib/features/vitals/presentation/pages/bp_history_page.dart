@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:ui' as ui;
 import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
@@ -37,6 +38,10 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final vitalsState = _state;
+    final completedReadings = vitalsState.history
+        .where((reading) =>
+            reading.displaySystolic != null && reading.displayDiastolic != null)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +61,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
         onRefresh: () async {
           await _notifier.loadHistory();
         },
-        child: vitalsState.history.isEmpty
+        child: completedReadings.isEmpty
             ? _buildEmptyState(context)
             : SingleChildScrollView(
                 padding: EdgeInsets.all(context.w(4)),
@@ -81,7 +86,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                             SizedBox(height: context.h(3)),
                             SizedBox(
                               height: context.h(25),
-                              child: _buildChart(vitalsState.history),
+                              child: _buildChart(completedReadings),
                             ),
                           ],
                         ),
@@ -100,10 +105,12 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: vitalsState.history.length,
+                      itemCount: completedReadings.length,
                       itemBuilder: (context, index) {
-                        final reading = vitalsState.history[index];
+                        final reading = completedReadings[index];
                         final riskColor = _getRiskColor(reading.riskLevel);
+                        final systolic = reading.displaySystolic!;
+                        final diastolic = reading.displayDiastolic!;
 
                         return Card(
                           shape: RoundedRectangleBorder(
@@ -131,12 +138,15 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                                 child: Icon(Icons.favorite,
                                     color: riskColor, size: context.sp(20)),
                               ),
-                              title: Text(
-                                '${reading.systolic}/${reading.diastolic}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: context.sp(18),
-                                  color: riskColor,
+                              title: Directionality(
+                                textDirection: ui.TextDirection.ltr,
+                                child: Text(
+                                  '$systolic/$diastolic',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: context.sp(18),
+                                    color: riskColor,
+                                  ),
                                 ),
                               ),
                               subtitle: Column(
@@ -153,6 +163,14 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
                                     Text(
                                       LocaleKeys.vitalsHeartRateValue.tr(
                                         args: [reading.heartRate.toString()],
+                                      ),
+                                      style:
+                                          TextStyle(fontSize: context.sp(13)),
+                                    ),
+                                  if (reading.spo2 != null)
+                                    Text(
+                                      'vitals.spo2_value'.tr(
+                                        args: [reading.spo2.toString()],
                                       ),
                                       style:
                                           TextStyle(fontSize: context.sp(13)),
@@ -261,7 +279,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             spots: chartData.asMap().entries.map((entry) {
               return FlSpot(
                 entry.key.toDouble(),
-                entry.value.systolic.toDouble(),
+                entry.value.displaySystolic!.toDouble(),
               );
             }).toList(),
             isCurved: true,
@@ -274,7 +292,7 @@ class _BPHistoryPageState extends ConsumerState<BPHistoryPage> {
             spots: chartData.asMap().entries.map((entry) {
               return FlSpot(
                 entry.key.toDouble(),
-                entry.value.diastolic.toDouble(),
+                entry.value.displayDiastolic!.toDouble(),
               );
             }).toList(),
             isCurved: true,

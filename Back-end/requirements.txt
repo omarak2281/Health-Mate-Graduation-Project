@@ -34,10 +34,16 @@ paho-mqtt==1.6.1
 websockets==12.0
 
 # AI/ML
-scikit-learn==1.4.0
+# scikit-learn bumped from 1.4.0 to match Symptom-Checker/requirements.txt's >=1.9.0 pin (Phase 4
+# needed it for lightgbm>=4.6.0 compatibility — see that file's inline note). Keep these two in
+# sync or joblib.load()-ing the LightGBM model here will raise/behave inconsistently — exactly
+# the risk plan §1.4/§8 flags. model_registry.py (Phase 5) checks this at load time.
+scikit-learn>=1.9.0
+lightgbm>=4.6.0
 numpy==1.26.3
-joblib==1.3.2
+joblib>=1.5.0
 scipy==1.11.4
+tensorflow-cpu==2.20.0
 
 # File Upload
 cloudinary==1.38.0

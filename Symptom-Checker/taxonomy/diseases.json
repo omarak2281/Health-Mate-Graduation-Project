@@ -1,0 +1,670 @@
+[
+  {
+    "id": "common_cold",
+    "name_en": "Common Cold",
+    "name_ar": "الزكام",
+    "description_en": "Viral infection of nose and throat",
+    "description_ar": "عدوى فيروسية في الأنف والحلق",
+    "category_id": "respiratory",
+    "default_urgency": "low",
+    "related_symptom_ids": [
+      "runny_nose",
+      "sore_throat",
+      "cough",
+      "sneezing",
+      "mild_headache",
+      "low_grade_fever"
+    ]
+  },
+  {
+    "id": "influenza",
+    "name_en": "Influenza",
+    "name_ar": "الإنفلونزا",
+    "description_en": "Contagious respiratory illness caused by influenza viruses",
+    "description_ar": "مرض تنفسي معدي تسببه فيروسات الإنفلونزا",
+    "category_id": "respiratory",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "fever",
+      "muscle_pain",
+      "fatigue",
+      "cough",
+      "headache",
+      "sore_throat"
+    ]
+  },
+  {
+    "id": "pneumonia",
+    "name_en": "Pneumonia",
+    "name_ar": "الالتهاب الرئوي",
+    "description_en": "Infection that inflames air sacs in one or both lungs",
+    "description_ar": "عدوى تسبب التهاب الحويصلات الهوائية في إحدى الرئتين أو كلتيهما",
+    "category_id": "respiratory",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "chest_pain",
+      "cough_with_phlegm",
+      "fever",
+      "shortness_of_breath",
+      "fatigue"
+    ]
+  },
+  {
+    "id": "asthma",
+    "name_en": "Asthma",
+    "name_ar": "الربو",
+    "description_en": "Condition in which airways narrow and swell producing extra mucus",
+    "description_ar": "حالة تضيق فيها الممرات الهوائية وتنتفخ وتنتج مخاطًا إضافيًا",
+    "category_id": "respiratory",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "wheezing",
+      "chest_tightness",
+      "cough",
+      "difficulty_breathing"
+    ]
+  },
+  {
+    "id": "gastroenteritis",
+    "name_en": "Gastroenteritis",
+    "name_ar": "التهاب المعدة والأمعاء",
+    "description_en": "Inflammation of stomach and intestines",
+    "description_ar": "التهاب المعدة والأمعاء",
+    "category_id": "digestive",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "diarrhea",
+      "nausea",
+      "vomiting",
+      "abdominal_pain",
+      "fever",
+      "loss_of_appetite"
+    ]
+  },
+  {
+    "id": "irritable_bowel_syndrome_ibs",
+    "name_en": "Irritable Bowel Syndrome (IBS)",
+    "name_ar": "متلازمة القولون العصبي",
+    "description_en": "Common disorder affecting large intestine",
+    "description_ar": "اضطراب شائع يؤثر على الأمعاء الغليظة",
+    "category_id": "digestive",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "abdominal_pain",
+      "bloating",
+      "gas",
+      "diarrhea",
+      "constipation"
+    ]
+  },
+  {
+    "id": "diabetes_mellitus_type_2",
+    "name_en": "Diabetes Mellitus Type 2",
+    "name_ar": "داء السكري النوع الثاني",
+    "description_en": "Chronic condition affecting how body processes blood sugar",
+    "description_ar": "حالة مزمنة تؤثر على كيفية معالجة الجسم لسكر الدم",
+    "category_id": "general_fever",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "increased_thirst",
+      "frequent_urination",
+      "increased_hunger",
+      "fatigue",
+      "blurred_vision"
+    ]
+  },
+  {
+    "id": "hypothyroidism",
+    "name_en": "Hypothyroidism",
+    "name_ar": "قصور الغدة الدرقية",
+    "description_en": "Underactive thyroid gland producing insufficient hormones",
+    "description_ar": "خمول في الغدة الدرقية ينتج هرمونات غير كافية",
+    "category_id": "general_fever",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "fatigue",
+      "weight_gain",
+      "cold_intolerance",
+      "constipation",
+      "dry_skin"
+    ]
+  },
+  {
+    "id": "osteoarthritis",
+    "name_en": "Osteoarthritis",
+    "name_ar": "التهاب المفاصل التنكسي",
+    "description_en": "Degenerative joint disease causing cartilage breakdown",
+    "description_ar": "مرض مفاصل تنكسي يسبب تدهور الغضروف",
+    "category_id": "muscles_joints",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "joint_pain",
+      "stiffness",
+      "tenderness",
+      "loss_of_flexibility",
+      "swelling"
+    ]
+  },
+  {
+    "id": "rheumatoid_arthritis",
+    "name_en": "Rheumatoid Arthritis",
+    "name_ar": "التهاب المفاصل الروماتويدي",
+    "description_en": "Autoimmune disorder causing joint inflammation and damage",
+    "description_ar": "اضطراب مناعي ذاتي يسبب التهاب المفاصل وتلفها",
+    "category_id": "muscles_joints",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "joint_pain",
+      "joint_swelling",
+      "joint_stiffness",
+      "fatigue",
+      "fever"
+    ]
+  },
+  {
+    "id": "migraine",
+    "name_en": "Migraine",
+    "name_ar": "الصداع النصفي",
+    "description_en": "Neurological condition causing severe recurrent headaches",
+    "description_ar": "حالة عصبية تسبب صداعًا شديدًا متكررًا",
+    "category_id": "neurological",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "throbbing_head_pain",
+      "nausea",
+      "vomiting",
+      "sensitivity_to_light",
+      "sensitivity_to_sound"
+    ]
+  },
+  {
+    "id": "epilepsy",
+    "name_en": "Epilepsy",
+    "name_ar": "الصرع",
+    "description_en": "Neurological disorder characterized by recurrent seizures",
+    "description_ar": "اضطراب عصبي يتميز بنوبات متكررة",
+    "category_id": "neurological",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "seizures",
+      "temporary_confusion",
+      "staring_spells",
+      "loss_of_consciousness"
+    ]
+  },
+  {
+    "id": "major_depressive_disorder",
+    "name_en": "Major Depressive Disorder",
+    "name_ar": "الاكتئاب الشديد",
+    "description_en": "Mood disorder causing persistent sadness and loss of interest",
+    "description_ar": "اضطراب المزاج يسبب حزنًا مستمرًا وفقدان الاهتمام",
+    "category_id": "mental_health",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "persistent_sadness",
+      "loss_of_interest",
+      "changes_in_appetite",
+      "sleep_problems",
+      "fatigue",
+      "feelings_of_worthlessness"
+    ]
+  },
+  {
+    "id": "eczema",
+    "name_en": "Eczema",
+    "name_ar": "الإكزيما",
+    "description_en": "Chronic skin condition causing inflamed, itchy, and cracked skin",
+    "description_ar": "حالة جلدية مزمنة تسبب التهاب وحكة وتشقق الجلد",
+    "category_id": "skin",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "dry_skin",
+      "intense_itching",
+      "red_patches",
+      "cracked_skin"
+    ]
+  },
+  {
+    "id": "covid_19",
+    "name_en": "COVID-19",
+    "name_ar": "كوفيد-19",
+    "description_en": "Respiratory illness caused by coronavirus SARS-CoV-2",
+    "description_ar": "مرض تنفسي يسببه فيروس كورونا سارس-كوف-2",
+    "category_id": "respiratory",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "fever",
+      "cough",
+      "shortness_of_breath",
+      "fatigue",
+      "loss_of_taste_smell"
+    ]
+  },
+  {
+    "id": "tuberculosis",
+    "name_en": "Tuberculosis",
+    "name_ar": "السل",
+    "description_en": "Bacterial infection primarily affecting lungs",
+    "description_ar": "عدوى بكتيرية تؤثر بشكل أساسي على الرئتين",
+    "category_id": "respiratory",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "persistent_cough",
+      "coughing_up_blood",
+      "chest_pain",
+      "unintentional_weight_loss",
+      "night_sweats"
+    ]
+  },
+  {
+    "id": "anemia",
+    "name_en": "Anemia",
+    "name_ar": "فقر الدم",
+    "description_en": "Condition with deficiency of red blood cells or hemoglobin",
+    "description_ar": "حالة نقص في خلايا الدم الحمراء أو الهيموجلوبين",
+    "category_id": "general_fever",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "fatigue",
+      "weakness",
+      "pale_skin",
+      "shortness_of_breath",
+      "dizziness"
+    ]
+  },
+  {
+    "id": "hepatitis_b",
+    "name_en": "Hepatitis B",
+    "name_ar": "التهاب الكبد الوبائي ب",
+    "description_en": "Viral infection causing liver inflammation and damage",
+    "description_ar": "عدوى فيروسية تسبب التهاب وتلف الكبد",
+    "category_id": "digestive",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "jaundice",
+      "dark_urine",
+      "fatigue",
+      "nausea",
+      "abdominal_pain"
+    ]
+  },
+  {
+    "id": "liver_cirrhosis",
+    "name_en": "Liver Cirrhosis",
+    "name_ar": "تليف الكبد",
+    "description_en": "Late-stage scarring (fibrosis) of the liver",
+    "description_ar": "مرحلة متأخرة من تندب (تليف) الكبد",
+    "category_id": "digestive",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "jaundice",
+      "fatigue",
+      "weight_loss",
+      "swelling_in_legs",
+      "ascites"
+    ]
+  },
+  {
+    "id": "chronic_kidney_disease",
+    "name_en": "Chronic Kidney Disease",
+    "name_ar": "مرض الكلى المزمن",
+    "description_en": "Gradual loss of kidney function over time",
+    "description_ar": "فقدان تدريجي لوظائف الكلى بمرور الوقت",
+    "category_id": "urinary_kidney",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "fatigue",
+      "swelling_in_ankles",
+      "shortness_of_breath",
+      "nausea",
+      "blood_in_urine"
+    ]
+  },
+  {
+    "id": "kidney_stones",
+    "name_en": "Kidney Stones",
+    "name_ar": "حصى الكلى",
+    "description_en": "Hard deposits made of minerals and salts that form inside kidneys",
+    "description_ar": "رواسب صلبة من المعادن والأملاح تتشكل داخل الكلى",
+    "category_id": "urinary_kidney",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "severe_flank_pain",
+      "pain_on_urination",
+      "pink_red_or_brown_urine",
+      "nausea",
+      "vomiting"
+    ]
+  },
+  {
+    "id": "stroke",
+    "name_en": "Stroke",
+    "name_ar": "السكتة الدماغية",
+    "description_en": "Damage to the brain from interruption of its blood supply",
+    "description_ar": "تلف في الدماغ ناتج عن انقطاع إمدادات الدم عنه",
+    "category_id": "neurological",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "sudden_numbness",
+      "confusion",
+      "trouble_speaking",
+      "vision_problems",
+      "loss_of_balance"
+    ]
+  },
+  {
+    "id": "hypertension",
+    "name_en": "Hypertension",
+    "name_ar": "ارتفاع ضغط الدم",
+    "description_en": "Long-term force of the blood against your artery walls is high",
+    "description_ar": "قوة دفع الدم ضد جدران الشرايين مرتفعة لفترة طويلة",
+    "category_id": "heart_bp",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "headache",
+      "shortness_of_breath",
+      "nosebleeds",
+      "dizziness",
+      "chest_pain"
+    ]
+  },
+  {
+    "id": "coronary_artery_disease",
+    "name_en": "Coronary Artery Disease",
+    "name_ar": "مرض الشريان التاجي",
+    "description_en": "Narrowing or blockage of coronary arteries that supply blood to heart muscle",
+    "description_ar": "ضيق أو انسداد في الشرايين التاجية التي تزود عضلة القلب بالدم",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "chest_pain",
+      "shortness_of_breath",
+      "fatigue",
+      "palpitations",
+      "nausea",
+      "dizziness"
+    ]
+  },
+  {
+    "id": "acute_myocardial_infarction",
+    "name_en": "Acute Myocardial Infarction",
+    "name_ar": "احتشاء عضلة القلب الحاد",
+    "description_en": "Sudden blockage of coronary artery causing death of heart muscle tissue",
+    "description_ar": "انسداد مفاجئ في الشريان التاجي يسبب موت نسيج عضلة القلب",
+    "category_id": "heart_bp",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "crushing_chest_pain",
+      "radiating_pain_to_left_arm",
+      "profuse_sweating",
+      "shortness_of_breath",
+      "nausea",
+      "sense_of_impending_doom"
+    ]
+  },
+  {
+    "id": "stable_angina",
+    "name_en": "Stable Angina",
+    "name_ar": "الذبحة الصدرية المستقرة",
+    "description_en": "Predictable chest pain triggered by physical exertion or emotional stress",
+    "description_ar": "ألم صدري متوقع يحدث بسبب المجهود البدني أو التوتر العاطفي",
+    "category_id": "heart_bp",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "chest_pain",
+      "shortness_of_breath",
+      "fatigue",
+      "nausea"
+    ]
+  },
+  {
+    "id": "heart_failure",
+    "name_en": "Heart Failure",
+    "name_ar": "فشل القلب",
+    "description_en": "Heart's inability to pump enough blood to meet body's needs",
+    "description_ar": "عجز القلب عن ضخ كمية كافية من الدم لتلبية احتياجات الجسم",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "fatigue",
+      "peripheral_edema",
+      "weight_gain",
+      "cough",
+      "palpitations"
+    ]
+  },
+  {
+    "id": "congestive_heart_failure",
+    "name_en": "Congestive Heart Failure",
+    "name_ar": "فشل القلب الاحتقاني",
+    "description_en": "Heart failure with fluid accumulation in lungs and other tissues",
+    "description_ar": "فشل القلب مع تراكم السوائل في الرئتين والأنسجة الأخرى",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "peripheral_edema",
+      "weight_gain",
+      "fatigue",
+      "cough",
+      "pink_frothy_sputum"
+    ]
+  },
+  {
+    "id": "aortic_stenosis",
+    "name_en": "Aortic Stenosis",
+    "name_ar": "تضيق الصمام الأبهري",
+    "description_en": "Narrowing of aortic valve opening restricting blood flow from heart",
+    "description_ar": "ضيق في فتحة الصمام الأبهري يحد من تدفق الدم من القلب",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "chest_pain",
+      "shortness_of_breath",
+      "syncope",
+      "dizziness",
+      "heart_murmur",
+      "fatigue"
+    ]
+  },
+  {
+    "id": "mitral_regurgitation",
+    "name_en": "Mitral Regurgitation",
+    "name_ar": "قصور الصمام التاجي",
+    "description_en": "Leakage of mitral valve causing backflow of blood into left atrium",
+    "description_ar": "تسرب في الصمام التاجي يسبب ارتداد الدم إلى الأذين الأيسر",
+    "category_id": "heart_bp",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "fatigue",
+      "weakness",
+      "palpitations",
+      "heart_murmur"
+    ]
+  },
+  {
+    "id": "dilated_cardiomyopathy",
+    "name_en": "Dilated Cardiomyopathy",
+    "name_ar": "اعتلال عضلة القلب التوسعي",
+    "description_en": "Enlargement and weakening of heart muscle leading to pumping dysfunction",
+    "description_ar": "تضخم وضعف عضلة القلب مما يؤدي إلى خلل في الضخ",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "fatigue",
+      "peripheral_edema",
+      "palpitations",
+      "dizziness",
+      "reduced_exercise_tolerance"
+    ]
+  },
+  {
+    "id": "hypertrophic_cardiomyopathy",
+    "name_en": "Hypertrophic Cardiomyopathy",
+    "name_ar": "اعتلال عضلة القلب الضخامي",
+    "description_en": "Abnormal thickening of heart muscle, especially interventricular septum",
+    "description_ar": "تثخن غير طبيعي لعضلة القلب، خاصة الحاجز بين البطينين",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "chest_pain",
+      "palpitations",
+      "syncope",
+      "dizziness",
+      "heart_murmur"
+    ]
+  },
+  {
+    "id": "atrial_fibrillation",
+    "name_en": "Atrial Fibrillation",
+    "name_ar": "الرجفان الأذيني",
+    "description_en": "Irregular and often rapid heart rhythm originating in atria",
+    "description_ar": "إيقاع قلب غير منتظم وغالبًا سريع ينشأ في الأذينين",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "palpitations",
+      "irregular_heartbeat",
+      "shortness_of_breath",
+      "fatigue",
+      "dizziness",
+      "anxiety"
+    ]
+  },
+  {
+    "id": "ventricular_tachycardia",
+    "name_en": "Ventricular Tachycardia",
+    "name_ar": "تسرع القلب البطيني",
+    "description_en": "Rapid heart rhythm originating in ventricles, potentially life-threatening",
+    "description_ar": "إيقاع قلب سريع ينشأ في البطينين، قد يهدد الحياة",
+    "category_id": "heart_bp",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "palpitations",
+      "dizziness",
+      "shortness_of_breath",
+      "chest_pain",
+      "syncope",
+      "loss_of_consciousness"
+    ]
+  },
+  {
+    "id": "myocarditis",
+    "name_en": "Myocarditis",
+    "name_ar": "التهاب عضلة القلب",
+    "description_en": "Inflammation of heart muscle usually caused by viral infection",
+    "description_ar": "التهاب عضلة القلب عادةً بسبب عدوى فيروسية",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "chest_pain",
+      "shortness_of_breath",
+      "fatigue",
+      "fever",
+      "palpitations",
+      "heart_murmur"
+    ]
+  },
+  {
+    "id": "pericarditis",
+    "name_en": "Pericarditis",
+    "name_ar": "التهاب التامور",
+    "description_en": "Inflammation of pericardium, the sac-like membrane around heart",
+    "description_ar": "التهاب التامور، الغشاء الشبيه بالكيس المحيط بالقلب",
+    "category_id": "heart_bp",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "chest_pain",
+      "fever",
+      "shortness_of_breath",
+      "fatigue",
+      "palpitations",
+      "cough"
+    ]
+  },
+  {
+    "id": "infective_endocarditis",
+    "name_en": "Infective Endocarditis",
+    "name_ar": "التهاب الشغاف العدوائي",
+    "description_en": "Infection of inner lining of heart chambers and valves",
+    "description_ar": "عدوى في البطانة الداخلية لحجرات القلب والصمامات",
+    "category_id": "heart_bp",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "fever",
+      "chills",
+      "night_sweats",
+      "fatigue",
+      "heart_murmur",
+      "shortness_of_breath"
+    ]
+  },
+  {
+    "id": "pulmonary_hypertension",
+    "name_en": "Pulmonary Hypertension",
+    "name_ar": "ارتفاع ضغط الدم الرئوي",
+    "description_en": "High blood pressure in the arteries to your lungs",
+    "description_ar": "ارتفاع ضغط الدم في الشرايين المؤدية إلى الرئتين",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "fatigue",
+      "dizziness",
+      "chest_pain",
+      "swelling_in_legs",
+      "cyanosis"
+    ]
+  },
+  {
+    "id": "deep_vein_thrombosis_dvt",
+    "name_en": "Deep Vein Thrombosis (DVT)",
+    "name_ar": "تجلط الأوردة العميقة",
+    "description_en": "Blood clot forms in a deep vein, usually in the legs",
+    "description_ar": "تشكل جلطة دموية في وريد عميق، عادة في الساقين",
+    "category_id": "heart_bp",
+    "default_urgency": "high",
+    "related_symptom_ids": [
+      "leg_pain",
+      "swelling_in_legs",
+      "warmth_over_area",
+      "redness_of_skin"
+    ]
+  },
+  {
+    "id": "aortic_aneurysm",
+    "name_en": "Aortic Aneurysm",
+    "name_ar": "تمدد الأوعية الدموية الأبهري",
+    "description_en": "Abnormal bulge in the wall of the aorta",
+    "description_ar": "انتفاخ غير طبيعي في جدار الشريان الأبهري",
+    "category_id": "heart_bp",
+    "default_urgency": "critical",
+    "related_symptom_ids": [
+      "chest_pain",
+      "back_pain",
+      "shortness_of_breath",
+      "difficulty_swallowing"
+    ]
+  },
+  {
+    "id": "atrial_septal_defect_asd",
+    "name_en": "Atrial Septal Defect (ASD)",
+    "name_ar": "عيت الحاجز الأذيني",
+    "description_en": "Hole in the wall (septum) between the two upper chambers of your heart",
+    "description_ar": "ثقب في الجدار (الحاجز) بين الغرفتين العلويتين للقلب",
+    "category_id": "heart_bp",
+    "default_urgency": "moderate",
+    "related_symptom_ids": [
+      "shortness_of_breath",
+      "fatigue",
+      "swelling_in_legs",
+      "heart_murmur",
+      "palpitations"
+    ]
+  }
+]

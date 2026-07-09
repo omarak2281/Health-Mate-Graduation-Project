@@ -1,0 +1,1626 @@
+[
+  {
+    "id": "cough",
+    "name_en": "Cough",
+    "name_ar": "السعال",
+    "description_en": "Sudden expulsion of air from lungs to clear throat or airways",
+    "description_ar": "إخراج مفاجئ للهواء من الرئتين لتنظيف الحلق أو الممرات الهوائية",
+    "category_ids": [
+      "heart_bp",
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "shortness_of_breath",
+    "name_en": "Shortness of Breath",
+    "name_ar": "ضيق التنفس",
+    "description_en": "Difficulty breathing or feeling unable to get enough air",
+    "description_ar": "صعوبة في التنفس أو الشعور بعدم القدرة على الحصول على هواء كافٍ",
+    "category_ids": [
+      "general_fever",
+      "heart_bp",
+      "respiratory",
+      "urinary_kidney"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "runny_nose",
+    "name_en": "Runny Nose",
+    "name_ar": "سيلان الأنف",
+    "description_en": "Excess nasal drainage ranging from clear fluid to thick mucus",
+    "description_ar": "تصريف أنفي زائد يتراوح من سائل صافٍ إلى مخاط سميك",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "sore_throat",
+    "name_en": "Sore Throat",
+    "name_ar": "التهاب الحلق",
+    "description_en": "Pain, scratchiness or irritation of throat that often worsens when swallowing",
+    "description_ar": "ألم، خشونة أو تهيج الحلق الذي غالبًا ما يزداد سوءًا عند البلع",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "fever",
+    "name_en": "Fever",
+    "name_ar": "الحمى",
+    "description_en": "Temporary increase in body temperature, often due to illness",
+    "description_ar": "ارتفاع مؤقت في درجة حرارة الجسم، غالبًا بسبب المرض",
+    "category_ids": [
+      "digestive",
+      "heart_bp",
+      "muscles_joints",
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "fatigue",
+    "name_en": "Fatigue",
+    "name_ar": "التعب",
+    "description_en": "Persistent feeling of tiredness, weakness or exhaustion",
+    "description_ar": "شعور مستمر بالتعب، الضعف أو الإرهاق",
+    "category_ids": [
+      "digestive",
+      "general_fever",
+      "heart_bp",
+      "mental_health",
+      "muscles_joints",
+      "respiratory",
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "headache",
+    "name_en": "Headache",
+    "name_ar": "الصداع",
+    "description_en": "Pain in any region of head, ranging from sharp to dull pain",
+    "description_ar": "ألم في أي منطقة من الرأس، يتراوح من ألم حاد إلى ممل",
+    "category_ids": [
+      "heart_bp",
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "dizziness",
+    "name_en": "Dizziness",
+    "name_ar": "الدوخة",
+    "description_en": "Feeling of lightheadedness, unsteadiness, or vertigo",
+    "description_ar": "إحساس بالدوار، عدم الثبات، أو الدوخة",
+    "category_ids": [
+      "general_fever",
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "nausea",
+    "name_en": "Nausea",
+    "name_ar": "الغثيان",
+    "description_en": "Unpleasant sensation of wanting to vomit",
+    "description_ar": "إحساس غير سار بالرغبة في التقيؤ",
+    "category_ids": [
+      "digestive",
+      "heart_bp",
+      "neurological",
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "vomiting",
+    "name_en": "Vomiting",
+    "name_ar": "التقيؤ",
+    "description_en": "Forceful expulsion of stomach contents through mouth",
+    "description_ar": "إخراج قوي لمحتويات المعدة عبر الفم",
+    "category_ids": [
+      "digestive",
+      "neurological",
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "diarrhea",
+    "name_en": "Diarrhea",
+    "name_ar": "الإسهال",
+    "description_en": "Loose, watery stools occurring more frequently than usual",
+    "description_ar": "براز رخو، مائي يحدث بشكل متكرر أكثر من المعتاد",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "abdominal_pain",
+    "name_en": "Abdominal Pain",
+    "name_ar": "ألم البطن",
+    "description_en": "Pain occurring between chest and pelvic regions",
+    "description_ar": "ألم يحدث بين مناطق الصدر والحوض",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "joint_pain",
+    "name_en": "Joint Pain",
+    "name_ar": "ألم المفاصل",
+    "description_en": "Discomfort, pain or inflammation arising from any joint",
+    "description_ar": "انزعاج، ألم أو التهاب ينشأ من أي مفصل",
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "muscle_pain",
+    "name_en": "Muscle Pain",
+    "name_ar": "ألم العضلات",
+    "description_en": "Pain affecting one or more muscles",
+    "description_ar": "ألم يؤثر على عضلة واحدة أو أكثر",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "skin_rash",
+    "name_en": "Skin Rash",
+    "name_ar": "طفح جلدي",
+    "description_en": "Change in skin color or texture, often with itching or redness",
+    "description_ar": "تغير في لون الجلد أو قوامه، غالبًا مع حكة أو احمرار",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "weight_loss",
+    "name_en": "Weight Loss",
+    "name_ar": "فقدان الوزن",
+    "description_en": "Decrease in body weight from normal or healthy range",
+    "description_ar": "انخفاض في وزن الجسم من النطاق الطبيعي أو الصحي",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "weight_gain",
+    "name_en": "Weight Gain",
+    "name_ar": "زيادة الوزن",
+    "description_en": "Increase in body weight above normal or healthy range",
+    "description_ar": "زيادة في وزن الجسم فوق النطاق الطبيعي أو الصحي",
+    "category_ids": [
+      "general_fever",
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "chest_pain",
+    "name_en": "Chest Pain",
+    "name_ar": "ألم الصدر",
+    "description_en": "Pain or discomfort in chest area",
+    "description_ar": "ألم أو انزعاج في منطقة الصدر",
+    "category_ids": [
+      "heart_bp",
+      "respiratory"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "back_pain",
+    "name_en": "Back Pain",
+    "name_ar": "ألم الظهر",
+    "description_en": "Pain in back region, ranging from dull constant ache to sudden sharp pain",
+    "description_ar": "ألم في منطقة الظهر، يتراوح من ألم ممل مستمر إلى ألم حاد مفاجئ",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "loss_of_appetite",
+    "name_en": "Loss of Appetite",
+    "name_ar": "فقدان الشهية",
+    "description_en": "Reduced desire to eat",
+    "description_ar": "انخفاض الرغبة في تناول الطعام",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "insomnia",
+    "name_en": "Insomnia",
+    "name_ar": "الأرق",
+    "description_en": "Persistent difficulty falling or staying asleep",
+    "description_ar": "صعوبة مستمرة في النوم أو البقاء نائمًا",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "frequent_urination",
+    "name_en": "Frequent Urination",
+    "name_ar": "التبول المتكرر",
+    "description_en": "Need to urinate more often than usual",
+    "description_ar": "الحاجة إلى التبول أكثر من المعتاد",
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "jaundice",
+    "name_en": "Jaundice",
+    "name_ar": "اليرقان",
+    "description_en": "Yellowing of the skin and eyes",
+    "description_ar": "اصفرار الجلد والعينين",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "dark_urine",
+    "name_en": "Dark Urine",
+    "name_ar": "بول داكن",
+    "description_en": "Urine that looks darker than normal",
+    "description_ar": "بول يبدو أغمق من المعتاد",
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "blood_in_urine",
+    "name_en": "Blood in Urine",
+    "name_ar": "دم في البول",
+    "description_en": "Presence of red blood cells in urine (Hematuria)",
+    "description_ar": "وجود خلايا دم حمراء في البول (بيلة دموية)",
+    "category_ids": [
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "flank_pain",
+    "name_en": "Flank Pain",
+    "name_ar": "ألم الخاصرة",
+    "description_en": "Pain in the side of the body between ribs and hip",
+    "description_ar": "ألم في جانب الجسم بين الأضلاع والورك",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "edema",
+    "name_en": "Edema",
+    "name_ar": "الوذمة",
+    "description_en": "Swelling caused by excess fluid trapped in body's tissues",
+    "description_ar": "تورم ناتج عن سوائل زائدة محبوسة في أنسجة الجسم",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "cough_with_phlegm",
+    "name_en": "Cough with Phlegm",
+    "name_ar": "سعال مع بلغم",
+    "description_en": "Coughing that produces mucus or phlegm",
+    "description_ar": "سعال ينتج عنه مخاط أو بلغم",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "chest_tightness",
+    "name_en": "Chest Tightness",
+    "name_ar": "ضيق في الصدر",
+    "description_en": "Feeling of pressure or squeezing in the chest area",
+    "description_ar": "شعور بالضغط أو الضيق في منطقة الصدر",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "wheezing",
+    "name_en": "Wheezing",
+    "name_ar": "أزيز التنفس",
+    "description_en": "Whistling sound during breathing",
+    "description_ar": "صوت صفير أثناء التنفس",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "difficulty_breathing",
+    "name_en": "Difficulty Breathing",
+    "name_ar": "صعوبة في التنفس",
+    "description_en": "Struggling to breathe properly",
+    "description_ar": "صعوبة في التنفس بشكل صحيح",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "sneezing",
+    "name_en": "Sneezing",
+    "name_ar": "العطس",
+    "description_en": "Sudden involuntary expulsion of air through nose and mouth",
+    "description_ar": "إخراج مفاجئ وغير إرادي للهواء عبر الأنف والفم",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "mild_headache",
+    "name_en": "Mild Headache",
+    "name_ar": "صداع خفيف",
+    "description_en": "Low intensity pain in the head",
+    "description_ar": "ألم خفيف الشدة في الرأس",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "low_grade_fever",
+    "name_en": "Low-Grade Fever",
+    "name_ar": "حمى خفيفة",
+    "description_en": "Slightly elevated body temperature",
+    "description_ar": "ارتفاع طفيف في درجة حرارة الجسم",
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "general"
+  },
+  {
+    "id": "angina_pectoris",
+    "name_en": "Angina Pectoris",
+    "name_ar": "الذبحة الصدرية",
+    "description_en": "Chest pain caused by reduced blood flow to the heart muscle",
+    "description_ar": "ألم صدري ناتج عن انخفاض تدفق الدم إلى عضلة القلب",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "orthopnea",
+    "name_en": "Orthopnea",
+    "name_ar": "ضيق النفس عند الاستلقاء",
+    "description_en": "Shortness of breath that occurs when lying flat and improves when sitting up",
+    "description_ar": "ضيق التنفس الذي يحدث عند الاستلقاء ويتحسن عند الجلوس",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "paroxysmal_nocturnal_dyspnea",
+    "name_en": "Paroxysmal Nocturnal Dyspnea",
+    "name_ar": "ضيق النفس الليلي الانتيابي",
+    "description_en": "Sudden episodes of shortness of breath that wake the person from sleep",
+    "description_ar": "نوبات مفاجئة من ضيق التنفس توقظ الشخص من النوم",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "palpitations",
+    "name_en": "Palpitations",
+    "name_ar": "خفقان القلب",
+    "description_en": "Awareness of abnormal heartbeats, either too fast, too strong, or irregular",
+    "description_ar": "إدراك دقات قلب غير طبيعية، إما سريعة جدًا، قوية جدًا، أو غير منتظمة",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "tachycardia",
+    "name_en": "Tachycardia",
+    "name_ar": "تسرع القلب",
+    "description_en": "Heart rate faster than 100 beats per minute at rest",
+    "description_ar": "معدل ضربات القلب أسرع من 100 نبضة في الدقيقة أثناء الراحة",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "peripheral_edema",
+    "name_en": "Peripheral Edema",
+    "name_ar": "الوذمة المحيطية",
+    "description_en": "Swelling in the legs, ankles, and feet due to fluid accumulation",
+    "description_ar": "تورم في الساقين والكاحلين والقدمين بسبب تراكم السوائل",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "jugular_venous_distension",
+    "name_en": "Jugular Venous Distension",
+    "name_ar": "انتفاخ الوريد الوداجي",
+    "description_en": "Visible bulging of the jugular veins in the neck",
+    "description_ar": "انتفاخ مرئي في أوردة الرقبة الوداجية",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "heart_murmur",
+    "name_en": "Heart Murmur",
+    "name_ar": "النفخة القلبية",
+    "description_en": "Abnormal heart sounds heard through a stethoscope",
+    "description_ar": "أصوات قلب غير طبيعية تسمع من خلال السماعة الطبية",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "crushing_chest_pain",
+    "name_en": "Crushing Chest Pain",
+    "name_ar": "ألم صدري ساحق",
+    "description_en": "Severe, intense chest pain that feels like heavy pressure",
+    "description_ar": "ألم صدري شديد وحاد يشعر وكأنه ضغط ثقيل",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "sudden_loss_of_consciousness",
+    "name_en": "Sudden Loss of Consciousness",
+    "name_ar": "فقدان مفاجئ للوعي",
+    "description_en": "Abrupt loss of consciousness without warning",
+    "description_ar": "فقدان مفاجئ للوعي بدون سابق إنذار",
+    "category_ids": [],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "cardiac_arrest",
+    "name_en": "Cardiac Arrest",
+    "name_ar": "السكتة القلبية",
+    "description_en": "Sudden cessation of heart function and blood circulation",
+    "description_ar": "توقف مفاجئ لوظيفة القلب والدورة الدموية",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "chills",
+    "name_en": "Chills",
+    "name_ar": "القشعريرة",
+    "description_en": "Sensation of cold with shivering",
+    "description_ar": "إحساس بالبرودة مع رعشة",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "syncope",
+    "name_en": "Syncope",
+    "name_ar": "الإغماء",
+    "description_en": "Temporary loss of consciousness due to decreased blood flow to the brain",
+    "description_ar": "فقدان مؤقت للوعي بسبب انخفاض تدفق الدم إلى الدماغ",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "claudication",
+    "name_en": "Claudication",
+    "name_ar": "العرج",
+    "description_en": "Pain in legs induced by exercise, caused by obstruction of arteries",
+    "description_ar": "ألم في الساقين يسببه التمرين، ناتج عن انسداد الشرايين",
+    "category_ids": [],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "cyanosis",
+    "name_en": "Cyanosis",
+    "name_ar": "الزرقة",
+    "description_en": "Bluish discoloration of skin due to poor circulation or inadequate oxygenation",
+    "description_ar": "تلون مزرق للجلد بسبب ضعف الدورة الدموية أو عدم كفاية الأكسجين",
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "heart"
+  },
+  {
+    "id": "bloating",
+    "name_en": "Bloating",
+    "name_ar": "الانتفاخ",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "gas",
+    "name_en": "Gas",
+    "name_ar": "الغازات",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "constipation",
+    "name_en": "Constipation",
+    "name_ar": "الإمساك",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "digestive",
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "increased_thirst",
+    "name_en": "Increased Thirst",
+    "name_ar": "زيادة العطش",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "increased_hunger",
+    "name_en": "Increased Hunger",
+    "name_ar": "زيادة الجوع",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "blurred_vision",
+    "name_en": "Blurred Vision",
+    "name_ar": "تشوش الرؤية",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "cold_intolerance",
+    "name_en": "Cold Intolerance",
+    "name_ar": "عدم تحمل البرد",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "dry_skin",
+    "name_en": "Dry Skin",
+    "name_ar": "جفاف الجلد",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever",
+      "skin"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "stiffness",
+    "name_en": "Stiffness",
+    "name_ar": "التيبّس",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "tenderness",
+    "name_en": "Tenderness",
+    "name_ar": "الألم عند اللمس",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "loss_of_flexibility",
+    "name_en": "Loss of Flexibility",
+    "name_ar": "فقدان المرونة",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "swelling",
+    "name_en": "Swelling",
+    "name_ar": "التورّم",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "joint_swelling",
+    "name_en": "Joint Swelling",
+    "name_ar": "تورّم المفاصل",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "joint_stiffness",
+    "name_en": "Joint Stiffness",
+    "name_ar": "تيبّس المفاصل",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "muscles_joints"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "throbbing_head_pain",
+    "name_en": "Throbbing Head Pain",
+    "name_ar": "صداع نابض",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "sensitivity_to_light",
+    "name_en": "Sensitivity to Light",
+    "name_ar": "الحساسية للضوء",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "sensitivity_to_sound",
+    "name_en": "Sensitivity to Sound",
+    "name_ar": "الحساسية للصوت",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "seizures",
+    "name_en": "Seizures",
+    "name_ar": "نوبات صرع",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "temporary_confusion",
+    "name_en": "Temporary Confusion",
+    "name_ar": "تشوّش مؤقت",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "staring_spells",
+    "name_en": "Staring Spells",
+    "name_ar": "نوبات تحديق",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "loss_of_consciousness",
+    "name_en": "Loss of Consciousness",
+    "name_ar": "فقدان الوعي",
+    "description_en": null,
+    "description_ar": "فقدان مفاجئ للوعي أو الإغماء الكامل.",
+    "category_ids": [
+      "heart_bp",
+      "neurological"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "persistent_sadness",
+    "name_en": "Persistent Sadness",
+    "name_ar": "حزن مستمر",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "mental_health"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "loss_of_interest",
+    "name_en": "Loss of Interest",
+    "name_ar": "فقدان الاهتمام",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "mental_health"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "changes_in_appetite",
+    "name_en": "Changes in Appetite",
+    "name_ar": "تغيّرات في الشهية",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "mental_health"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "sleep_problems",
+    "name_en": "Sleep Problems",
+    "name_ar": "مشاكل في النوم",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "mental_health"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "feelings_of_worthlessness",
+    "name_en": "Feelings of Worthlessness",
+    "name_ar": "الشعور بانعدام القيمة",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "mental_health"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "intense_itching",
+    "name_en": "Intense Itching",
+    "name_ar": "حكة شديدة",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "skin"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "red_patches",
+    "name_en": "Red Patches",
+    "name_ar": "بقع حمراء",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "skin"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "cracked_skin",
+    "name_en": "Cracked Skin",
+    "name_ar": "تشقق الجلد",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "skin"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "loss_of_taste_smell",
+    "name_en": "Loss of Taste/Smell",
+    "name_ar": "فقدان حاسة التذوق أو الشم",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "persistent_cough",
+    "name_en": "Persistent Cough",
+    "name_ar": "سعال مستمر",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "coughing_up_blood",
+    "name_en": "Coughing up Blood",
+    "name_ar": "سعال مصحوب بدم",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "unintentional_weight_loss",
+    "name_en": "Unintentional Weight Loss",
+    "name_ar": "فقدان وزن غير مقصود",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "night_sweats",
+    "name_en": "Night Sweats",
+    "name_ar": "تعرّق ليلي",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp",
+      "respiratory"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "weakness",
+    "name_en": "Weakness",
+    "name_ar": "الضعف العام",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever",
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "pale_skin",
+    "name_en": "Pale Skin",
+    "name_ar": "شحوب الجلد",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "general_fever"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "swelling_in_legs",
+    "name_en": "Swelling in Legs",
+    "name_ar": "تورّم الساقين",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "digestive",
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "ascites",
+    "name_en": "Ascites",
+    "name_ar": "استسقاء البطن",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "digestive"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "swelling_in_ankles",
+    "name_en": "Swelling in Ankles",
+    "name_ar": "تورّم الكاحلين",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "severe_flank_pain",
+    "name_en": "Severe Flank Pain",
+    "name_ar": "ألم شديد في الخاصرة",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "pain_on_urination",
+    "name_en": "Pain on Urination",
+    "name_ar": "ألم عند التبول",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "pink_red_or_brown_urine",
+    "name_en": "Pink, Red or Brown Urine",
+    "name_ar": "بول وردي أو أحمر أو بني",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "urinary_kidney"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "sudden_numbness",
+    "name_en": "Sudden Numbness",
+    "name_ar": "خدر مفاجئ",
+    "description_en": null,
+    "description_ar": "تنميل أو خدر مفاجئ، غالبًا في جانب واحد من الجسم أو الوجه أو الذراع أو الساق.",
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "confusion",
+    "name_en": "Confusion",
+    "name_ar": "التشوّش الذهني",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "trouble_speaking",
+    "name_en": "Trouble Speaking",
+    "name_ar": "صعوبة في الكلام",
+    "description_en": null,
+    "description_ar": "صعوبة مفاجئة في الكلام أو فهمه، أو كلام غير واضح.",
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "vision_problems",
+    "name_en": "Vision Problems",
+    "name_ar": "مشاكل في الرؤية",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "loss_of_balance",
+    "name_en": "Loss of Balance",
+    "name_ar": "فقدان التوازن",
+    "description_en": null,
+    "description_ar": "فقدان مفاجئ للتوازن أو التنسيق، أو صعوبة في المشي.",
+    "category_ids": [
+      "neurological"
+    ],
+    "red_flag": true,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "nosebleeds",
+    "name_en": "Nosebleeds",
+    "name_ar": "نزيف الأنف",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "radiating_pain_to_left_arm",
+    "name_en": "Radiating Pain to Left Arm",
+    "name_ar": "ألم ممتد إلى الذراع اليسرى",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "profuse_sweating",
+    "name_en": "Profuse Sweating",
+    "name_ar": "تعرّق غزير",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "sense_of_impending_doom",
+    "name_en": "Sense of Impending Doom",
+    "name_ar": "إحساس بخطر وشيك",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "pink_frothy_sputum",
+    "name_en": "Pink Frothy Sputum",
+    "name_ar": "بلغم وردي رغوي",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "reduced_exercise_tolerance",
+    "name_en": "Reduced Exercise Tolerance",
+    "name_ar": "انخفاض القدرة على بذل المجهود",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "irregular_heartbeat",
+    "name_en": "Irregular Heartbeat",
+    "name_ar": "عدم انتظام ضربات القلب",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "anxiety",
+    "name_en": "Anxiety",
+    "name_ar": "القلق",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "leg_pain",
+    "name_en": "Leg Pain",
+    "name_ar": "ألم في الساق",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "warmth_over_area",
+    "name_en": "Warmth over Area",
+    "name_ar": "سخونة موضعية في المنطقة",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "redness_of_skin",
+    "name_en": "Redness of Skin",
+    "name_ar": "احمرار الجلد",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  },
+  {
+    "id": "difficulty_swallowing",
+    "name_en": "Difficulty Swallowing",
+    "name_ar": "صعوبة في البلع",
+    "description_en": null,
+    "description_ar": null,
+    "category_ids": [
+      "heart_bp"
+    ],
+    "red_flag": false,
+    "synonyms_en": [],
+    "synonyms_ar": [],
+    "needs_translation": false,
+    "source": "stub_orphan_reference"
+  }
+]

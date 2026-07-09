@@ -4,7 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/locale_keys.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../communication/presentation/pages/call_page.dart';
 import '../providers/notifications_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
@@ -138,6 +140,8 @@ class NotificationsPage extends ConsumerWidget {
                         fontSize: context.sp(12),
                         color: AppColors.textSecondary),
                   ),
+                  if (notification.isEmergency)
+                    _buildEmergencyActions(context, notification),
                 ],
               ),
               onTap: () {
@@ -147,6 +151,18 @@ class NotificationsPage extends ConsumerWidget {
                   ]);
                 }
               },
+              // Explicit delete button -- the swipe-to-dismiss gesture above
+              // isn't discoverable on its own.
+              trailing: IconButton(
+                icon: Icon(Icons.delete_outline_rounded,
+                    color: AppColors.textSecondary, size: context.sp(22)),
+                tooltip: LocaleKeys.delete.tr(),
+                onPressed: () {
+                  ref
+                      .read(notificationsNotifierProvider.notifier)
+                      .deleteNotification(notification.id);
+                },
+              ),
             ),
           ),
         );
@@ -157,6 +173,10 @@ class NotificationsPage extends ConsumerWidget {
   IconData _getNotificationIcon(String type) {
     switch (type) {
       case 'emergency_alert':
+      case 'emergency_bp_alert':
+      case 'EMERGENCY_BP_ALERT':
+      case 'symptom_assessment_alert':
+      case 'SYMPTOM_ASSESSMENT_ALERT':
         return Icons.warning;
       case 'medication_reminder':
         return Icons.medication;
@@ -167,9 +187,120 @@ class NotificationsPage extends ConsumerWidget {
     }
   }
 
+  Widget _buildEmergencyActions(BuildContext context, notification) {
+    final patientId = notification.data['patient_id']?.toString() ?? '';
+    final patientName =
+        notification.data['patient_name']?.toString() ?? notification.title;
+    final phone = notification.data['phone']?.toString().trim() ?? '';
+    if (patientId.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.only(top: context.h(1)),
+      child: Wrap(
+        spacing: context.w(2),
+        runSpacing: context.h(0.8),
+        children: [
+          _buildNotificationActionChip(
+            context,
+            icon: Icons.call_rounded,
+            label: LocaleKeys.communicationAudioCall.tr(),
+            color: AppColors.success,
+            onTap: () => _openCall(context, patientId, patientName, false),
+          ),
+          _buildNotificationActionChip(
+            context,
+            icon: Icons.videocam_rounded,
+            label: LocaleKeys.communicationVideoCall.tr(),
+            color: AppColors.primary,
+            onTap: () => _openCall(context, patientId, patientName, true),
+          ),
+          if (phone.isNotEmpty)
+            _buildNotificationActionChip(
+              context,
+              icon: Icons.phone_android_rounded,
+              label: LocaleKeys.communicationPhoneCall.tr(),
+              color: AppColors.info,
+              onTap: () => _makePhoneCall(phone),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationActionChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: context.w(2.5),
+          vertical: context.h(0.7),
+        ),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: context.sp(15), color: color),
+            SizedBox(width: context.w(1)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openCall(
+    BuildContext context,
+    String patientId,
+    String patientName,
+    bool isVideo,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CallPage(
+          isVideo: isVideo,
+          contactName: patientName,
+          contactId: patientId,
+          isCaller: true,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    final launched = await launchUrl(
+      launchUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched) {
+      debugPrint('No dialer app can handle $launchUri');
+    }
+  }
+
   Color _getNotificationColor(String type) {
     switch (type) {
       case 'emergency_alert':
+      case 'emergency_bp_alert':
+      case 'EMERGENCY_BP_ALERT':
+      case 'symptom_assessment_alert':
+      case 'SYMPTOM_ASSESSMENT_ALERT':
         return AppColors.error;
       case 'medication_reminder':
         return AppColors.primary;

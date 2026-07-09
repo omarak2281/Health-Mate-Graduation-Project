@@ -4,7 +4,93 @@
 
 ExperTIQ Healthcare Pro is a professional Arabic-first medical AI diagnostic platform featuring multi-page navigation, 100% Arabic localization, and professional PDF reporting with RTL support.
 
+**⚠️ Status note (2026-07-01):** everything below this line documents the **v1 system**
+(`app.py`, `train_model.py`/`Disease_Prediction_Model.ipynb`, `best_model.pkl`, the
+`Data/General`/`Data/Heart` `.js`/`.json` files) — this is still what `Back-end/app/services/ai_service.py`
+loads and serves in production today, and none of it has been deleted or modified. A parallel
+**v2 pipeline** now exists alongside it (see the section immediately below) and is what the
+new `Back-end/app/api/v1/ai.py` structured-assessment endpoints (`/categories`,
+`/taxonomy/symptoms`, `/assessment`, `/bp-triage`, `/chat/from-assessment`) actually run on.
+Full rationale and phase-by-phase execution log: `Plans/SYMPTOM_CHECKER_IMPLEMENTATION_PLAN.md`
+and `Plans/SYMPTOM_CHECKER_PROGRESS.md` at the repo root.
+
 ---
+
+## v2 Pipeline (new — Phases 1-4 of the implementation plan)
+
+Replaces the v1 model architecture (`CountVectorizer` + `MLPClassifier` over a space-joined
+symptom string, no severity/duration/vitals input) with a structured, ID-based taxonomy and a
+LightGBM classifier that accepts severity/duration/age/risk-factors/vitals. The v1 model stays
+in place as the production fallback until this is validated and rolled out (plan §12).
+
+```
+Symptom-Checker/
+├── migration/
+│   ├── migrate_legacy_taxonomy.py   # Phase 1 — reads Data/General, Data/Heart; outputs taxonomy/
+│   └── migration_report.md          # dedup log, category mapping, orphan-symptom log
+├── taxonomy/                        # Phase 1 output — stable-ID schema (see data_pipeline/schema.py)
+│   ├── categories.json              # 9 fixed categories
+│   ├── symptoms.json                # 108 entries (49 directly migrated + 59 orphan stubs — see migration_report.md)
+│   └── diseases.json                # 41 entries, same disease set as v1
+├── data_pipeline/
+│   ├── schema.py                    # Pydantic models: Category, Symptom, Disease, TrainingCase
+│   ├── constants.py                 # RISK_FACTOR_POOL — shared by dataset generation and feature engineering
+│   ├── generate_structured_cases.py # Phase 3 — synthetic case generation from the taxonomy
+│   └── validate_dataset.py          # Phase 3 — schema + class-balance validation
+├── Data/cases/
+│   ├── dataset.jsonl                # Phase 3 output — 12,300 structured training cases
+│   └── dataset_report.md            # balance report + flagged limitations (see below)
+├── training/
+│   ├── feature_engineering.py       # single build_features() — imported by both training AND
+│   │                                 # Back-end/app/infrastructure/ml/structured_feature_builder.py
+│   ├── train_baseline.py            # LogisticRegression + RandomForest, comparison only
+│   ├── train_final.py               # LightGBM — the actual candidate, top-3 confidence
+│   └── evaluate.py                  # confusion matrix + confusable-pair report
+└── Output/Production/
+    ├── best_model.pkl, vectorizer.pkl, model_metadata.json   # v1 — untouched
+    └── best_model_v2.pkl, label_encoder_v2.pkl,              # v2 — new, does not overwrite v1
+        model_metadata_v2.json, baseline_comparison.json, evaluation_report_v2.md
+```
+
+### Running the v2 pipeline end to end
+
+```bash
+cd Symptom-Checker
+python migration/migrate_legacy_taxonomy.py       # Phase 1 — only needed if Data/General|Heart change
+python data_pipeline/generate_structured_cases.py  # Phase 3 — regenerate the synthetic dataset
+python data_pipeline/validate_dataset.py           # must print PASS before training
+python training/train_baseline.py                  # comparison baseline
+python training/train_final.py                     # trains + saves best_model_v2.pkl
+python training/evaluate.py                         # confusion matrix + confusable-pair report
+```
+
+Requires `scikit-learn>=1.9.0` and `lightgbm>=4.6.0` (see the inline note in
+`requirements.txt` — these are bumped from the original `>=1.7.2` pin specifically because
+`lightgbm<4.6.0` calls a `scikit-learn` API argument that `>=1.7` removed).
+**`Back-end/requirements.txt` must stay on the same `scikit-learn` version** or the backend
+can't unpickle `best_model_v2.pkl` — this has been kept in sync as of this writing.
+
+### Known limitations (flagged, not hidden — full detail in `Plans/SYMPTOM_CHECKER_PROGRESS.md`)
+
+- 59 of the 108 migrated symptoms are "orphan stubs" (referenced by a disease's related-symptom
+  list but never defined as their own entry in the original `.json` files) — they have no
+  `name_ar`/description yet and need a human review pass before Phase 3-generated data that
+  uses them is treated as clinically final.
+- The risk-factor vocabulary (`data_pipeline/constants.RISK_FACTOR_POOL`) isn't sourced from
+  any taxonomy file — none exists. It's a small pool of already-migrated chronic disease ids
+  reused as risk-factor tokens, following the plan's own two worked examples.
+- The synthetic dataset's urgency labels skew high for ~18 heart-disease classes whose related
+  symptoms happen to include a red-flag symptom (e.g. chest pain) — see
+  `Data/cases/dataset_report.md` for the full per-disease breakdown.
+- Top-1 accuracy is 85.8%, top-3 is 95.5% on a held-out split (`Output/Production/evaluation_report_v2.md`).
+  The confusable respiratory triad (Common Cold/Influenza/COVID-19) and Hypertension vs.
+  Migraine/Stroke show zero cross-confusion; the weakest classes are a cluster of clinically
+  similar heart diseases (myocarditis, hypertrophic cardiomyopathy, coronary artery disease...)
+  that share almost identical symptom profiles in the taxonomy.
+
+---
+
+## v1 System (original — still in production via `ai_service.py`)
 
 ## Installation
 

@@ -3,6 +3,7 @@ Application configuration using Pydantic Settings
 No hardcoded values - all configuration from environment variables
 """
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 from pathlib import Path
@@ -62,6 +63,14 @@ class Settings(BaseSettings):
     
     # AI Models - Read from environment or use default based on Docker detection
     symptom_checker_model_path: str = str(MODELS_BASE_PATH / "Symptom-Checker" / "Output" / "Production")
+    symptom_checker_root_path: str = str(MODELS_BASE_PATH / "Symptom-Checker")
+    symptom_checker_taxonomy_path: str = str(MODELS_BASE_PATH / "Symptom-Checker" / "taxonomy")
+    symptom_checker_v2_enabled: bool = True
+    symptom_checker_llm_phrasing_enabled: bool = False
+    symptom_checker_llm_api_key: str = ""
+    symptom_checker_llm_model: str = "gpt-4o-mini"
+    symptom_checker_llm_base_url: str = "https://api.openai.com/v1"
+    symptom_checker_llm_timeout_seconds: float = 8.0
     bp_model_path: str = str(MODELS_BASE_PATH / "Predict-ABP" / "models")
     
     # Cloudinary
@@ -97,6 +106,13 @@ class Settings(BaseSettings):
         if self.stun_server_2:
             servers.append(self.stun_server_2)
         return servers
+
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug(cls, value):
+        if isinstance(value, str) and value.lower() in {"release", "prod", "production"}:
+            return False
+        return value
 
 
 # Global settings instance

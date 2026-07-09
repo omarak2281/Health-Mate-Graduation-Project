@@ -13,6 +13,7 @@ import 'core/services/local_notification_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/background_translation_service.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
+import 'features/communication/presentation/widgets/call_coordinator.dart';
 
 // Global navigator key for background notification navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -94,6 +95,9 @@ class HealthMateApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      builder: (context, child) => CallCoordinator(
+        child: child ?? const SizedBox.shrink(),
+      ),
 
       home: const SplashPage(),
     );

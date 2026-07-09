@@ -4,7 +4,10 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../vitals/presentation/providers/vitals_provider.dart';
+import '../../../ai/presentation/pages/symptom_checker_page.dart';
+import '../../../symptom_checker/presentation/pages/symptom_checker_wizard_page.dart';
 import '../pages/bp_history_page.dart';
+import '../pages/bp_measurement_guide_page.dart';
 
 /// BP Card Widget
 /// Shows latest blood pressure reading with risk indicator
@@ -47,7 +50,7 @@ class BPCard extends ConsumerWidget {
               if (patientId == null)
                 ElevatedButton.icon(
                   onPressed: () {
-                    _showAddReadingDialog(context, ref);
+                    _showAddReadingOptions(context, ref);
                   },
                   icon: Icon(AppIcons.add),
                   label: Text(LocaleKeys.vitalsAddReading.tr()),
@@ -81,25 +84,34 @@ class BPCard extends ConsumerWidget {
                     LocaleKeys.vitalsLastReading.tr(),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                  if (patientId == null) ...[
+                    IconButton(
+                      icon: const Icon(Icons.add, color: AppColors.primary),
+                      onPressed: () {
+                        _showAddReadingOptions(context, ref);
+                      },
                     ),
-                    decoration: BoxDecoration(
-                      color: riskColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: riskColor),
-                    ),
-                    child: Text(
-                      riskText,
-                      style: TextStyle(
-                        color: riskColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: riskColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: riskColor),
+                      ),
+                      child: Text(
+                        riskText,
+                        style: TextStyle(
+                          color: riskColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
               const SizedBox(height: 16),
@@ -152,9 +164,9 @@ class BPCard extends ConsumerWidget {
                     DateFormat.yMMMd().add_jm().format(bp.measuredAt),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  if (bp.heartRate != null)
-                    Row(
-                      children: [
+                  Row(
+                    children: [
+                      if (bp.heartRate != null) ...[
                         AppIcons.heartRate(
                           size: 16,
                           color: AppColors.error,
@@ -166,7 +178,22 @@ class BPCard extends ConsumerWidget {
                           ),
                         ),
                       ],
-                    ),
+                      if (bp.spo2 != null) ...[
+                        if (bp.heartRate != null) const SizedBox(width: 12),
+                        Icon(
+                          Icons.water_drop,
+                          size: 16,
+                          color: AppColors.info,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'vitals.spo2_value'.tr(
+                            args: [bp.spo2.toString()],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -210,13 +237,13 @@ class BPCard extends ConsumerWidget {
     }
   }
 
-  void _showAddReadingDialog(BuildContext context, WidgetRef ref) {
+  void _showAddReadingDialog(BuildContext pageContext, WidgetRef ref) {
     final systolicController = TextEditingController();
     final diastolicController = TextEditingController();
 
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: pageContext,
+      builder: (dialogContext) => AlertDialog(
         title: Text(LocaleKeys.vitalsAddReading.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -240,24 +267,103 @@ class BPCard extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(LocaleKeys.cancel.tr()),
           ),
           ElevatedButton(
             onPressed: () async {
-              final systolic = int.tryParse(systolicController.text);
-              final diastolic = int.tryParse(diastolicController.text);
+              final systolic = int.tryParse(systolicController.text.trim());
+              final diastolic = int.tryParse(diastolicController.text.trim());
 
-              if (systolic != null && diastolic != null) {
-                await ref
-                    .read(vitalsNotifierProvider.notifier)
-                    .createBPReading(systolic: systolic, diastolic: diastolic);
-                if (context.mounted) Navigator.pop(context);
+              if (systolic == null ||
+                  diastolic == null ||
+                  systolic <= 0 ||
+                  diastolic <= 0) {
+                ScaffoldMessenger.of(pageContext).showSnackBar(
+                  SnackBar(
+                    content: Text(LocaleKeys.errorsRequiredField.tr()),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+                return;
+              }
+
+              if (systolic <= diastolic) {
+                ScaffoldMessenger.of(pageContext).showSnackBar(
+                  SnackBar(
+                    content: Text(LocaleKeys.errorsPasswordsDontMatch.tr()),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+                return;
+              }
+
+              final reading = await ref
+                  .read(vitalsNotifierProvider.notifier)
+                  .createBPReading(systolic: systolic, diastolic: diastolic);
+              if (!dialogContext.mounted) return;
+              // Close the dialog first, using ITS OWN context. Navigating afterwards must
+              // use pageContext (the card's context), not dialogContext — dialogContext
+              // belongs to the route we just popped, so pushing a new page on it is relying
+              // on undefined timing (it happens to still be attached during the pop
+              // animation today, but is not a safe navigation target).
+              Navigator.pop(dialogContext);
+              if (reading != null &&
+                  reading.isEmergency &&
+                  pageContext.mounted) {
+                Navigator.of(pageContext).push(
+                  MaterialPageRoute(
+                    builder: (_) => ApiConstants.symptomCheckerV2Enabled
+                        ? SymptomCheckerWizardPage(initialBpReading: reading)
+                        : const SymptomCheckerPage(),
+                  ),
+                );
               }
             },
             child: Text(LocaleKeys.save.tr()),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddReadingOptions(BuildContext pageContext, WidgetRef ref) {
+    showModalBottomSheet(
+      context: pageContext,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading:
+                  const Icon(Icons.wifi_tethering, color: AppColors.primary),
+              title: Text(LocaleKeys.vitalsBpGuideTitle.tr()),
+              subtitle: Text(LocaleKeys.vitalsBpGuideSubtitle.tr()),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.of(pageContext).push(
+                  MaterialPageRoute(
+                    builder: (_) => const BPMeasurementGuidePage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.edit, color: AppColors.primary),
+              title: Text(LocaleKeys.vitalsAddReading.tr()),
+              subtitle: Text(LocaleKeys.vitalsManual.tr()),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _showAddReadingDialog(pageContext, ref);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

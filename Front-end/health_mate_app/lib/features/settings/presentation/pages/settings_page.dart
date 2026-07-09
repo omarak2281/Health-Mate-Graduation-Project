@@ -14,8 +14,11 @@ import '../../../auth/presentation/pages/splash_page.dart';
 import '../../../../core/theme/app_styles.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/widgets/expert_app_bar.dart';
-import '../../../contacts/presentation/pages/medical_contacts_page.dart';
+import '../../../contacts/presentation/pages/linked_caregivers_page.dart';
+import '../../../home/presentation/pages/linked_patients_page.dart';
 import '../../../../core/widgets/connectivity_status_widget.dart';
+import '../../../vitals/presentation/providers/vitals_provider.dart';
+import '../../../vitals/presentation/pages/bp_measurement_guide_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -26,10 +29,24 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
+  void initState() {
+    super.initState();
+    // The linking provider only fetches once in its constructor, so a
+    // caregiver who linked after that fetch would never appear. Refresh the
+    // list every time Settings opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(linkingNotifierProvider.notifier).getLinkedUsers();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Navigate to splash on logout/delete
     ref.listen(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.unauthenticated) {
+        // Drop the previous user's linked list so the next login doesn't
+        // briefly show someone else's companions.
+        ref.invalidate(linkingNotifierProvider);
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const SplashPage()),
           (route) => false,
@@ -78,6 +95,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             // Device Status
             _buildDeviceStatusSection(isDark),
             SizedBox(height: context.h(3)),
+
+            // Daily BP Reminders (Only for patients)
+            if (user?.isPatient == true) ...[
+              _buildBPReminderSection(isDark),
+              SizedBox(height: context.h(3)),
+            ],
 
             // General Section
             _buildGeneralSection(currentLocale, isDark),
@@ -409,7 +432,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                      builder: (_) => const MedicalContactsPage()),
+                    builder: (_) => user?.isPatient == true
+                        ? const LinkedCaregiversPage()
+                        : const LinkedPatientsPage(),
+                  ),
                 );
               },
               child: Text(
@@ -437,7 +463,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ],
           ),
-          child: linkingState.linkedUsers.isEmpty
+          child: linkingState.isLoading && linkingState.linkedUsers.isEmpty
+              ? Padding(
+                  padding: EdgeInsets.all(context.w(5)),
+                  child: const Center(child: CircularProgressIndicator()),
+                )
+              : linkingState.linkedUsers.isEmpty
               ? Padding(
                   padding: EdgeInsets.all(context.w(5)),
                   child: Center(
@@ -778,6 +809,206 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBPReminderSection(bool isDark) {
+    return Consumer(builder: (context, ref, _) {
+      final reminderState = ref.watch(bpReminderNotifierProvider);
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'vitals.bp_reminder_settings_title'.tr(),
+            style: TextStyle(
+              fontSize: context.sp(18),
+              fontWeight: FontWeight.bold,
+              color:
+                  isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: context.h(1.5)),
+          Container(
+            padding: EdgeInsets.all(context.w(5)),
+            decoration: BoxDecoration(
+              color:
+                  isDark ? AppColors.surfaceDark : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(24),
+              border: isDark ? Border.all(color: AppColors.borderDark) : null,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.primary.withValues(alpha: 0.2)
+                            : AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.notifications_active_outlined,
+                          color: isDark
+                              ? AppColors.primaryLight
+                              : AppColors.primary,
+                          size: context.sp(20)),
+                    ),
+                    SizedBox(width: context.w(3)),
+                    Expanded(
+                      child: Text(
+                        'vitals.bp_reminder_settings_desc'.tr(),
+                        style: TextStyle(
+                          fontSize: context.sp(12.5),
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: context.h(2)),
+                InkWell(
+                  onTap: () => _pickBPReminderStartTime(context, ref, isDark),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: context.w(4), vertical: context.h(1.5)),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.backgroundDark : AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            isDark ? AppColors.borderDark : AppColors.border,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.access_time,
+                            color: isDark
+                                ? AppColors.primaryLight
+                                : AppColors.primary),
+                        SizedBox(width: context.w(3)),
+                        Text(
+                          'vitals.bp_reminder_start_time'.tr(),
+                          style: TextStyle(
+                            fontSize: context.sp(14),
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(Icons.chevron_right,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                    .withValues(alpha: 0.4)
+                                : AppColors.textSecondary.withValues(alpha: 0.5)),
+                      ],
+                    ),
+                  ),
+                ),
+                if (reminderState.scheduledTimes.isNotEmpty) ...[
+                  SizedBox(height: context.h(2)),
+                  Text(
+                    'vitals.bp_reminder_scheduled_times'.tr(),
+                    style: TextStyle(
+                      fontSize: context.sp(12),
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: context.h(1)),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: reminderState.scheduledTimes
+                        .map((t) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(
+                                    alpha: isDark ? 0.2 : 0.08),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                t,
+                                style: TextStyle(
+                                  fontSize: context.sp(13),
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppColors.primaryLight
+                                      : AppColors.primary,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ],
+                SizedBox(height: context.h(2)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const BPMeasurementGuidePage(
+                                quickRecalibration: true),
+                      ),
+                    ),
+                    icon: const Icon(Icons.tune, color: AppColors.primary, size: 18),
+                    label: Text(
+                      'vitals.bp_recalibrate_now'.tr(),
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Future<void> _pickBPReminderStartTime(
+      BuildContext context, WidgetRef ref, bool isDark) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked == null || !context.mounted) return;
+
+    final startTime =
+        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    final success =
+        await ref.read(bpReminderNotifierProvider.notifier).scheduleDaily(startTime);
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success
+            ? 'vitals.bp_reminder_saved'.tr()
+            : ref.read(bpReminderNotifierProvider).errorMessage ??
+                'vitals.bp_reminder_saved'.tr()),
+        backgroundColor: success ? AppColors.success : AppColors.error,
+      ),
     );
   }
 

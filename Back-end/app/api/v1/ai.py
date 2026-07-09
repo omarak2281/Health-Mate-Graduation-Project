@@ -2,26 +2,113 @@
 AI inference router for Symptom Checker
 """
 
+from time import perf_counter
+from uuid import UUID, uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
+from app.core.config import settings
+from app.core.database import get_db
 from app.models.user import User
+from app.services.notification_service import NotificationService, get_notification_service
 from app.services.ai_service import get_symptom_checker, symptom_checker, SymptomCheckerService
 from app.schemas.ai import (
-    SymptomCheckRequest, 
-    SymptomCheckResponse, 
-    DiseaseInfo, 
-    ChatRequest, 
+    SymptomCheckRequest,
+    SymptomCheckResponse,
+    DiseaseInfo,
+    ChatRequest,
     ChatResponse,
     SymptomCategory,
     SymptomListResponse
 )
 
+from app.api.schemas.assessment_schemas import AssessmentRequestSchema, CaregiverNotificationResponse
+from app.api.schemas.category_schemas import CategoryResponse, SymptomResponse
+from app.application.dto.assessment_dto import AssessmentResultDTO
+from app.application.use_cases.get_available_symptoms import get_available_symptoms as get_available_symptoms_v2
+from app.application.use_cases.get_categories import get_categories as get_categories_use_case
+from app.application.use_cases.run_assessment import run_assessment
+from app.application.use_cases.run_bp_triage import run_bp_triage
+from app.application.use_cases.start_chat_from_assessment import start_chat_from_assessment
+from app.core.di import (
+    get_assessment_phraser,
+    get_assessment_repository,
+    get_chat_sessions,
+    get_disease_classifier,
+    get_taxonomy_repository,
+)
+from app.domain.entities.assessment import AssessmentInput
+from app.application.interfaces.assessment_phraser import AssessmentPhraser
+from app.application.services.symptom_checker_metrics import rollout_metrics
+from app.domain.interfaces.assessment_repository import AssessmentRepository
+from app.domain.interfaces.chat_session_repository import ChatSessionRepository
+from app.domain.interfaces.disease_classifier import DiseaseClassifier
+from app.domain.interfaces.taxonomy_repository import TaxonomyRepository
+
 
 router = APIRouter(prefix="/ai", tags=["AI Inference"])
 
-# In-memory session store for AI chat (In production, use Redis or DB)
-CHAT_SESSIONS = {}
+
+def require_symptom_checker_v2_enabled() -> None:
+    if not settings.symptom_checker_v2_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error_code": "symptom_checker_v2_disabled",
+                "message": "Structured symptom checker is currently disabled.",
+            },
+        )
+
+
+def _user_id_or_none(current_user: User) -> UUID | None:
+    return getattr(current_user, "id", None)
+
+
+def _assessment_persistence_payload(
+    payload: AssessmentRequestSchema,
+    result: AssessmentResultDTO,
+    current_user: User,
+    lang: str,
+    assessment_type: str,
+) -> dict:
+    return {
+        "user_id": _user_id_or_none(current_user),
+        "lang": lang,
+        "assessment_type": assessment_type,
+        "request": payload.model_dump(mode="json"),
+        "result": result.model_dump(),
+    }
+
+
+def _should_notify_from_result(result: AssessmentResultDTO) -> bool:
+    return result.should_notify_caregiver or result.urgency in {"high", "critical"}
+
+
+async def _notify_caregivers_from_assessment_result(
+    db: AsyncSession,
+    current_user: User,
+    result: AssessmentResultDTO,
+    notification_service: NotificationService,
+    assessment_id: UUID | None = None,
+    manual: bool = False,
+    lang: str = "en",
+) -> int:
+    user_id = _user_id_or_none(current_user)
+    if user_id is None:
+        return 0
+    return await notification_service.send_symptom_assessment_alert(
+        db=db,
+        patient_id=str(user_id),
+        urgency=result.urgency,
+        caregiver_summary=result.caregiver_summary,
+        recommended_action=result.recommended_action_text,
+        red_flags=[flag.code for flag in result.red_flags],
+        assessment_id=str(assessment_id) if assessment_id else None,
+        manual=manual,
+        lang=lang,
+    )
 
 
 @router.on_event("startup")
@@ -203,6 +290,7 @@ async def chat_symptom_checker(
     request: ChatRequest,
     current_user: User = Depends(get_current_user),
     symptom_checker: SymptomCheckerService = Depends(get_symptom_checker),
+    chat_sessions: ChatSessionRepository = Depends(get_chat_sessions),
     lang: str = "en"
 ):
     """
@@ -216,10 +304,10 @@ async def chat_symptom_checker(
             )
 
     session_id = request.session_id or "default"
-    if session_id not in CHAT_SESSIONS:
-        CHAT_SESSIONS[session_id] = {"symptoms": [], "state": "INITIAL"}
-    
-    session = CHAT_SESSIONS[session_id]
+    session = chat_sessions.get(session_id)
+    if session is None:
+        session = {"symptoms": [], "state": "INITIAL"}
+        chat_sessions.create(session_id, session)
     
     # 1. Automatic Symptom Extraction from Message
     raw_message = request.message.lower().strip()
@@ -235,7 +323,7 @@ async def chat_symptom_checker(
     if is_no:
         # "No" or "No more" always triggers final diagnosis if we have symptoms
         if session["symptoms"]:
-            return await generate_final_diagnosis(session_id, session["symptoms"], lang, symptom_checker)
+            return await generate_final_diagnosis(session_id, session["symptoms"], lang, symptom_checker, chat_sessions)
         else:
             return ChatResponse(
                 message="يرجى ذكر بعض الأعراض أولاً لنتمكن من مساعدتك." if lang == "ar" else "Please describe some symptoms first so we can help you.",
@@ -248,6 +336,7 @@ async def chat_symptom_checker(
     for symptom in new_found:
         if symptom not in session["symptoms"]:
             session["symptoms"].append(symptom)
+    chat_sessions.create(session_id, session)
             
     # 2. Check if we have symptoms
     all_session_symptoms = session["symptoms"]
@@ -264,9 +353,10 @@ async def chat_symptom_checker(
 
     # 3. Direct Suggestions Branch (No more binary Yes/No step)
     # The suggestions will include a "No" option to finish and analyze
-    return await generate_suggestions(session_id, all_session_symptoms, lang, symptom_checker)
+    return await generate_suggestions(session_id, all_session_symptoms, lang, symptom_checker, chat_sessions)
 
-async def generate_suggestions(session_id, symptoms, lang, symptom_checker):
+
+async def generate_suggestions(session_id, symptoms, lang, symptom_checker, chat_sessions: ChatSessionRepository):
     result = symptom_checker.predict_disease(symptoms)
     suggestions = []
     if result and result.get("disease"):
@@ -291,7 +381,10 @@ async def generate_suggestions(session_id, symptoms, lang, symptom_checker):
 
     # Move back to INITIAL state to allow more input or selection
     # But we stay in a "context" where a "No" input triggers diagnosis
-    CHAT_SESSIONS[session_id]["state"] = "INITIAL"
+    session = chat_sessions.get(session_id) or {"symptoms": symptoms, "state": "INITIAL"}
+    session["state"] = "INITIAL"
+    session["symptoms"] = symptoms
+    chat_sessions.create(session_id, session)
 
     return ChatResponse(
         message=msg,
@@ -300,7 +393,7 @@ async def generate_suggestions(session_id, symptoms, lang, symptom_checker):
         found_symptoms=translated_all
     )
 
-async def generate_final_diagnosis(session_id, symptoms, lang, symptom_checker):
+async def generate_final_diagnosis(session_id, symptoms, lang, symptom_checker, chat_sessions: ChatSessionRepository):
     result = symptom_checker.predict_disease(symptoms)
     disease_translation = symptom_checker.get_disease_translation(result["disease"], lang)
     disease_name = disease_translation["name"]
@@ -325,7 +418,7 @@ async def generate_final_diagnosis(session_id, symptoms, lang, symptom_checker):
         response_msg += "\n\n⚠️ Disclaimer: This is for educational purposes only. Please consult a healthcare professional."
 
     # Clear session
-    CHAT_SESSIONS[session_id] = {"symptoms": [], "state": "INITIAL"}
+    chat_sessions.create(session_id, {"symptoms": [], "state": "INITIAL"})
 
     return ChatResponse(
         message=response_msg,
@@ -388,3 +481,187 @@ async def get_chat_history(
             "timestamp": "2024-01-01T10:00:05Z"
         }
     ]
+
+
+# --- Phase 5: new structured-assessment endpoints (plan §6.1) ---------------------------
+# Deliberately additive: none of the routes above are modified, so the existing
+# AiSymptomChatPage/SymptomCheckerPage keep working unchanged (plan §3.2). One documented path
+# deviation from the plan's literal spec: `GET /available-symptoms` already exists above with
+# a different response shape consumed by the current SymptomCheckerPage — reusing that exact
+# path for the new taxonomy-based listing would silently break it. The new listing is exposed
+# at `/taxonomy/symptoms` instead; see Plans/SYMPTOM_CHECKER_PROGRESS.md Phase 5 for the full
+# rationale.
+
+
+@router.get("/categories", response_model=list[CategoryResponse])
+async def get_categories_v2(
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+):
+    """GET /api/v1/ai/categories?lang=ar|en — plan §6.1."""
+    return get_categories_use_case(taxonomy, lang="ar" if lang == "ar" else "en")
+
+
+@router.get("/taxonomy/symptoms", response_model=list[SymptomResponse])
+async def get_taxonomy_symptoms(
+    category_id: str | None = None,
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+):
+    """GET /api/v1/ai/taxonomy/symptoms?category_id=&lang= — plan §6.1's `available-symptoms`
+    shape, exposed at this path instead (see module note above)."""
+    return get_available_symptoms_v2(taxonomy, category_id=category_id, lang="ar" if lang == "ar" else "en")
+
+
+def _to_domain_assessment(payload: AssessmentRequestSchema) -> AssessmentInput:
+    if not payload.symptoms:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error_code": "no_symptoms_selected", "message": "Please select at least one symptom."},
+        )
+    return AssessmentInput(**payload.model_dump())
+
+
+@router.post("/assessment", response_model=AssessmentResultDTO)
+async def post_assessment(
+    payload: AssessmentRequestSchema,
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+    classifier: DiseaseClassifier = Depends(get_disease_classifier),
+    phraser: AssessmentPhraser = Depends(get_assessment_phraser),
+    assessments: AssessmentRepository = Depends(get_assessment_repository),
+    db: AsyncSession = Depends(get_db),
+    notification_service: NotificationService = Depends(get_notification_service),
+):
+    """POST /api/v1/ai/assessment?lang=ar|en — plan §6.1."""
+    started_at = perf_counter()
+    resolved_lang = "ar" if lang == "ar" else "en"
+    assessment = _to_domain_assessment(payload)
+    result = run_assessment(assessment, taxonomy, classifier, lang=resolved_lang, phraser=phraser)
+    assessment_id = uuid4()
+    await assessments.save(
+        assessment_id,
+        _assessment_persistence_payload(payload, result, current_user, resolved_lang, "symptom_checker"),
+    )
+    notified_count = 0
+    if _should_notify_from_result(result):
+        notified_count = await _notify_caregivers_from_assessment_result(
+            db,
+            current_user,
+            result,
+            notification_service,
+            assessment_id=assessment_id,
+            manual=False,
+            lang=resolved_lang,
+        )
+    rollout_metrics.record_assessment(
+        result,
+        latency_ms=(perf_counter() - started_at) * 1000,
+        caregiver_notified=notified_count > 0,
+    )
+    return result
+
+
+@router.post("/bp-triage", response_model=AssessmentResultDTO)
+async def post_bp_triage(
+    payload: AssessmentRequestSchema,
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+    classifier: DiseaseClassifier = Depends(get_disease_classifier),
+    phraser: AssessmentPhraser = Depends(get_assessment_phraser),
+    assessments: AssessmentRepository = Depends(get_assessment_repository),
+):
+    """POST /api/v1/ai/bp-triage?lang=ar|en — plan §6.1 + §8 BP integration hook."""
+    started_at = perf_counter()
+    resolved_lang = "ar" if lang == "ar" else "en"
+    assessment = _to_domain_assessment(payload)
+    result = run_bp_triage(assessment, taxonomy, classifier, lang=resolved_lang, phraser=phraser)
+    await assessments.save(
+        uuid4(),
+        _assessment_persistence_payload(payload, result, current_user, resolved_lang, "bp_triage"),
+    )
+    rollout_metrics.record_assessment(
+        result,
+        latency_ms=(perf_counter() - started_at) * 1000,
+        caregiver_notified=False,
+    )
+    return result
+
+
+@router.post("/chat/from-assessment")
+async def post_chat_from_assessment(
+    payload: AssessmentRequestSchema,
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+    classifier: DiseaseClassifier = Depends(get_disease_classifier),
+    phraser: AssessmentPhraser = Depends(get_assessment_phraser),
+    chat_sessions: ChatSessionRepository = Depends(get_chat_sessions),
+    assessments: AssessmentRepository = Depends(get_assessment_repository),
+):
+    """POST /api/v1/ai/chat/from-assessment?lang=ar|en — plan §6.1, returns `{"assessment_id"}`."""
+    resolved_lang = "ar" if lang == "ar" else "en"
+    assessment = _to_domain_assessment(payload)
+    result = run_assessment(assessment, taxonomy, classifier, lang=resolved_lang, phraser=phraser)
+    assessment_id = uuid4()
+    await assessments.save(
+        assessment_id,
+        _assessment_persistence_payload(payload, result, current_user, resolved_lang, "symptom_checker_chat_seed"),
+    )
+    session_id = start_chat_from_assessment(result, chat_sessions, lang=resolved_lang, assessment_id=str(assessment_id))
+    await assessments.save_chat_seed(
+        assessment_id,
+        {
+            "user_id": _user_id_or_none(current_user),
+            "assessment_id": assessment_id,
+            "state": "INITIAL",
+            "seeded_from_assessment": True,
+            "lang": resolved_lang,
+            "context": {"seed_context": result.model_dump()},
+        },
+    )
+    return {"assessment_id": session_id}
+
+
+@router.post("/assessment/notify-caregiver", response_model=CaregiverNotificationResponse)
+async def post_assessment_notify_caregiver(
+    payload: AssessmentRequestSchema,
+    lang: str = "en",
+    _v2_enabled: None = Depends(require_symptom_checker_v2_enabled),
+    current_user: User = Depends(get_current_user),
+    taxonomy: TaxonomyRepository = Depends(get_taxonomy_repository),
+    classifier: DiseaseClassifier = Depends(get_disease_classifier),
+    phraser: AssessmentPhraser = Depends(get_assessment_phraser),
+    notification_service: NotificationService = Depends(get_notification_service),
+    db: AsyncSession = Depends(get_db),
+):
+    """Send the current guided assessment summary to all linked caregivers."""
+    resolved_lang = "ar" if lang == "ar" else "en"
+    assessment = _to_domain_assessment(payload)
+    result = run_assessment(assessment, taxonomy, classifier, lang=resolved_lang, phraser=phraser)
+    notified_count = await _notify_caregivers_from_assessment_result(
+        db,
+        current_user,
+        result,
+        notification_service,
+        manual=True,
+        lang=resolved_lang,
+    )
+    return CaregiverNotificationResponse(notified_count=notified_count, auto_triggered=False)
+
+
+@router.get("/assessment/rollout-metrics")
+async def get_assessment_rollout_metrics(
+    current_user: User = Depends(get_current_user),
+):
+    """Phase 12 rollout monitor: distribution, red-flag rate, caregiver notify rate, latency."""
+    return rollout_metrics.snapshot()

@@ -81,26 +81,38 @@ class AppStyles {
 
   // Input Decoration
   static InputDecoration inputDecoration({
+    BuildContext? context,
     required String hint,
     IconData? icon,
     Widget? customIcon,
     Widget? suffixIcon,
   }) {
+    final theme = context != null ? Theme.of(context) : null;
+    final isDark = theme?.brightness == Brightness.dark;
+    final fillColor = isDark ? AppColors.surfaceDark : AppColors.white;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.black;
+    final iconColor =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final hintColor = isDark
+        ? AppColors.textSecondaryDark.withValues(alpha: 0.7)
+        : AppColors.textDisabled;
+
     return InputDecoration(
       hintText: hint,
+      hintStyle: GoogleFonts.tajawal(color: hintColor, fontSize: 14),
       prefixIcon: customIcon != null
           ? Padding(
               padding: const EdgeInsets.all(12.0),
               child: customIcon,
             )
-          : (icon != null ? Icon(icon, color: AppColors.textSecondary) : null),
+          : (icon != null ? Icon(icon, color: iconColor) : null),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: fillColor,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.black, width: 1),
+        borderSide: BorderSide(color: borderColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

@@ -19,6 +19,7 @@ import '../../../../core/providers/navigation_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
 import '../../../../core/services/local_notification_service.dart';
+import '../../../../core/services/push_notification_service.dart';
 
 class MedicationAlarmPage extends ConsumerStatefulWidget {
   final List<Medication> medications;
@@ -51,9 +52,12 @@ class _MedicationAlarmPageState extends ConsumerState<MedicationAlarmPage> {
       // If we are already snoozed, ensure hardware is off (safety)
       // and let the notifier know it should enter snooze state
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // The hardware-silence + cloud-snooze calls were already made by
+        // PushNotificationService.handleNotificationAction before this page
+        // was pushed -- skip them here to avoid a duplicate scheduler job.
         ref
             .read(medicationAlarmNotifierProvider(widget.medications).notifier)
-            .snooze();
+            .snooze(skipNetworkCalls: true);
       });
     }
   }
@@ -111,6 +115,7 @@ class _MedicationAlarmPageState extends ConsumerState<MedicationAlarmPage> {
   void dispose() {
     _stopAlarm();
     _audioPlayer.dispose();
+    PushNotificationService.instance.notifyAlarmScreenClosed();
     super.dispose();
   }
 

@@ -90,6 +90,17 @@ dev_dependencies:
   retrofit_generator: ^8.0.6
   hive_generator: ^2.0.1
 
+  # App icon generation (one-off tool, not used at runtime)
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  remove_alpha_ios: true
+
 flutter:
   uses-material-design: true
 
@@ -98,6 +109,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/audio/
+    - assets/icon/
 
   fonts:
     - family: Tajawal

@@ -158,6 +158,10 @@ class LocaleKeys {
   static const String homeMax = 'home.max';
   static const String homeBpm = 'home.bpm';
   static const String homeCheckNow = 'home.check_now';
+  static const String homeRefreshDataMessage = 'home.refresh_data_message';
+  static const String homeUnlinkConfirmMessage = 'home.unlink_confirm_message';
+  static const String homeUnlinkedSuccessMessage =
+      'home.unlinked_success_message';
 
   // Communication
   static const String communicationIncomingVideoCall =
@@ -166,6 +170,17 @@ class LocaleKeys {
       'communication.incoming_audio_call';
   static const String communicationAccept = 'communication.accept';
   static const String communicationDecline = 'communication.decline';
+  static const String communicationAudioCall = 'communication.audio_call';
+  static const String communicationVideoCall = 'communication.video_call';
+  static const String communicationPhoneCall = 'communication.phone_call';
+  static const String communicationContact = 'communication.contact';
+  static const String communicationNoPhoneNumber =
+      'communication.no_phone_number';
+  static const String communicationBloodPressureValue =
+      'communication.blood_pressure_value';
+  static const String communicationRiskValue = 'communication.risk_value';
+  static const String communicationConnecting = 'communication.connecting';
+  static const String communicationRinging = 'communication.ringing';
   static const String homeMeasurementsHistory = 'home.measurements_history';
   static const String homeHome = 'home.home';
   static const String homeCheck = 'home.check';
@@ -174,6 +189,10 @@ class LocaleKeys {
   static const String homeMmHg = 'home.mmHg';
 
   // Vitals
+  static const String vitalsBpReminderTitle = 'vitals.bp_reminder_title';
+  static const String vitalsBpReminderBody = 'vitals.bp_reminder_body';
+  static const String vitalsBpReminderKicker = 'vitals.bp_reminder_kicker';
+  static const String vitalsBpMeasureNow = 'vitals.bp_measure_now';
   static const String vitalsBloodPressure = 'vitals.blood_pressure';
   static const String vitalsBpReadingWithUnit = 'vitals.bp_reading_with_unit';
   static const String vitalsSystolic = 'vitals.systolic';
@@ -209,6 +228,24 @@ class LocaleKeys {
   static const String vitalsDrawerWithNumber = 'vitals.drawer_with_number';
   static const String vitalsTestingDrawer = 'vitals.testing_drawer';
   static const String vitalsIoTDevices = 'vitals.iot_devices';
+  static const String vitalsBpGuideTitle = 'vitals.bp_guide_title';
+  static const String vitalsBpGuideSubtitle = 'vitals.bp_guide_subtitle';
+  static const String vitalsBpGuideConnect = 'vitals.bp_guide_connect';
+  static const String vitalsBpGuideSensorPlacement =
+      'vitals.bp_guide_sensor_placement';
+  static const String vitalsBpGuideHoldStill = 'vitals.bp_guide_hold_still';
+  static const String vitalsBpGuideSuccess = 'vitals.bp_guide_success';
+  static const String vitalsBpGuideRetry = 'vitals.bp_guide_retry';
+  static const String vitalsBpGuideDeviceOffline =
+      'vitals.bp_guide_device_offline';
+  static const String vitalsBpGuideNoDevice = 'vitals.bp_guide_no_device';
+  static const String vitalsBpGuideFingerMissing =
+      'vitals.bp_guide_finger_missing';
+  static const String vitalsBpGuideLeadsOff = 'vitals.bp_guide_leads_off';
+  static const String vitalsBpGuidePoorSignal = 'vitals.bp_guide_poor_signal';
+  static const String vitalsBpGuideStart = 'vitals.bp_guide_start';
+  static const String vitalsBpGuideRetryButton = 'vitals.bp_guide_retry_button';
+  static const String vitalsBpGuideSecondsLeft = 'vitals.bp_guide_seconds_left';
 
   // Medications
   static const String medicationsMyMedications = 'medications.my_medications';
@@ -344,6 +381,12 @@ class LocaleKeys {
   static const String contactsFamily = 'contacts.family';
   static const String contactsDeleteConfirm = 'contacts.delete_confirm';
   static const String contactsDeleteWarning = 'contacts.delete_warning';
+  static const String contactsLinkedCaregivers = 'contacts.linked_caregivers';
+  static const String contactsLinkedPatients = 'contacts.linked_patients';
+  static const String contactsNoLinkedCaregivers =
+      'contacts.no_linked_caregivers';
+  static const String contactsNoLinkedCaregiversDesc =
+      'contacts.no_linked_caregivers_desc';
 
   // Linking
   static const String linkingMyQrCode = 'linking.my_qr_code';

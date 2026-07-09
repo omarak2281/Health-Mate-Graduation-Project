@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/app_constants.dart';
 
 /// A lightweight translator that works in background isolates where
 /// EasyLocalization is not initialized.
@@ -11,6 +13,7 @@ class BackgroundTranslationService {
 
   Map<String, dynamic>? _enMap;
   Map<String, dynamic>? _arMap;
+  String? _cachedLocale;
   bool _isLoading = false;
 
   Future<void> init() async {
@@ -24,6 +27,7 @@ class BackgroundTranslationService {
 
       _enMap = jsonDecode(enContent);
       _arMap = jsonDecode(arContent);
+      await refreshLocale();
       debugPrint(
           '[BackgroundTranslation] ✅ Successfully loaded translation maps');
     } catch (e) {
@@ -37,12 +41,17 @@ class BackgroundTranslationService {
     return await rootBundle.loadString(path);
   }
 
+  Future<void> refreshLocale() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _cachedLocale = prefs.getString(AppConstants.cacheKeyLanguage);
+    } catch (_) {}
+  }
+
   /// Translate a key. Language is determined by system locale or passed manually.
   String translate(String key,
       {String? locale, Map<String, String>? namedArgs}) {
-    // Default to 'ar' as it's the primary language for this project's users
-    // In a real app, you might want to persist the user's choice in shared_prefs
-    final targetLocale = locale ?? 'ar';
+    final targetLocale = locale ?? _cachedLocale ?? 'en';
     final map = targetLocale == 'ar' ? _arMap : _enMap;
 
     if (map == null) return key;

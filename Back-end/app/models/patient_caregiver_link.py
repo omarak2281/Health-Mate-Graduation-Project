@@ -3,7 +3,7 @@ Patient-Caregiver relationship model
 Many-to-many relationship allowing multiple caregivers per patient
 """
 
-from sqlalchemy import Column, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, DateTime, Boolean, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -32,6 +32,9 @@ class PatientCaregiverLink(Base):
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
     
+    # Primary caregiver flag (bookkeeping only)
+    is_primary = Column(Boolean, default=False, nullable=False)
+    
     # Timestamps
     linked_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -40,5 +43,14 @@ class PatientCaregiverLink(Base):
     patient = relationship("User", foreign_keys=[patient_id], back_populates="caregivers")
     caregiver = relationship("User", foreign_keys=[caregiver_id], back_populates="patients")
     
+    __table_args__ = (
+        Index(
+            "uq_patient_active_primary_caregiver",
+            "patient_id",
+            postgresql_where="is_primary = true AND is_active = true",
+            unique=True
+        ),
+    )
+
     def __repr__(self):
-        return f"<PatientCaregiverLink(patient={self.patient_id}, caregiver={self.caregiver_id})>"
+        return f"<PatientCaregiverLink(patient={self.patient_id}, caregiver={self.caregiver_id}, primary={self.is_primary})>"

@@ -56,5 +56,6 @@ Thumbs.db
 
 # Exclude folders by user request
 /Predict-ABP/
-/bp-hardware-code/
+Back-end/.env
+
 

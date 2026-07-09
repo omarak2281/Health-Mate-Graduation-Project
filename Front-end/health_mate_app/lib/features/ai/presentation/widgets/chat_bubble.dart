@@ -15,6 +15,21 @@ class ChatBubble extends StatelessWidget {
     this.userProfileImage,
   });
 
+  /// The backend's final-diagnosis message packs disease name + advice +
+  /// disclaimer into one `\n\n`-joined string (see `generate_final_diagnosis`
+  /// in ai.py) -- but the name/advice are ALSO rendered, styled, in
+  /// [_buildDiagnosisCard]. Showing the raw text in full underneath the card
+  /// duplicated that content (and left literal `**` markers visible, since
+  /// this is plain Text with no markdown renderer). When a diagnosis card is
+  /// shown, keep only the last paragraph (the disclaimer); otherwise show
+  /// the text as-is, with markdown bold markers stripped.
+  String get _displayText {
+    final stripped = message.text.replaceAll('**', '');
+    if (message.diagnosis == null) return stripped;
+    final paragraphs = stripped.split('\n\n').where((p) => p.trim().isNotEmpty).toList();
+    return paragraphs.isNotEmpty ? paragraphs.last.trim() : '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
@@ -78,18 +93,19 @@ class ChatBubble extends StatelessWidget {
                         _buildDiagnosisCard(context),
                         SizedBox(height: context.h(1)),
                       ],
-                      Text(
-                        message.text,
-                        style: TextStyle(
-                          color: isUser
-                              ? Colors.white
-                              : (isDark ? Colors.white : Colors.black87),
-                          fontSize: context.sp(14),
-                          height: 1.5,
-                          fontWeight:
-                              isUser ? FontWeight.w500 : FontWeight.normal,
+                      if (_displayText.isNotEmpty)
+                        Text(
+                          _displayText,
+                          style: TextStyle(
+                            color: isUser
+                                ? Colors.white
+                                : (isDark ? Colors.white : Colors.black87),
+                            fontSize: context.sp(14),
+                            height: 1.5,
+                            fontWeight:
+                                isUser ? FontWeight.w500 : FontWeight.normal,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),

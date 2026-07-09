@@ -15,8 +15,20 @@ import '../../../../core/constants/iot_constants.dart';
 class MedicationsList extends ConsumerWidget {
   final bool compact;
   final String? patientId;
+  final bool embedded;
+  final bool showAddButton;
+  final bool showHeader;
+  final bool showSmartBoxStatus;
 
-  const MedicationsList({super.key, this.compact = false, this.patientId});
+  const MedicationsList({
+    super.key,
+    this.compact = false,
+    this.patientId,
+    this.embedded = false,
+    this.showAddButton = true,
+    this.showHeader = true,
+    this.showSmartBoxStatus = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,6 +36,7 @@ class MedicationsList extends ConsumerWidget {
     final medsState = patientId != null
         ? ref.watch(patientMedicationsNotifierProvider(patientId!))
         : ref.watch(medicationsNotifierProvider);
+    final horizontalPadding = embedded ? 0.0 : context.w(6);
 
     if (medsState.isLoading) {
       return Center(
@@ -81,33 +94,35 @@ class MedicationsList extends ConsumerWidget {
                   ),
                 ),
               ),
-              SizedBox(height: context.h(4)),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => MedicineFormPage(patientId: patientId)),
-                ),
-                icon: Icon(Icons.add_rounded,
-                    size: context.sp(22), color: AppColors.white),
-                label: Text(
-                  LocaleKeys.medicationsAddMedication.tr(),
-                  style: TextStyle(
-                    fontSize: context.sp(16),
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
+              if (showAddButton) ...[
+                SizedBox(height: context.h(4)),
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => MedicineFormPage(patientId: patientId)),
+                  ),
+                  icon: Icon(Icons.add_rounded,
+                      size: context.sp(22), color: AppColors.white),
+                  label: Text(
+                    LocaleKeys.medicationsAddMedication.tr(),
+                    style: TextStyle(
+                      fontSize: context.sp(16),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.white,
+                    ),
+                  ),
+                  style: AppStyles.primaryButtonStyle.copyWith(
+                    minimumSize: WidgetStateProperty.all(
+                        Size(context.w(60), context.h(6.5))),
+                    shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16))),
+                    backgroundColor:
+                        WidgetStateProperty.all(AppColors.expertTeal),
+                    elevation: WidgetStateProperty.all(8),
                   ),
                 ),
-                style: AppStyles.primaryButtonStyle.copyWith(
-                  minimumSize: WidgetStateProperty.all(
-                      Size(context.w(60), context.h(6.5))),
-                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16))),
-                  backgroundColor:
-                      WidgetStateProperty.all(AppColors.expertTeal),
-                  elevation: WidgetStateProperty.all(8),
-                ),
-              ),
+              ],
             ],
           ),
         ),
@@ -121,7 +136,7 @@ class MedicationsList extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!compact) ...[
+        if (!compact && showHeader) ...[
           Padding(
             padding: EdgeInsets.fromLTRB(
                 context.w(6), context.h(4), context.w(6), context.h(1)),
@@ -138,7 +153,7 @@ class MedicationsList extends ConsumerWidget {
           ),
           SizedBox(height: context.h(4)),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.w(6)),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -169,7 +184,7 @@ class MedicationsList extends ConsumerWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: context.w(6)),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           itemCount: medications.length,
           itemBuilder: (context, index) {
             return MedicationScheduleCard(
@@ -180,7 +195,7 @@ class MedicationsList extends ConsumerWidget {
           },
         ),
         SizedBox(height: context.h(4)),
-        if (!compact) ...[
+        if (!compact && showSmartBoxStatus) ...[
           Padding(
             padding: EdgeInsets.symmetric(horizontal: context.w(6)),
             child: Text(
@@ -198,10 +213,12 @@ class MedicationsList extends ConsumerWidget {
           SizedBox(height: context.h(2)),
           const SmartBoxStatusCard(),
         ],
-        if (!compact && medsState.activeMedications.isNotEmpty) ...[
+        if (!compact &&
+            showAddButton &&
+            medsState.activeMedications.isNotEmpty) ...[
           SizedBox(height: context.h(4)),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.w(6)),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: ElevatedButton.icon(
               onPressed: () => Navigator.push(
                 context,
@@ -315,7 +332,7 @@ class SmartBoxStatusCard extends ConsumerWidget {
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: boxStatus != null
+                            color: boxStatus?['status'] == 'online'
                                 ? AppColors.success
                                 : AppColors.textDisabled,
                             shape: BoxShape.circle,
@@ -323,10 +340,10 @@ class SmartBoxStatusCard extends ConsumerWidget {
                         ),
                         SizedBox(width: 6),
                         Text(
-                          boxStatus != null
+                          boxStatus?['status'] == 'online'
                               ? LocaleKeys.medicationsStatusOnlineWithId.tr(
                                   namedArgs: {
-                                    'id': (boxStatus['box_id'] ??
+                                    'id': (boxStatus?['box_id'] ??
                                             LocaleKeys.commonNotAvailable.tr())
                                         .toString(),
                                   },

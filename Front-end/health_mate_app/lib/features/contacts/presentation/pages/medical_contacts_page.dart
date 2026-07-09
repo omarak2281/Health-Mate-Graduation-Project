@@ -8,7 +8,11 @@ import '../../../../core/utils/responsive.dart';
 import '../providers/medical_contacts_provider.dart';
 import '../../../../core/theme/app_styles.dart';
 import '../../../../core/models/medical_contact.dart';
+import '../../../../core/models/user.dart';
 import '../../../../core/widgets/expert_app_bar.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../linking/presentation/providers/linking_provider.dart';
+import '../widgets/linked_user_card.dart';
 
 class MedicalContactsPage extends ConsumerWidget {
   const MedicalContactsPage({super.key});
@@ -16,6 +20,8 @@ class MedicalContactsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(medicalContactsNotifierProvider);
+    final linkingState = ref.watch(linkingNotifierProvider);
+    final currentUser = ref.watch(authNotifierProvider).user;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -44,22 +50,62 @@ class MedicalContactsPage extends ConsumerWidget {
               padding:
                   EdgeInsets.only(top: ExpertAppBar.getAppBarPadding(context)),
               child: RefreshIndicator(
-                onRefresh: () => ref
-                    .read(medicalContactsNotifierProvider.notifier)
-                    .loadContacts(),
-                child: state.contacts.isEmpty
+                onRefresh: () async {
+                  await Future.wait([
+                    ref
+                        .read(medicalContactsNotifierProvider.notifier)
+                        .loadContacts(),
+                    ref.read(linkingNotifierProvider.notifier).getLinkedUsers(),
+                  ]);
+                },
+                child: state.contacts.isEmpty && linkingState.linkedUsers.isEmpty
                     ? _buildEmptyState(context, ref)
-                    : ListView.builder(
+                    : ListView(
                         padding: EdgeInsets.symmetric(
                             horizontal: context.w(4), vertical: context.h(2)),
-                        itemCount: state.contacts.length,
-                        itemBuilder: (context, index) {
-                          final contact = state.contacts[index];
-                          return _buildContactCard(context, ref, contact);
-                        },
+                        children: [
+                          if (linkingState.linkedUsers.isNotEmpty) ...[
+                            _buildPinnedLinkedSection(
+                              context,
+                              linkingState.linkedUsers,
+                              currentUser?.isPatient == true,
+                            ),
+                            SizedBox(height: context.h(1.5)),
+                          ],
+                          ...state.contacts.map(
+                            (contact) => _buildContactCard(context, ref, contact),
+                          ),
+                        ],
                       ),
               ),
             ),
+    );
+  }
+
+  Widget _buildPinnedLinkedSection(
+    BuildContext context,
+    List<User> linkedUsers,
+    bool currentUserIsPatient,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: context.h(1.2)),
+          child: Text(
+            currentUserIsPatient
+                ? LocaleKeys.contactsLinkedCaregivers.tr()
+                : LocaleKeys.contactsLinkedPatients.tr(),
+            style: AppStyles.headingStyle.copyWith(
+              fontSize: context.sp(18),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimary,
+            ),
+          ),
+        ),
+        ...linkedUsers.map((user) => LinkedUserCard(user: user)),
+      ],
     );
   }
 
@@ -247,26 +293,6 @@ class MedicalContactsPage extends ConsumerWidget {
               ),
             ),
           ),
-          SizedBox(height: context.h(4)),
-          ElevatedButton.icon(
-            onPressed: () => _showAddContactDialog(context, ref),
-            icon: Icon(Icons.add_rounded,
-                size: context.sp(22), color: AppColors.white),
-            label: Text(
-              LocaleKeys.contactsAddContact.tr(),
-              style: TextStyle(
-                fontSize: context.sp(16),
-                fontWeight: FontWeight.bold,
-                color: AppColors.white,
-              ),
-            ),
-            style: AppStyles.primaryButtonStyle.copyWith(
-              minimumSize:
-                  WidgetStateProperty.all(Size(context.w(60), context.h(6.5))),
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16))),
-            ),
-          ),
         ],
       ),
     );
@@ -274,8 +300,12 @@ class MedicalContactsPage extends ConsumerWidget {
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
+    final launched = await launchUrl(
+      launchUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched) {
+      debugPrint('No dialer app can handle $launchUri');
     }
   }
 

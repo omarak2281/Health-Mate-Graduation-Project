@@ -123,6 +123,43 @@ async def get_linked_users(
     return linked_users
 
 
+def _normalize_phone(phone: str) -> str:
+    """Normalize a phone number for duplicate comparison (digits and + only)."""
+    return "".join(ch for ch in phone if ch.isdigit() or ch == "+")
+
+
+async def _sync_caregiver_into_patient_contacts(db, patient_id, caregiver) -> None:
+    """
+    Add the caregiver's registered phone number to the patient's in-app
+    medical contacts (family type) when a link is created or reactivated.
+    Skips silently if the caregiver has no phone or a contact with the same
+    phone number already exists (de-duplication by normalized number).
+    """
+    from app.models.medical_contact import MedicalContact, ContactType
+
+    if not caregiver.phone or not caregiver.phone.strip():
+        return
+
+    result = await db.execute(
+        select(MedicalContact).where(MedicalContact.user_id == patient_id)
+    )
+    existing_contacts = result.scalars().all()
+    caregiver_phone = _normalize_phone(caregiver.phone)
+    if any(
+        _normalize_phone(c.phone) == caregiver_phone for c in existing_contacts
+    ):
+        return
+
+    db.add(
+        MedicalContact(
+            user_id=patient_id,
+            name=caregiver.full_name,
+            phone=caregiver.phone,
+            contact_type=ContactType.FAMILY,
+        )
+    )
+
+
 @router.post("/link/{user_id}")
 async def link_user(
     user_id: UUID,
@@ -180,6 +217,10 @@ async def link_user(
         else:
             # Reactivate existing link
             existing_link.is_active = True
+            from app.services.patient_caregiver_service import assign_is_primary_for_new_link
+            await assign_is_primary_for_new_link(db, patient_id, existing_link)
+            caregiver = current_user if caregiver_id == current_user.id else target_user
+            await _sync_caregiver_into_patient_contacts(db, patient_id, caregiver)
             await db.commit()
             return {"message": "Link reactivated"}
     
@@ -188,10 +229,13 @@ async def link_user(
         patient_id=patient_id,
         caregiver_id=caregiver_id
     )
-    
+    from app.services.patient_caregiver_service import assign_is_primary_for_new_link
+    await assign_is_primary_for_new_link(db, patient_id, link)
     db.add(link)
+    caregiver = current_user if caregiver_id == current_user.id else target_user
+    await _sync_caregiver_into_patient_contacts(db, patient_id, caregiver)
     await db.commit()
-    
+
     return {"message": "Users linked successfully"}
 
 
@@ -231,6 +275,8 @@ async def unlink_user(
     
     # Soft delete
     link.is_active = False
+    from app.services.patient_caregiver_service import promote_new_primary_if_needed
+    await promote_new_primary_if_needed(db, patient_id, link)
     await db.commit()
     
     return None

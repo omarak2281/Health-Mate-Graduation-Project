@@ -14,7 +14,16 @@ import '../widgets/chat_input_field.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class AiSymptomChatPage extends ConsumerStatefulWidget {
-  const AiSymptomChatPage({super.key});
+  final String? initialSessionId;
+  final String? initialContextMessage;
+  final VoidCallback? onBackToStart;
+
+  const AiSymptomChatPage({
+    super.key,
+    this.initialSessionId,
+    this.initialContextMessage,
+    this.onBackToStart,
+  });
 
   @override
   ConsumerState<AiSymptomChatPage> createState() => _AiSymptomChatPageState();
@@ -22,6 +31,12 @@ class AiSymptomChatPage extends ConsumerStatefulWidget {
 
 class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
   final ScrollController _scrollController = ScrollController();
+
+  // Multi-select state for the current suggestion-chip batch. Symptom chips
+  // toggle in/out of this set instead of sending immediately on tap, so the
+  // user can pick several before sending one combined message. Cleared
+  // whenever a new AI message (and therefore a new options batch) arrives.
+  final Set<String> _selectedQuickReplies = {};
 
   @override
   void dispose() {
@@ -42,13 +57,19 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.locale.languageCode;
-    final chatState = ref.watch(aiChatProvider(currentLocale));
-    final chatController = ref.read(aiChatProvider(currentLocale).notifier);
+    final providerArgs = AiChatProviderArgs(
+      locale: currentLocale,
+      initialSessionId: widget.initialSessionId,
+      initialContextMessage: widget.initialContextMessage,
+    );
+    final chatState = ref.watch(aiChatProvider(providerArgs));
+    final chatController = ref.read(aiChatProvider(providerArgs).notifier);
 
     // Auto scroll to bottom when new messages arrive
-    ref.listen(aiChatProvider(currentLocale), (previous, next) {
+    ref.listen(aiChatProvider(providerArgs), (previous, next) {
       if (previous?.messages.length != next.messages.length) {
         Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+        _selectedQuickReplies.clear();
       }
     });
 
@@ -60,9 +81,16 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
         title: LocaleKeys.homeAiChat.tr(),
         onBackTap: () {
           // Expert Back Logic:
-          // 1. If we can pop the navigator (pushed page), do it.
-          // 2. If we are in the bottom nav, switch to Home tab.
-          if (Navigator.of(context).canPop()) {
+          // 1. If a restart callback was provided (opened from the symptom
+          //    checker's result page), pop back to the wizard and reset it
+          //    to the category-selection step instead of leaving it stuck
+          //    on the result step.
+          // 2. Otherwise, if we can pop the navigator (pushed page), do it.
+          // 3. If we are in the bottom nav, switch to Home tab.
+          if (widget.onBackToStart != null) {
+            Navigator.of(context).pop();
+            widget.onBackToStart!();
+          } else if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           } else {
             ref.read(navigationProvider.notifier).goHome();
@@ -376,6 +404,29 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
     );
   }
 
+  bool _isArabicText(String text) => text.contains(RegExp(r'[؀-ۿ]'));
+
+  bool _isExitOption(String option) =>
+      option == "نعم" || option == "Yes" || option.contains("لا") || option.contains("No");
+
+  String _quickReplyLabel(String option, bool isAr) {
+    if (_isExitOption(option)) return option;
+    // Some symptoms have no Arabic translation in the backend's (older)
+    // symptom_translations table and come back in English even when the app
+    // is in Arabic -- prefixing those with "أعاني من" produced a garbled
+    // mixed-direction string. Match the prefix language to the actual text,
+    // not the app locale.
+    return _isArabicText(option) ? "أعاني من $option" : "I have $option";
+  }
+
+  void _sendSelectedQuickReplies(AiChatController controller, bool isAr) {
+    if (_selectedQuickReplies.isEmpty) return;
+    final joined = _selectedQuickReplies.join(isAr ? '، ' : ', ');
+    final combined = isAr ? 'أعاني من $joined' : 'I have $joined';
+    controller.sendMessage(combined);
+    setState(() => _selectedQuickReplies.clear());
+  }
+
   Widget _buildQuickReplies(List<String> options, AiChatController controller) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isAr = context.locale.languageCode == 'ar';
@@ -402,16 +453,51 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: context.w(5), vertical: context.h(0.5)),
-              child: Text(
-                isAr
-                    ? SymptomCheckerConstants.suggestionsAr
-                    : SymptomCheckerConstants.suggestionsEn,
-                style: TextStyle(
-                  color: AppColors.primary.withValues(alpha: 0.7),
-                  fontSize: context.sp(10),
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isAr
+                          ? SymptomCheckerConstants.suggestionsAr
+                          : SymptomCheckerConstants.suggestionsEn,
+                      style: TextStyle(
+                        color: AppColors.primary.withValues(alpha: 0.7),
+                        fontSize: context.sp(10),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  if (_selectedQuickReplies.isNotEmpty)
+                    InkWell(
+                      onTap: () => _sendSelectedQuickReplies(controller, isAr),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: context.w(3), vertical: context.h(0.4)),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${_selectedQuickReplies.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.send_rounded,
+                                color: Colors.white, size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             SizedBox(
@@ -421,19 +507,38 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
                 padding: EdgeInsets.symmetric(horizontal: context.w(4)),
                 itemCount: options.length,
                 itemBuilder: (context, index) {
+                  final option = options[index];
+                  final isExit = _isExitOption(option);
+                  final isSelected = _selectedQuickReplies.contains(option);
                   return Padding(
                     padding: EdgeInsets.only(right: context.w(2)),
                     child: InkWell(
-                      onTap: () => controller.sendMessage(options[index]),
+                      onTap: () {
+                        if (isExit) {
+                          controller.sendMessage(option);
+                        } else {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedQuickReplies.remove(option);
+                            } else {
+                              _selectedQuickReplies.add(option);
+                            }
+                          });
+                        }
+                      },
                       borderRadius: BorderRadius.circular(15),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: context.w(4), vertical: context.h(1)),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.08),
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(15),
                           border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.2),
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.primary.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -441,29 +546,25 @@ class _AiSymptomChatPageState extends ConsumerState<AiSymptomChatPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              options[index] == "نعم" || options[index] == "Yes"
+                              option == "نعم" || option == "Yes"
                                   ? Icons.check_circle_rounded
-                                  : (options[index].contains("لا") ||
-                                          options[index].contains("No")
+                                  : (option.contains("لا") || option.contains("No")
                                       ? Icons.stop_circle_outlined
-                                      : Icons.check_circle_outline_rounded),
+                                      : (isSelected
+                                          ? Icons.check_circle_rounded
+                                          : Icons.add_circle_outline_rounded)),
                               size: 16,
-                              color:
-                                  isDark ? Colors.white70 : AppColors.primary,
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isDark ? Colors.white70 : AppColors.primary),
                             ),
                             SizedBox(width: context.w(2)),
                             Text(
-                              (options[index] == "نعم" ||
-                                      options[index] == "Yes" ||
-                                      options[index].contains("لا") ||
-                                      options[index].contains("No"))
-                                  ? options[index]
-                                  : (isAr
-                                      ? "أعاني من ${options[index]}"
-                                      : "I have ${options[index]}"),
+                              _quickReplyLabel(option, isAr),
                               style: TextStyle(
-                                color:
-                                    isDark ? Colors.white : AppColors.primary,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark ? Colors.white : AppColors.primary),
                                 fontWeight: FontWeight.w600,
                                 fontSize: context.sp(11),
                               ),

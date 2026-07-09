@@ -26,6 +26,9 @@ class CallStatus(str, enum.Enum):
     IN_CALL = "in_call"
     ENDED = "ended"
     REJECTED = "rejected"
+    BUSY = "busy"
+    MISSED = "missed"
+    FAILED = "failed"
 
 
 class CallSession(Base):

@@ -70,6 +70,15 @@ class MedicationsNotifier extends StateNotifier<MedicationsState> {
         _scheduler.scheduleAll(medications);
       }
     } catch (e) {
+      if (patientId != null) {
+        state = state.copyWith(
+          medications: [],
+          isLoading: false,
+          errorMessage: e.toString(),
+        );
+        return;
+      }
+
       // Try cache
       final cachedMeds = _repository.getCachedMedications();
       state = state.copyWith(

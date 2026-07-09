@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:ui' as ui;
 import '../../../../core/constants/constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles.dart';
 import '../../../../core/models/user.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/expert_app_bar.dart';
+import '../../../../core/widgets/connectivity_status_widget.dart';
 import '../../../vitals/presentation/providers/vitals_provider.dart';
 import '../../../medications/presentation/widgets/medications_list.dart';
+import '../../../medications/presentation/pages/medicine_form_page.dart';
+import '../../../medications/presentation/providers/medications_provider.dart';
 import '../../../communication/presentation/pages/call_page.dart';
 import '../../../linking/presentation/providers/linking_provider.dart';
 import '../../../vitals/presentation/pages/bp_history_page.dart';
-import '../../../medications/presentation/pages/medicine_form_page.dart';
 import '../widgets/patient_dashboard_widgets.dart';
 
 /// Caregiver Patient Detail Page
@@ -32,7 +35,13 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
           isDark ? AppColors.backgroundDark : AppColors.pageBackground,
       appBar: ExpertAppBar(
         title: patient.fullName,
+        onBackTap: () => Navigator.of(context).pop(),
         actions: [
+          SensorsDeviceStatusWidget(
+            showText: false,
+            patientId: patient.id,
+          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: Icon(
               Icons.delete_outline_rounded,
@@ -43,162 +52,173 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Patient Profile Summary Card
-            _buildPatientProfileCard(context),
+      body: RefreshIndicator(
+        onRefresh: () => _refreshPatientData(ref),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Patient Profile Summary Card
+              _buildPatientProfileCard(context),
 
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: context.w(5)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: context.h(2)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: context.w(5)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: context.h(2)),
 
-                  // ─── Quick Actions ──────────────────────────────────────
-                  _buildSectionTitle(context, LocaleKeys.homeQuickActions.tr()),
-                  SizedBox(height: context.h(1.5)),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildCallActionCard(
-                          context,
-                          icon: null,
-                          iconData: AppIcons.videoCall,
-                          label: LocaleKeys.communicationIncomingVideoCall.tr(),
-                          color: AppColors.primary,
-                          onTap: () => _initiateCall(context, isVideo: true),
-                        ),
-                      ),
-                      SizedBox(width: context.w(3)),
-                      Expanded(
-                        child: _buildCallActionCard(
-                          context,
-                          icon: null,
-                          iconData: Icons.phone_rounded,
-                          label: LocaleKeys.communicationIncomingAudioCall.tr(),
-                          color: AppColors.riskNormal,
-                          onTap: () => _initiateCall(context, isVideo: false),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: context.h(3)),
-
-                  // ─── Vitals Overview ─────────────────────────────────────
-                  _buildSectionTitle(context, LocaleKeys.homeLatestBp.tr()),
-                  SizedBox(height: context.h(1.5)),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final vitalsState =
-                          ref.watch(patientVitalsNotifierProvider(patient.id));
-                      final bp = vitalsState.currentBP;
-
-                      return Column(
-                        children: [
-                          _buildCaregiverVitalCard(
+                    // ─── Quick Actions ──────────────────────────────────────
+                    _buildSectionTitle(
+                        context, LocaleKeys.homeQuickActions.tr()),
+                    SizedBox(height: context.h(1.5)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildCallActionCard(
                             context,
-                            label: LocaleKeys.vitalsBloodPressure.tr(),
-                            value: bp != null
-                                ? '${bp.systolic}/${bp.diastolic}'
-                                : '--/--',
-                            unit: LocaleKeys.homeMmHg.tr(),
-                            icon: Icons.favorite_rounded,
+                            icon: null,
+                            iconData: AppIcons.videoCall,
+                            label: LocaleKeys.communicationVideoCall.tr(),
                             color: AppColors.primary,
-                            onAction: () {
-                              ref
-                                  .read(
-                                      patientVitalsNotifierProvider(patient.id)
-                                          .notifier)
-                                  .loadCurrentBP();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Requesting latest measurements from ${patient.fullName}\'s device...',
-                                    style: AppStyles.labelStyle
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  backgroundColor: AppColors.primary,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            actionLabel: LocaleKeys.homeCheckNow.tr(),
+                            onTap: () => _initiateCall(context, isVideo: true),
                           ),
-                          SizedBox(height: context.h(2)),
-                          _buildCaregiverVitalCard(
+                        ),
+                        SizedBox(width: context.w(3)),
+                        Expanded(
+                          child: _buildCallActionCard(
                             context,
-                            label: LocaleKeys.vitalsHeartRate.tr(),
-                            value: bp?.heartRate?.toString() ?? '--',
-                            unit: LocaleKeys.homeBpm.tr(),
-                            icon: Icons.monitor_heart_rounded,
-                            color: AppColors.error,
+                            icon: null,
+                            iconData: Icons.phone_rounded,
+                            label: LocaleKeys.communicationAudioCall.tr(),
+                            color: AppColors.riskNormal,
+                            onTap: () => _initiateCall(context, isVideo: false),
                           ),
-                          SizedBox(height: context.h(2.5)),
-                          MeasurementsHistoryCard(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      BPHistoryPage(patientId: patient.id),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  SizedBox(height: context.h(3)),
-
-                  // ─── Medications ────────────────────────────────────────
-                  _buildSectionTitle(context, LocaleKeys.homeMedications.tr()),
-                  SizedBox(height: context.h(1.5)),
-                  MedicationsList(patientId: patient.id),
-                  SizedBox(height: context.h(2)),
-
-                  // ─── Add Medication Button ───────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              MedicineFormPage(patientId: patient.id),
                         ),
-                      ),
-                      icon: const Icon(Icons.add_rounded,
-                          color: AppColors.expertTeal),
-                      label: Text(
-                        LocaleKeys.medicationsAddMedication.tr(),
-                        style: TextStyle(
-                          color: AppColors.expertTeal,
-                          fontWeight: FontWeight.bold,
-                          fontSize: context.sp(15),
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: AppColors.expertTeal, width: 1.5),
-                        padding: EdgeInsets.symmetric(vertical: context.h(1.8)),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
+                      ],
                     ),
-                  ),
+                    SizedBox(height: context.h(3)),
 
-                  SizedBox(height: context.h(4)),
-                ],
+                    // ─── Vitals Overview ─────────────────────────────────────
+                    _buildSectionTitle(context, LocaleKeys.homeLatestBp.tr()),
+                    SizedBox(height: context.h(1.5)),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final vitalsState = ref
+                            .watch(patientVitalsNotifierProvider(patient.id));
+                        final bp = vitalsState.currentBP;
+
+                        return Column(
+                          children: [
+                            _buildCaregiverVitalCard(
+                              context,
+                              label: LocaleKeys.vitalsBloodPressure.tr(),
+                              value: bp?.displaySystolic != null &&
+                                      bp?.displayDiastolic != null
+                                  ? '${bp!.displaySystolic}/${bp.displayDiastolic}'
+                                  : '--/--',
+                              unit: LocaleKeys.homeMmHg.tr(),
+                              icon: Icons.favorite_rounded,
+                              color: AppColors.primary,
+                              badge: bp != null
+                                  ? VitalTrustBadge(
+                                      signalQuality: bp.signalQuality,
+                                      calibrationStatus:
+                                          bp.effectiveCalibrationStatus,
+                                    )
+                                  : null,
+                              onAction: () {
+                                ref
+                                    .read(patientVitalsNotifierProvider(
+                                            patient.id)
+                                        .notifier)
+                                    .loadCurrentBP();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      LocaleKeys.homeRefreshDataMessage.tr(
+                                        namedArgs: {'name': patient.fullName},
+                                      ),
+                                      style: AppStyles.labelStyle
+                                          .copyWith(color: AppColors.white),
+                                    ),
+                                    backgroundColor: AppColors.primary,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              actionLabel: LocaleKeys.homeCheckNow.tr(),
+                            ),
+                            SizedBox(height: context.h(2)),
+                            _buildCaregiverVitalCard(
+                              context,
+                              label: LocaleKeys.vitalsHeartRate.tr(),
+                              value: bp?.heartRate?.toString() ?? '--',
+                              unit: LocaleKeys.homeBpm.tr(),
+                              icon: Icons.monitor_heart_rounded,
+                              color: _heartRateColor(bp?.heartRateRiskLevel),
+                              badge: _heartRateBadge(context, bp?.heartRateRiskLevel),
+                            ),
+                            SizedBox(height: context.h(2)),
+                            _buildCaregiverVitalCard(
+                              context,
+                              label: 'vitals.spo2'.tr(),
+                              value: bp?.spo2?.toString() ?? '--',
+                              unit: '%',
+                              icon: Icons.water_drop_rounded,
+                              color: AppColors.info,
+                            ),
+                            SizedBox(height: context.h(2.5)),
+                            MeasurementsHistoryCard(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        BPHistoryPage(patientId: patient.id),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(height: context.h(3)),
+
+                    // ─── Medications ────────────────────────────────────────
+                    _buildMedicationsHeader(context, ref),
+                    SizedBox(height: context.h(1.5)),
+                    MedicationsList(
+                      patientId: patient.id,
+                      embedded: true,
+                      showAddButton: false,
+                      showHeader: false,
+                      showSmartBoxStatus: false,
+                    ),
+
+                    SizedBox(height: context.h(4)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _refreshPatientData(WidgetRef ref) async {
+    await Future.wait([
+      ref
+          .read(patientVitalsNotifierProvider(patient.id).notifier)
+          .loadCurrentBP(),
+      ref
+          .read(patientMedicationsNotifierProvider(patient.id).notifier)
+          .loadMedications(),
+      ref.read(linkingNotifierProvider.notifier).getLinkedUsers(),
+    ]);
   }
 
   Widget _buildPatientProfileCard(BuildContext context) {
@@ -328,6 +348,54 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildMedicationsHeader(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSectionTitle(context, LocaleKeys.homeMedications.tr()),
+        ),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.w(42)),
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MedicineFormPage(patientId: patient.id),
+                ),
+              );
+              ref
+                  .read(patientMedicationsNotifierProvider(patient.id).notifier)
+                  .loadMedications();
+            },
+            icon: Icon(Icons.add_rounded, size: context.sp(18)),
+            label: Text(
+              LocaleKeys.medicationsAddMedication.tr(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.expertTeal,
+              foregroundColor: AppColors.white,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(
+                horizontal: context.w(3),
+                vertical: context.h(0.9),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: TextStyle(
+                fontSize: context.sp(12),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ─── Call Action Card ──────────────────────────────────────────────────────
   Widget _buildCallActionCard(
     BuildContext context, {
@@ -401,6 +469,62 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
     );
   }
 
+  Color _heartRateColor(String? riskLevel) {
+    switch (riskLevel) {
+      case 'low':
+        return Colors.blue[400]!;
+      case 'moderate':
+        return AppColors.warning;
+      case 'high':
+        return Colors.deepOrange[400]!;
+      case 'critical':
+        return AppColors.error;
+      case 'normal':
+        return AppColors.riskNormal;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  Widget? _heartRateBadge(BuildContext context, String? riskLevel) {
+    String? label;
+    switch (riskLevel) {
+      case 'low':
+        label = LocaleKeys.vitalsRiskLow.tr();
+        break;
+      case 'moderate':
+        label = LocaleKeys.vitalsRiskModerate.tr();
+        break;
+      case 'high':
+        label = LocaleKeys.vitalsRiskHigh.tr();
+        break;
+      case 'critical':
+        label = LocaleKeys.vitalsRiskCritical.tr();
+        break;
+      case 'normal':
+        label = LocaleKeys.vitalsRiskNormal.tr();
+        break;
+    }
+    if (label == null) return null;
+    final color = _heartRateColor(riskLevel);
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: context.w(2.2), vertical: context.h(0.25)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: context.sp(10.5),
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildCaregiverVitalCard(
     BuildContext context, {
     required String label,
@@ -410,6 +534,7 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
     required Color color,
     VoidCallback? onAction,
     String? actionLabel,
+    Widget? badge,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -459,14 +584,17 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: context.sp(28),
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? AppColors.textPrimaryDark
-                                : AppColors.textPrimary,
+                        Directionality(
+                          textDirection: ui.TextDirection.ltr,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: context.sp(28),
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimary,
+                            ),
                           ),
                         ),
                         SizedBox(width: context.w(1.5)),
@@ -480,6 +608,10 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    if (badge != null) ...[
+                      SizedBox(height: context.h(0.8)),
+                      badge,
+                    ],
                   ],
                 ),
               ),
@@ -519,6 +651,7 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
         builder: (_) => CallPage(
           isVideo: isVideo,
           contactName: patient.fullName,
+          contactImage: patient.profileImage,
           contactId: patient.id,
           isCaller: true,
         ),
@@ -532,7 +665,9 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: Text(LocaleKeys.confirm.tr()),
         content: Text(
-          'Are you sure you want to unlink from ${patient.fullName}? This will remove your access to their records.',
+          LocaleKeys.homeUnlinkConfirmMessage.tr(
+            namedArgs: {'name': patient.fullName},
+          ),
         ),
         actions: [
           TextButton(
@@ -552,7 +687,13 @@ class CaregiverPatientDetailPage extends ConsumerWidget {
               if (context.mounted) {
                 Navigator.pop(context); // Go back to dashboard
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Unlinked from ${patient.fullName}')),
+                  SnackBar(
+                    content: Text(
+                      LocaleKeys.homeUnlinkedSuccessMessage.tr(
+                        namedArgs: {'name': patient.fullName},
+                      ),
+                    ),
+                  ),
                 );
               }
             },
